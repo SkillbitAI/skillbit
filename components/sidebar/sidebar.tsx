@@ -51,7 +51,7 @@ const Sidebar = () => {
                 </li>
               )}
               {path != "/dashboard" && (
-                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-white hover:bg-opacity-10 duration-100">
+                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100">
                   <Image
                     src={DashboardIcon}
                     alt=""

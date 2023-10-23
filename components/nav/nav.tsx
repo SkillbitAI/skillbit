@@ -25,7 +25,7 @@ const Nav = () => {
         <li className="opacity-60">Contact</li>
       </ul>
       <button
-        onClick={() => router.push("/auth")}
+        onClick={() => router.push("/dashboard")}
         className="bg-indigo-600 bg-opacity-50 border border-indigo-600 border-opacity-50 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100 duration-200"
       >
         Get Started{" "}

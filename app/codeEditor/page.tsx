@@ -79,8 +79,8 @@ export default function CodeEditor() {
     fitAddonRef.current.fit();
     termRef.current.focus();
 
-    await fetch("http://localhost:3000/api/codeEditor/start");
-    const newSocket = io("http://localhost:9999");
+    // await fetch("http://localhost:3000/api/codeEditor/start");
+    // const newSocket = io("http://localhost:9999");
     setSocket(newSocket);
     if (socket) {
       socket.emit("data", "cd project\n");
