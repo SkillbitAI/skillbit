@@ -5,7 +5,12 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 
-export async function addUser(email: string, password: string, name: string) {
+export async function addUser(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+) {
   try {
     // Check if a user with the provided email already exists
     const existingUser = await prisma.user.findFirst({
@@ -26,7 +31,8 @@ export async function addUser(email: string, password: string, name: string) {
       data: {
         email,
         password: encryptedPassword,
-        name,
+        firstName,
+        lastName,
       },
     });
 

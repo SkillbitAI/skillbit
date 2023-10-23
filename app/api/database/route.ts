@@ -5,7 +5,12 @@ export async function POST(req: Request) {
   const data = await req.json();
 
   if (data.action === "addUser") {
-    const response = await addUser(data.email, data.password, data.name);
+    const response = await addUser(
+      data.email,
+      data.password,
+      data.firstName,
+      data.lastName
+    );
     if (response == "User already exists") {
       return NextResponse.json(
         { message: "User already exists! Please sign in." },
