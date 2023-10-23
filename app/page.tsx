@@ -9,19 +9,6 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-
-  useEffect(() => {
-    testExpressServer();
-  }, []);
-
-  const testExpressServer = async () => {
-    const response = await fetch("http://localhost:5000/", {
-      method: "GET",
-    });
-    const data = await response.text();
-    console.log(data);
-  };
-
   return (
     <>
       <div className="max-w-screen text-white graphPaper p-6 text-center bg-slate-900">
@@ -42,7 +29,7 @@ export default function Home() {
                 Skillbit's AI-powered technical interview platform.
               </p>
               <button
-                onClick={() => router.push("/auth")}
+                onClick={() => router.push("/dashboard")}
                 className="mt-10 bg-indigo-600 bg-opacity-50 border border-indigo-600 border-opacity-50 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100 duration-200"
               >
                 Get Started{" "}
