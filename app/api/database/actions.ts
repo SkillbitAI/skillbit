@@ -1,8 +1,8 @@
 //this file will be used to store methods to help us do backend actions like adding a user
 
-//importing prisma so we can use query tools
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+// Import Prisma to use the database query tools
+import prisma from "../database/prismaConnection";
+
 const bcrypt = require("bcrypt");
 
 export async function addUser(

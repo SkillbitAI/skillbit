@@ -4,9 +4,7 @@ import EmailProvider from "next-auth/providers/email";
 const bcrypt = require("bcrypt");
 
 // Import Prisma to use the database query tools
-import { PrismaClient } from "@prisma/client";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-const prisma = new PrismaClient();
+import prisma from "../../database/prismaConnection";
 
 const handler = NextAuth({
   providers: [

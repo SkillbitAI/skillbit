@@ -6,10 +6,18 @@ generator client {
   binaryTargets = ["native", "linux-arm64-openssl-1.1.x"]
 }
 
+// public database
+// datasource db {
+//   provider = "postgresql"
+//   url = env("POSTGRES_PRISMA_URL")
+//   directUrl = env("POSTGRES_URL_NON_POOLING")
+// }
+
+//For Tyler local testing
 datasource db {
   provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  url = env("POSTGRES_LOCAL_URL")
+  directUrl = env("POSTGRES_LOCAL_URL")
 }
 
 model Account {
