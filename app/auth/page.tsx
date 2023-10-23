@@ -21,12 +21,15 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     setRequestType("login");
   }, []);
 
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     if (
       email.length > 0 &&
       password.length > 0 &&
@@ -36,12 +39,14 @@ const Auth = () => {
       const response = await addUser();
       if (response.message == "User already exists! Please sign in.") {
         toast.error(response.message);
+        setIsLoading(false);
         return;
       } else if (
         response.message ==
         "Username is already in use. Please choose another username."
       ) {
         toast.error(response.message);
+        setIsLoading(false);
         return;
       }
       const signin = await userSignIn();
@@ -50,6 +55,7 @@ const Auth = () => {
         signin.message == "Incorrect password."
       ) {
         toast.error("An error occured.");
+        setIsLoading(false);
         return;
       }
       toast.loading("Signing you in...");
@@ -67,6 +73,7 @@ const Auth = () => {
     } else {
       toast.error("Please fill in all fields.");
     }
+    setIsLoading(false);
   };
 
   const addUser = async () => {
@@ -94,13 +101,16 @@ const Auth = () => {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     if (email.length > 0 && password.length > 0) {
       const response = await userSignIn();
       if (response.message == "No user found! Please sign up.") {
         toast.error(response.message);
+        setIsLoading(false);
         return;
       } else if (response.message == "Incorrect password.") {
         toast.error(response.message);
+        setIsLoading(false);
         return;
       }
       toast.loading("Signing you in...");
@@ -117,6 +127,7 @@ const Auth = () => {
     } else {
       toast.error("Please fill in all fields.");
     }
+    setIsLoading(false);
   };
 
   const userSignIn = async () => {
@@ -264,19 +275,31 @@ const Auth = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
               >
-                Register{" "}
-                <div className=" arrow flex items-center justify-center">
-                  <div className="arrowMiddle"></div>
-                  <div>
-                    <Image
-                      src={Arrow}
-                      alt=""
-                      width={14}
-                      height={14}
-                      className="arrowSide"
-                    ></Image>
+                {!isLoading && (
+                  <>
+                    Register{" "}
+                    <div className=" arrow flex items-center justify-center">
+                      <div className="arrowMiddle"></div>
+                      <div>
+                        <Image
+                          src={Arrow}
+                          alt=""
+                          width={14}
+                          height={14}
+                          className="arrowSide"
+                        ></Image>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {isLoading && (
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
                   </div>
-                </div>
+                )}
               </motion.button>
               <motion.p
                 className="text-gray-500"
@@ -369,19 +392,31 @@ const Auth = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.7, ease: "backOut" }}
               >
-                Login{" "}
-                <div className=" arrow flex items-center justify-center">
-                  <div className="arrowMiddle"></div>
-                  <div>
-                    <Image
-                      src={Arrow}
-                      alt=""
-                      width={14}
-                      height={14}
-                      className="arrowSide"
-                    ></Image>
+                {!isLoading && (
+                  <>
+                    Login{" "}
+                    <div className=" arrow flex items-center justify-center">
+                      <div className="arrowMiddle"></div>
+                      <div>
+                        <Image
+                          src={Arrow}
+                          alt=""
+                          width={14}
+                          height={14}
+                          className="arrowSide"
+                        ></Image>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {isLoading && (
+                  <div className="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
                   </div>
-                </div>
+                )}
               </motion.button>
               <motion.p
                 className="text-gray-500"
