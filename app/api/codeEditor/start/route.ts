@@ -2,9 +2,34 @@ const Docker = require("dockerode");
 
 const docker = new Docker();
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
+  const body = await req.json();
+  const containerName = body.testID;
+  const containers = await docker.listContainers({ all: true });
+  const container = containers.find((container) =>
+    container.Names.includes(`/${containerName}`)
+  );
+
+  if (container) {
+    console.log(`Container '${containerName}' already exists.`);
+    const containerInfo = await docker.getContainer(container.Id).inspect();
+    const portBindings = containerInfo.HostConfig.PortBindings;
+
+    const ports = {
+      webServer: portBindings["3000/tcp"][0].HostPort,
+      socketServer: portBindings["9999/tcp"][0].HostPort,
+    };
+    console.log(ports);
+
+    return new Response(JSON.stringify(ports));
+  }
+
+  const randomPort = Math.floor(Math.random() * 1000) + 3000;
+  const randomPort2 = Math.floor(Math.random() * 1000) + 3000;
+
   docker.createContainer(
     {
+      name: containerName,
       Image: "skillbit",
       ExposedPorts: {
         "9999/tcp": {},
@@ -14,12 +39,12 @@ export async function GET(req: Request) {
         PortBindings: {
           "9999/tcp": [
             {
-              HostPort: "9999",
+              HostPort: randomPort.toString(),
             },
           ],
           "3000/tcp": [
             {
-              HostPort: "9998",
+              HostPort: randomPort2.toString(),
             },
           ],
         },
