@@ -18,6 +18,6 @@ RUN npm rebuild node-pty
 WORKDIR /home
 RUN npx create-react-app project
 WORKDIR /home/project
-COPY .env .
+COPY codeRunner.env .env
 WORKDIR /server
 CMD ["node", "server.js"]
