@@ -89,16 +89,19 @@ export default function Tests({ params }: { params: { id: string } }) {
     });
 
     const ports = await response.json();
-    console.log(ports);
 
     const newSocket = io(`http://localhost:${ports.socketServer}`);
     setSocket(newSocket);
     setWebServerPort(ports.webServer);
 
-    if (socket) {
-      socket.emit("data", "cd project\n");
-      socket.emit("data", "npm run start\n");
-    }
+    newSocket.on("connect", () => {
+      newSocket.emit("data", "\n");
+      newSocket.emit("data", "cd project\n");
+      newSocket.emit("data", "npm run start\n");
+      setTimeout(() => {
+        setIframeKey(iframeKey + 1);
+      }, 2000);
+    });
   }, []);
 
   useEffect(() => {
@@ -107,7 +110,6 @@ export default function Tests({ params }: { params: { id: string } }) {
         socket.emit("codeChange", { fileName, value: file.value });
       });
       socket.on("data", (data) => {
-        console.log(data);
         termRef.current.write(
           String.fromCharCode.apply(null, new Uint8Array(data))
         );

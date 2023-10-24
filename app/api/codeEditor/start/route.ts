@@ -62,4 +62,10 @@ export async function POST(req: Request) {
       }
     }
   );
+  const ports = {
+    webServer: randomPort2,
+    socketServer: randomPort,
+  };
+
+  return new Response(JSON.stringify(ports));
 }
