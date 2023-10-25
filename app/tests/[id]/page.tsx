@@ -70,6 +70,7 @@ const xtermOptions = {
   useStyle: true,
   screenKeys: true,
   cursorBlink: true,
+  theme: { background: "#0f172a00" },
 };
 
 export default function Tests({ params }: { params: { id: string } }) {
@@ -341,7 +342,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               defaultLanguage={file.language}
               defaultValue={file.value}
               onChange={handleEditorChange}
-              className="absolute left-0 right-0 bottom-0 top-0"
+              className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
             />
           </div>
           {showBrowser && (
@@ -364,16 +365,23 @@ export default function Tests({ params }: { params: { id: string } }) {
             </motion.div>
           )}
           <div
-            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-black"
+            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-black bg-opacity-60 backdrop-blur-md rounded-tr-3xl rounded-tl-3xl"
             style={{ display: showTerminal ? "block" : "none" }}
           >
             <div ref={terminalRef}></div>
             <Image
               src={ExitIcon}
               alt=""
-              width={15}
-              height={15}
-              className="absolute top-3 right-3"
+              width={10}
+              height={10}
+              className="absolute top-6 right-6"
+              onClick={() => {
+                if (showTerminal) {
+                  setShowTerminal(false);
+                } else {
+                  setShowTerminal(true);
+                }
+              }}
             ></Image>
           </div>
         </div>

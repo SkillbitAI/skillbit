@@ -182,3 +182,7 @@ button:hover .arrowMiddle {
     transform: rotate(360deg);
   }
 }
+
+.xterm-viewport::-webkit-scrollbar {
+  background: transparent;
+}
