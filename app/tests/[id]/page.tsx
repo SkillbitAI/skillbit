@@ -150,13 +150,13 @@ export default function Tests({ params }: { params: { id: string } }) {
       inherit: true,
       rules: [],
       colors: {
-        "editor.background": "#1e293b",
+        "editor.background": "#1e293b00",
       },
     });
   });
 
   return (
-    <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen overflow-x-hidden flex">
+    <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
       {showSidebar && (
         <motion.div
           initial={{ opacity: 0, x: -100 }}
@@ -167,9 +167,9 @@ export default function Tests({ params }: { params: { id: string } }) {
             delay: 0,
             ease: "backOut",
           }}
-          className="bg-slate-800 h-screen border-slate-700 border-r w-72 z-20 relative"
+          className="bg-slate-900 h-screen border-slate-700 border-r w-72 z-20 relative"
         >
-          <div className="fixed bg-slate-800 border-slate-700 border-r w-72 p-3">
+          <div className="fixed bg-slate-900 border-slate-700 border-r w-72 p-3">
             <div className="flex flex-col justify-between">
               <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-700 mb-3">
                 <input
@@ -273,7 +273,7 @@ export default function Tests({ params }: { params: { id: string } }) {
         </motion.div>
       )}
       <div className="flex-1 flex flex-col h-screen">
-        <div className="bg-slate-800 border-b border-slate-700 flex justify-between p-3">
+        <div className="bg-slate-900 border-b border-slate-700 flex justify-between p-3">
           <div className="flex-1 flex gap-2">
             <div
               className="flex justify-start p-2 rounded-md hover:bg-slate-700"
@@ -346,7 +346,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                 delay: 0,
                 ease: "backOut",
               }}
-              className="flex-1 relative bg-slate-900"
+              className="flex-1 relative bg-slate-950"
             >
               <iframe
                 className="w-full h-full"
@@ -356,7 +356,7 @@ export default function Tests({ params }: { params: { id: string } }) {
             </motion.div>
           )}
           <div
-            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-black bg-opacity-60 backdrop-blur-md rounded-tr-3xl rounded-tl-3xl"
+            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
             style={{ display: showTerminal ? "block" : "none" }}
           >
             <div ref={terminalRef}></div>
