@@ -20,6 +20,7 @@ import DropdownIcon from "../../../public/assets/icons/dropdown.svg";
 import SearchIcon from "../../../public/assets/icons/search.svg";
 import ExitIcon from "../../../public/assets/icons/exit.svg";
 import { usePathname } from "next/navigation";
+import Arrow from "../../../public/assets/icons/arrow.svg";
 import Link from "next/link";
 
 const files: {
@@ -169,7 +170,7 @@ export default function Tests({ params }: { params: { id: string } }) {
           }}
           className="bg-slate-900 h-screen border-slate-700 border-r w-72 z-20 relative"
         >
-          <div className="fixed bg-slate-900 border-slate-700 border-r w-72 p-3">
+          <div className="fixed bg-slate-900 border-slate-700 border-r w-72 p-3 flex flex-col justify-between h-screen">
             <div className="flex flex-col justify-between">
               <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-700 mb-3">
                 <input
@@ -268,6 +269,28 @@ export default function Tests({ params }: { params: { id: string } }) {
                 </li>
                 <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
               </ul>
+            </div>
+            <div className="flex flex-col justify-between">
+              <motion.button
+                className="w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
+              >
+                Submit{" "}
+                <div className=" arrow flex items-center justify-center">
+                  <div className="arrowMiddle"></div>
+                  <div>
+                    <Image
+                      src={Arrow}
+                      alt=""
+                      width={14}
+                      height={14}
+                      className="arrowSide"
+                    ></Image>
+                  </div>
+                </div>
+              </motion.button>
             </div>
           </div>
         </motion.div>
