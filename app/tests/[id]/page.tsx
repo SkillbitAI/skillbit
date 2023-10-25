@@ -275,20 +275,17 @@ export default function Tests({ params }: { params: { id: string } }) {
       <div className="flex-1 flex flex-col h-screen">
         <div className="bg-slate-800 border-b border-slate-700 flex justify-between p-3">
           <div className="flex-1 flex gap-2">
-            <div className="flex justify-start">
-              <Image
-                src={SidebarIcon}
-                alt=""
-                width={20}
-                height={20}
-                onClick={() => {
-                  if (showSidebar) {
-                    setShowSidebar(false);
-                  } else {
-                    setShowSidebar(true);
-                  }
-                }}
-              ></Image>
+            <div
+              className="flex justify-start p-2 rounded-md hover:bg-slate-700"
+              onClick={() => {
+                if (showSidebar) {
+                  setShowSidebar(false);
+                } else {
+                  setShowSidebar(true);
+                }
+              }}
+            >
+              <Image src={SidebarIcon} alt="" width={20} height={20}></Image>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -301,36 +298,30 @@ export default function Tests({ params }: { params: { id: string } }) {
             ></Image>
             <h1 className="text-white text-2xl">Skillbit</h1>
           </div>
-          <div className="flex-1 flex justify-end gap-2">
-            <div className="flex">
-              <Image
-                src={TerminalIcon}
-                alt=""
-                width={20}
-                height={20}
-                onClick={() => {
-                  if (showTerminal) {
-                    setShowTerminal(false);
-                  } else {
-                    setShowTerminal(true);
-                  }
-                }}
-              ></Image>
+          <div className="flex-1 flex justify-end">
+            <div
+              className="flex p-2 rounded-md hover:bg-slate-700"
+              onClick={() => {
+                if (showTerminal) {
+                  setShowTerminal(false);
+                } else {
+                  setShowTerminal(true);
+                }
+              }}
+            >
+              <Image src={TerminalIcon} alt="" width={20} height={20}></Image>
             </div>
-            <div className="flex">
-              <Image
-                src={WindowIcon}
-                alt=""
-                width={20}
-                height={20}
-                onClick={() => {
-                  if (showBrowser) {
-                    setShowBrowser(false);
-                  } else {
-                    setShowBrowser(true);
-                  }
-                }}
-              ></Image>
+            <div
+              className="flex p-2 rounded-md hover:bg-slate-700"
+              onClick={() => {
+                if (showBrowser) {
+                  setShowBrowser(false);
+                } else {
+                  setShowBrowser(true);
+                }
+              }}
+            >
+              <Image src={WindowIcon} alt="" width={20} height={20}></Image>
             </div>
           </div>
         </div>
@@ -369,12 +360,8 @@ export default function Tests({ params }: { params: { id: string } }) {
             style={{ display: showTerminal ? "block" : "none" }}
           >
             <div ref={terminalRef}></div>
-            <Image
-              src={ExitIcon}
-              alt=""
-              width={10}
-              height={10}
-              className="absolute top-6 right-6"
+            <div
+              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700"
               onClick={() => {
                 if (showTerminal) {
                   setShowTerminal(false);
@@ -382,7 +369,9 @@ export default function Tests({ params }: { params: { id: string } }) {
                   setShowTerminal(true);
                 }
               }}
-            ></Image>
+            >
+              <Image src={ExitIcon} alt="" width={10} height={10}></Image>
+            </div>
           </div>
         </div>
       </div>
