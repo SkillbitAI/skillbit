@@ -55,7 +55,7 @@ const router = useRouter();
                 </li>
               )}
               {path != "/dashboard" && (
-                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100" onClick={() => router.push('/dashboard')}>
+                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100">
                   <Image
                     src={DashboardIcon}
                     alt=""
