@@ -182,3 +182,11 @@ button:hover .arrowMiddle {
     transform: rotate(360deg);
   }
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0.1rem;
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
