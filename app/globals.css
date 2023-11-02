@@ -183,10 +183,6 @@ button:hover .arrowMiddle {
   }
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  width: 0.1rem;
-}
-
-.hide-scrollbar::-webkit-scrollbar-thumb {
-  background-color: transparent;
+.xterm-viewport::-webkit-scrollbar {
+  background: transparent;
 }

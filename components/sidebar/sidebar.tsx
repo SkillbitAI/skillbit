@@ -25,12 +25,12 @@ import SettingsIcon from "../../public/assets/icons/settings.svg";
 const Sidebar = () => {
   const path = usePathname();
 
-const router = useRouter();
+  const router = useRouter();
 
   return (
     <>
-      <div className="bg-slate-800 h-screen border-slate-700 border-r w-72">
-        <div className="fixed bg-slate-800 h-screen border-slate-700 border-r w-72 p-6">
+      <div className="bg-slate-900 h-screen border-slate-800 border-r w-72">
+        <div className="fixed bg-slate-900 h-screen border-slate-800 border-r w-72 p-6">
           <div className="flex items-center gap-2">
             <Image
               src={Logo}
@@ -55,7 +55,10 @@ const router = useRouter();
                 </li>
               )}
               {path != "/dashboard" && (
-                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100" onClick={() => router.push('/dashboard')}>
+                <li
+                  className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
+                  onClick={() => router.push("/dashboard")}
+                >
                   <Image
                     src={DashboardIcon}
                     alt=""
@@ -74,10 +77,13 @@ const router = useRouter();
                     height={25}
                   ></Image>
                   <p>Applicants</p>
-                </li> 
+                </li>
               )}
               {path != "/applicants" && (
-                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100" onClick={() => router.push('/applicants')}>
+                <li
+                  className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
+                  onClick={() => router.push("/applicants")}
+                >
                   <Image
                     src={ApplicantsIcon}
                     alt=""
@@ -99,7 +105,10 @@ const router = useRouter();
                 </li>
               )}
               {path != "/companyProfile" && (
-                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100" onClick={() => router.push('/companyProfile')}>
+                <li
+                  className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
+                  onClick={() => router.push("/companyProfile")}
+                >
                   <Image
                     src={CompanyIcon}
                     alt=""
@@ -121,7 +130,10 @@ const router = useRouter();
                 </li>
               )}
               {path != "/questionWorkshop" && (
-                <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100" onClick={() => router.push('/questionWorkshop')}>
+                <li
+                  className="p-2 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
+                  onClick={() => router.push("/questionWorkshop")}
+                >
                   <Image
                     src={WorkshopIcon}
                     alt=""
@@ -133,7 +145,7 @@ const router = useRouter();
               )}
             </ul>
             <ul className="list-none text-white flex flex-col gap-2">
-              <hr className="border-t border-slate-700" />
+              <hr className="border-t border-slate-800" />
               <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-white hover:bg-opacity-10 duration-100">
                 <Image src={SupportIcon} alt="" width={25} height={25}></Image>
                 <p>Contact Support</p>
