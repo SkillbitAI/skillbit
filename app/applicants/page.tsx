@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Loader from "@/components/loader/loader";
+import Papa from "papaparse";
 
 import Nav from "@/components/nav/nav";
 import Image from "next/image";
@@ -16,6 +17,7 @@ import { useRouter } from "next/navigation";
 import TopMenuBar from "@/components/topmenubar/topmenubar";
 import Dropdown from "../../public/assets/icons/dropdown.svg";
 import { Toaster, toast } from "react-hot-toast";
+import FilterIcon from "../../public/assets/icons/filter.svg";
 
 //dashboard icons
 import DashboardIcon from "../../public/assets/icons/dashboard.svg";
@@ -30,58 +32,61 @@ import SearchIcon from "../../public/assets/icons/search.svg";
 
 const Applicants = () => {
   interface ApplicantDataInterface {
-    name: string;
+    id: string;
+    firstName: string;
+    lastName: string;
     email: string;
     status: string;
+    score: string;
     selected: boolean;
   }
 
   const path = usePathname();
   const router = useRouter();
 
-  const [accountMenuVisible, setAccountMenuVisible] = useState(false);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showOptionsIndex, setShowOptionsIndex] = useState("");
   const [applicantData, setApplicantData] = useState<
     Array<ApplicantDataInterface>
   >([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAll = () => {
+    setSelectAll((prevSelectAll) => !prevSelectAll);
+    const updatedData = applicantData.map((item) => ({
+      ...item,
+      selected: !selectAll,
+    }));
+    setApplicantData(updatedData);
+  };
 
   useEffect(() => {
-    // Populate applicantData
-    const data: ApplicantDataInterface[] = [
-      {
-        name: "Tyler Haisman",
-        email: "mail@example.com",
+    async function fetchData() {
+      const rows = await getData();
+      const combinedData = rows.map((row) => ({
+        ...(row as Omit<
+          ApplicantDataInterface,
+          "status" | "score" | "selected"
+        >),
         status: "Sent",
+        score: "",
         selected: false,
-      },
-      {
-        name: "Daniel Lai",
-        email: "mail@example.com",
-        status: "Expired",
-        selected: false,
-      },
-      {
-        name: "David Noguera",
-        email: "mail@example.com",
-        status: "Awaiting Review",
-        selected: false,
-      },
-      {
-        name: "Matthew Jung",
-        email: "mail@example.com",
-        status: "Reviewed",
-        selected: false,
-      },
-      {
-        name: "Blake Rand",
-        email: "mail@example.com",
-        status: "Sent",
-        selected: false,
-      },
-    ];
-
-    setApplicantData(data);
+      }));
+      setApplicantData(combinedData);
+    }
+    fetchData();
   }, []);
+
+  async function getData() {
+    const response = await fetch("/assets/documents/MOCK_DATA.csv");
+    const reader = response.body?.getReader();
+    const result = await reader?.read();
+    const decoder = new TextDecoder("utf-8");
+    const csv = decoder.decode(result?.value);
+    const results = Papa.parse(csv, { header: true });
+    const rows = results.data;
+    return rows;
+  }
 
   const { data: session, status } = useSession();
 
@@ -113,21 +118,78 @@ const Applicants = () => {
           {/* Applicants content */}
           <div className="p-6">
             <Toaster position="top-right"></Toaster>
-            <ul className="flex gap-6 items-center">
-              <li className="">
-                <div className="flex gap-2 items-center text-gray-500 relative">
-                  <input
-                    type="checkbox"
-                    className="before:content[''] peer relative h-4 w-4 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-transparent before:opacity-0 before:transition-opacity checked:border-indigo-600 checked:bg-indigo-600 checked:before:bg-indigo-600 hover:before:opacity-10"
-                  />
-                  <p>Select all</p>
-                </div>
-              </li>
-              <li className="">
-                <button className="bg-indigo-600 rounded-lg flex p-1 px-2 justify-center items-center m-auto">
-                  Clear selected
-                </button>
-              </li>
+            <ul className="flex gap-6 items-center justify-between">
+              <div className="flex gap-3 items-center justify-center">
+                <li className="">
+                  <div className="flex gap-2 items-center text-white relative">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="before:content[''] peer relative h-4 w-4 cursor-pointer appearance-none rounded-md border border-white transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-transparent before:opacity-0 before:transition-opacity checked:border-indigo-600 checked:bg-indigo-600 checked:before:bg-indigo-600 hover:before:opacity-10"
+                    />
+                    <p>Select all</p>
+                  </div>
+                </li>
+                <hr className="border-l border-slate-800 h-5" />
+                <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
+                  <p className="text-sm flex gap-2 items-center justify-center">
+                    Clear Selected
+                  </p>
+                </li>
+                <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
+                  <p className="text-sm flex gap-2 items-center justify-center">
+                    Clear Failed
+                  </p>
+                </li>
+              </div>
+              <div className="flex gap-3 items-center justify-center">
+                <li
+                  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative"
+                  onClick={() => setShowFilterMenu(!showFilterMenu)}
+                >
+                  <p className="text-sm flex gap-2 items-center justify-center">
+                    <Image
+                      src={FilterIcon}
+                      alt=""
+                      width={15}
+                      height={15}
+                    ></Image>
+                    Filter
+                  </p>
+                  {/* Filter Menu */}
+                  {showFilterMenu && (
+                    <motion.ul
+                      initial={{ opacity: 0, y: -30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: 0,
+                        ease: "backOut",
+                        delayChildren: 0.2,
+                      }}
+                      className="absolute top-12 right-0 bg-slate-800 bg-opacity-60 backdrop-blur-lg rounded-lg border border-slate-800 p-3 flex flex-col gap-2 z-10"
+                    >
+                      <li className="flex gap-3 items-center justify-center w-max">
+                        <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                        <p className="text-sm">Sent</p>
+                      </li>
+                      <li className="flex gap-3 items-center justify-center  w-max">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        <p className="text-sm">Failed</p>
+                      </li>
+                      <li className="flex gap-3 items-center justify-center  w-max">
+                        <div className="w-2 h-2 rounded-full bg-green-600"></div>
+                        <p className="text-sm">Passed</p>
+                      </li>
+                      <li className="flex gap-3 items-center justify-center  w-max">
+                        <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                        <p className="text-sm">Expired</p>
+                      </li>
+                    </motion.ul>
+                  )}
+                </li>
+              </div>
             </ul>
             <ul className="flex flex-col gap-2 mt-6">
               {applicantData.map((item, index) => (
@@ -156,10 +218,12 @@ const Applicants = () => {
                             !updatedData[index].selected;
                           setApplicantData(updatedData);
                         }}
-                        className="before:content[''] peer relative h-4 w-4 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-transparent before:opacity-0 before:transition-opacity checked:border-indigo-600 checked:bg-indigo-600 checked:before:bg-indigo-600 hover:before:opacity-10"
+                        className="before:content[''] peer relative h-4 w-4 cursor-pointer appearance-none rounded-md border border-white border-opacity-25 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-transparent before:opacity-0 before:transition-opacity checked:border-indigo-600 checked:bg-indigo-600 checked:before:bg-indigo-600 hover:before:opacity-10"
                       />
                       <div className="">
-                        <h1 className="text-base">{item.name}</h1>
+                        <h1 className="text-base">
+                          {item.firstName} {item.lastName}
+                        </h1>
                         <p className="text-gray-500 text-sm">{item.email}</p>
                       </div>
                     </div>
@@ -170,16 +234,16 @@ const Applicants = () => {
                           <p className="text-sm">Sent</p>
                         </div>
                       )}
-                      {item.status == "Awaiting Review" && (
+                      {item.status == "Failed" && (
                         <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                           <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          <p className="text-sm">Awaiting Review</p>
+                          <p className="text-sm">Failed | {item.score}</p>
                         </div>
                       )}
-                      {item.status == "Reviewed" && (
+                      {item.status == "Passed" && (
                         <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                           <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                          <p className="text-sm">Reviewed</p>
+                          <p className="text-sm">Passed | {item.score}</p>
                         </div>
                       )}
                       {item.status == "Expired" && (
@@ -208,10 +272,10 @@ const Applicants = () => {
                     >
                       <motion.li
                         className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
-                          duration: 0.5,
+                          duration: 0.2,
                           delay: 0,
                           ease: "backOut",
                         }}
@@ -221,10 +285,10 @@ const Applicants = () => {
                       <motion.li
                         className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                         onClick={() => toast.success("Email address copied.")}
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
-                          duration: 0.5,
+                          duration: 0.2,
                           delay: 0,
                           ease: "backOut",
                         }}
@@ -234,10 +298,10 @@ const Applicants = () => {
                       <motion.li
                         className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                         onClick={() => toast.success("Interview resent.")}
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
-                          duration: 0.5,
+                          duration: 0.2,
                           delay: 0,
                           ease: "backOut",
                         }}
