@@ -68,8 +68,8 @@ const Applicants = () => {
           ApplicantDataInterface,
           "status" | "score" | "selected"
         >),
-        status: "Sent",
-        score: "",
+        status: "Expired",
+        score: "90%",
         selected: false,
       }));
       setApplicantData(combinedData);
