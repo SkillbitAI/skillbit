@@ -105,7 +105,7 @@ button:hover .arrowMiddle {
 .graphPaperWhite {
   background-image: linear-gradient(#e5e7eb65 1px, transparent 1px),
     linear-gradient(90deg, #e5e7eb65 1px, transparent 1px);
-  background-size: 40px 40px; /* Adjust the size of grid squares */
+  background-size: repeat; /* Adjust the size of grid squares */
 }
 
 .meshGradient {
@@ -132,9 +132,9 @@ button:hover .arrowMiddle {
   width: 800px;
   height: 600px;
   position: absolute;
-  left: 200px;
+  left: -280px;
   top: 50px;
-  background: radial-gradient(#4f46e5, transparent 60%);
+  background: radial-gradient(#4f46e5, transparent 70%);
   opacity: 0.2;
 }
 
