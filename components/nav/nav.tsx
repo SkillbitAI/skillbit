@@ -43,7 +43,24 @@ const Nav = () => {
           <h1 className="">Skillbit</h1>
         </div>
         <div className="mr-[10px] basis-1/3 flex justify-end ">
-          <Button></Button>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="bg-indigo-600 bg-opacity-50 border border-white border-opacity-50 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100 hover:bg-indigo-950 duration-200 hover:shadow-[0_0_2px_#fff,inset_0_0_2px_#fff,0_0_5px_#4f46e5,0_0_15px_#4f46e5,0_0_30px_#4f46e5]"
+          >
+            Get Started{" "}
+            <div className=" arrow flex items-center justify-center">
+              <div className="arrowMiddle"></div>
+              <div>
+                <Image
+                  src={Arrow}
+                  alt=""
+                  width={14}
+                  height={14}
+                  className="arrowSide"
+                ></Image>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
       <div className="filter blur-2xl"></div>

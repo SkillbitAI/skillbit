@@ -43,18 +43,18 @@ const Applicants = () => {
 
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvData, setCsvData] = useState<ApplicantDataInterface[]>([]);
-  
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
 
     if (files && files.length > 0) {
       const file = files[0];
 
-      if (file && file.type === 'text/csv') {
+      if (file && file.type === "text/csv") {
         setCsvFile(file);
         parseCSV(file);
       } else {
-        alert('Please upload a valid CSV file.');
+        alert("Please upload a valid CSV file.");
       }
     }
   };
@@ -62,8 +62,8 @@ const Applicants = () => {
   const parseCSV = (file: File) => {
     Papa.parse(file, {
       complete: (results) => {
-        const rows = results.data
-      const combinedData = rows.map((row) => ({
+        const rows = results.data;
+        const combinedData = rows.map((row) => ({
           ...(row as Omit<
             ApplicantDataInterface,
             "status" | "score" | "selected"
@@ -72,15 +72,14 @@ const Applicants = () => {
           score: "90%",
           selected: false,
         }));
-      console.log("Parsed CSV data: ", combinedData);
-      setApplicantData(combinedData);
+        console.log("Parsed CSV data: ", combinedData);
+        setApplicantData(combinedData);
         //setCsvData(results.data as ApplicantDataInterface[]);
       },
-      header: true
+      header: true,
     });
   };
-  
-  
+
   const path = usePathname();
   const router = useRouter();
 
@@ -113,14 +112,14 @@ const Applicants = () => {
   //       selected: false,
   //     }));
   //     setApplicantData(combinedData);
-      
+
   //   }
   //   fetchData();
   // }, []);
 
   async function getData() {
     const response = await fetch("/assets/documents/MOCK_DATA.csv");
-    
+
     const reader = response?.body?.getReader();
     const result = await reader?.read();
     const decoder = new TextDecoder("utf-8");
@@ -130,28 +129,28 @@ const Applicants = () => {
     return rows;
   }
 
-const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
 
-useEffect(() => {
-  const fetch = async () => {
-    if (session) {
-      console.log("Hello world!");
+  useEffect(() => {
+    const fetch = async () => {
+      if (session) {
+        console.log("Hello world!");
 
-      //other than print hello world, set user data here
+        //other than print hello world, set user data here
+      }
+    };
+    if (status === "authenticated") {
+      fetch();
     }
-  };
-  if (status === "authenticated") {
-    fetch();
+  }, [session, status]);
+  if (status === "loading") {
+    return <Loader></Loader>;
   }
-}, [session, status]);
-if (status === "loading") {
-  return <Loader></Loader>;
-}
-if (status === "unauthenticated") {
-  router.push("/auth");
-  return;
-}
-  
+  if (status === "unauthenticated") {
+    router.push("/auth");
+    return;
+  }
+
   return (
     <>
       <div className="max-w-screen text-white flex overflow-x-hidden">
@@ -187,19 +186,22 @@ if (status === "unauthenticated") {
                 </li>
               </div>
               <div className="flex gap-3 items-center justify-center">
-              <label
-                  htmlFor="fileInput" 
+                <label
+                  htmlFor="fileInput"
                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative"
                 >
-                   Import CSV
+                  <p className="text-sm flex gap-2 items-center justify-center">
+                    Import CSV
+                  </p>
                 </label>
-                <input 
-                    type="file" 
-                    accept=".csv" 
-                    id="fileInput"
-                    onChange={handleFileChange}
-                    style= {{ display: 'none'}} />
-                
+                <input
+                  type="file"
+                  accept=".csv"
+                  id="fileInput"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                />
+
                 <li
                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative"
                   onClick={() => setShowFilterMenu(!showFilterMenu)}
