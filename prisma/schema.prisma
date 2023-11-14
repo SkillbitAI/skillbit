@@ -58,5 +58,5 @@ model VerificationToken {
 }
 
 model testID {
-  uid Int @id
+  uid String @id
 }
