@@ -1,3 +1,5 @@
+import prisma from "../../database/prismaConnection";
+
 const Docker = require("dockerode");
 
 const docker = new Docker();
@@ -9,6 +11,16 @@ export async function POST(req: Request) {
   const container = containers.find((container) =>
     container.Names.includes(`/${containerName}`)
   );
+
+  const test = await prisma.testID.findUnique({
+    where: {
+      uid: containerName,
+    },
+  });
+
+  if (!test) {
+    return new Response("invalid");
+  }
 
   if (container) {
     console.log(`Container '${containerName}' already exists.`);

@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-async-client-component */
+// @ts-nocheck
+
 "use client";
 
 import Editor, { loader } from "@monaco-editor/react";
@@ -22,50 +26,8 @@ import ExitIcon from "../../../public/assets/icons/exit.svg";
 import { usePathname } from "next/navigation";
 import Arrow from "../../../public/assets/icons/arrow.svg";
 import Link from "next/link";
-
-const files: {
-  [key: string]: { name: string; language: string; value: string };
-} = {
-  "/project/src/App.js": {
-    name: "App.js",
-    language: "javascript",
-    value: `import logo from './logo.svg';
-    import './App.css';
-    
-    function App() {
-      return (
-        <div className="App">
-          <header className="App-header">
-            <img src={logo} className="App-logo" alt="logo" />
-            <p>
-              Edit <code>src/App.js</code> and save to reload.
-            </p>
-            <a
-              className="App-link"
-              href="https://reactjs.org"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn React
-            </a>
-          </header>
-        </div>
-      );
-    }
-    
-    export default App;`,
-  },
-  "style.css": {
-    name: "style.css",
-    language: "css",
-    value: "body { background-color: red; }",
-  },
-  "index.html": {
-    name: "index.html",
-    language: "html",
-    value: "<h1>hello world</h1>",
-  },
-};
+import { files } from "./files";
+import { verifyTestId } from "./verifyTestId";
 
 const xtermOptions = {
   useStyle: true,
@@ -93,6 +55,21 @@ export default function Tests({ params }: { params: { id: string } }) {
   };
 
   useEffect(async () => {
+    const validID = await fetch(
+      "http://localhost:3000/api/codeEditor/verifyTestID",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ testID: params.id }),
+      }
+    );
+
+    const validIDJSON = await validID.json();
+
+    if (!validIDJSON.valid) {
+      window.location.href = "/404";
+    }
+
     termRef.current = new Terminal(xtermOptions);
     fitAddonRef.current = new FitAddon();
     termRef.current.loadAddon(fitAddonRef.current);
@@ -118,6 +95,10 @@ export default function Tests({ params }: { params: { id: string } }) {
       newSocket.emit("data", "\n");
       newSocket.emit("data", "cd project\n");
       newSocket.emit("data", "npm run start\n");
+      for (const [fileName, file] of Object.entries(files)) {
+        newSocket.emit("codeChange", { fileName, value: file.value });
+      }
+
       setTimeout(() => {
         setIframeKey(iframeKey + 1);
       }, 2000);
@@ -205,68 +186,43 @@ export default function Tests({ params }: { params: { id: string } }) {
                 <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
                 <div className="flex justify-between items-center">
                   <p className="text-base">Project Files</p>
-                  <Image
-                    src={DropdownIcon}
-                    alt=""
-                    width={14}
-                    height={14}
-                  ></Image>
                 </div>
-                <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
-                <li
-                  disabled={fileName === "/project/src/App.js"}
-                  onClick={() => setFileName("/project/src/App.js")}
-                  className={
-                    fileName === "/project/src/App.js"
-                      ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
-                      : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
-                  }
-                >
-                  <Image
-                    src={JSIcon}
-                    alt=""
-                    width={15}
-                    height={15}
-                    className="ml-1 rounded-sm"
-                  ></Image>
-                  <p>script.js</p>
-                </li>
-                <li
-                  disabled={fileName === "style.css"}
-                  onClick={() => setFileName("style.css")}
-                  className={
-                    fileName === "style.css"
-                      ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
-                      : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
-                  }
-                >
-                  <Image
-                    src={CSSIcon}
-                    alt=""
-                    width={15}
-                    height={15}
-                    className="ml-1"
-                  ></Image>
-                  <p>style.css</p>
-                </li>
-                <li
-                  disabled={fileName === "index.html"}
-                  onClick={() => setFileName("index.html")}
-                  className={
-                    fileName === "index.html"
-                      ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
-                      : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
-                  }
-                >
-                  <Image
-                    src={HTMLIcon}
-                    alt=""
-                    width={15}
-                    height={15}
-                    className="ml-1"
-                  ></Image>
-                  <p>index.html</p>
-                </li>
+                <ul>
+                  {Object.keys(files).map((key) => {
+                    const file = files[key];
+                    let icon;
+                    if (file.name.endsWith(".js")) {
+                      icon = JSIcon;
+                    } else if (file.name.endsWith(".css")) {
+                      icon = CSSIcon;
+                    } // Add additional file type checks as necessary
+
+                    return (
+                      <li
+                        key={key} // Don't forget to add a unique key for each list item
+                        onClick={() => setFileName(key)}
+                        className={
+                          fileName === key
+                            ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
+                            : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
+                        }
+                        // 'disabled' attribute is not valid on 'li' element. You may need to handle it differently
+                      >
+                        {icon && (
+                          <Image
+                            src={icon}
+                            alt=""
+                            width={15}
+                            height={15}
+                            className="ml-1 rounded-sm"
+                          />
+                        )}
+                        <p>{file.name}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+
                 <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
               </ul>
             </div>
