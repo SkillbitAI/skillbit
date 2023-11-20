@@ -13,18 +13,21 @@ const About = () => {
   const isInView = useInView(ref);
 
   return (
-    <div className="text-white flex items-center justify-center mt-40 pb-32 pt-20">
+    <div
+      className="text-white flex items-center justify-center mt-40 pb-32 pt-20"
+      id="features"
+    >
       <div className="px-6 max-w-7xl m-auto">
         <h1 ref={ref} className="text-5xl">
-          <div
-            style={{
-              transform: isInView ? "none" : "translateX(-200px)",
-              opacity: isInView ? "100" : "0",
-              transition: "all 0.9s cubic-bezier(0.17, 0.55, 0.55, 1) 0.1s",
-            }}
-          >
-            <h1 className="text-6xl"> Optimize your talent search</h1>
-          </div>
+          {isInView && (
+            <motion.div
+              initial={{ x: -200, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0, duration: 0.5, ease: "backOut" }}
+            >
+              <h1 className="text-6xl"> Optimize your talent search</h1>
+            </motion.div>
+          )}
         </h1>
         <p className="mt-4">
           Our simplified interface makes technical interviewing practical for

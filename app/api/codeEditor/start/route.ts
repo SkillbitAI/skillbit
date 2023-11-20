@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const containerName = body.testID;
   const containers = await docker.listContainers({ all: true });
-  const container = containers.find((container) =>
+  const container = containers.find((container: any) =>
     container.Names.includes(`/${containerName}`)
   );
 

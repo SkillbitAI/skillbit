@@ -29,16 +29,28 @@ const Nav = () => {
           <h1 className="">Skillbit</h1>
         </div>
         <ul className="list-none hidden md:flex items-center justify-center">
-          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
-            <div onClick={() => scrolltoHash("home")}>Home</div>
+          <li
+            className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
+            onClick={() => scrolltoHash("top")}
+          >
+            Home
           </li>
-          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
-            <div onClick={() => scrolltoHash("about")}>About</div>
+          <li
+            className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
+            onClick={() => scrolltoHash("features")}
+          >
+            Features
           </li>
-          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
-            Spacer
+          <li
+            className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
+            onClick={() => scrolltoHash("how it works")}
+          >
+            How It Works
           </li>
-          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
+          <li
+            className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
+            onClick={() => scrolltoHash("footer")}
+          >
             Contact
           </li>
         </ul>
