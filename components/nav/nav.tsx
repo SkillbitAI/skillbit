@@ -28,7 +28,7 @@ const Nav = () => {
           ></Image>
           <h1 className="">Skillbit</h1>
         </div>
-        <ul className="list-none flex items-center justify-center">
+        <ul className="list-none hidden md:flex items-center justify-center">
           <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
             <div onClick={() => scrolltoHash("home")}>Home</div>
           </li>

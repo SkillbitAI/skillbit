@@ -70,7 +70,7 @@ export default function Home() {
     <>
       {/* <Mousetrail></Mousetrail> */}
       {/* PAGE */}
-      <div className="max-w-screen text-white graphPaper text-center bg-slate-900">
+      <div className="text-white graphPaper text-center bg-slate-900">
         {/* PAGE COVER */}
         <div className="px-6 max-w-7xl m-auto">
           <div className="loginAccentBackground h-[900px] absolute -top-96 -right-96 -left-96 -rotate-6 z-0"></div>
