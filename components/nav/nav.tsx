@@ -28,20 +28,24 @@ const Nav = () => {
           ></Image>
           <h1 className="">Skillbit</h1>
         </div>
-        <ul className="list-none flex gap-6 items-center justify-center">
-          <li className="hover:cursor-pointer transition">
+        <ul className="list-none flex items-center justify-center">
+          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
             <div onClick={() => scrolltoHash("home")}>Home</div>
           </li>
-          <li className="hover:cursor-pointer transition">
+          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
             <div onClick={() => scrolltoHash("about")}>About</div>
           </li>
-          <li className="hover:cursor-pointer transition">Spacer</li>
-          <li className="hover:cursor-pointer transition">Contact</li>
+          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
+            Spacer
+          </li>
+          <li className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl">
+            Contact
+          </li>
         </ul>
         <div className="flex justify-end ">
           <button
             onClick={() => router.push("/dashboard")}
-            className="bg-indigo-600 bg-opacity-50 border border-white border-opacity-50 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100 hover:bg-indigo-950 duration-200 hover:shadow-[0_0_2px_#fff,inset_0_0_2px_#fff,0_0_5px_#4f46e5,0_0_15px_#4f46e5,0_0_30px_#4f46e5]"
+            className="bg-white bg-opacity-10 px-6 py-3 rounded-lg flex justify-center items-center backdrop-blur-lg"
           >
             Get Started{" "}
             <div className=" arrow flex items-center justify-center">

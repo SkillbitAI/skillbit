@@ -186,3 +186,23 @@ button:hover .arrowMiddle {
 .xterm-viewport::-webkit-scrollbar {
   background: transparent;
 }
+
+.pie-chart {
+  width: 100px;
+  height: 100px;
+  background: conic-gradient(
+    rgba(255, 255, 255, 0.1) 0% 20%,
+    rgba(255, 255, 255, 0.15) 20% 40%,
+    rgba(255, 255, 255, 0.2) 40% 100%
+  );
+  border-radius: 50%;
+  position: relative;
+}
+
+@media (max-width: 1300px) {
+  .adjustFlex {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+}
