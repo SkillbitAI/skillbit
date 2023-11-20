@@ -47,7 +47,7 @@ const Nav = () => {
             onClick={() => router.push("/dashboard")}
             className="bg-white bg-opacity-10 px-6 py-3 rounded-lg flex justify-center items-center backdrop-blur-lg"
           >
-            Get Started{" "}
+            Sign In
             <div className=" arrow flex items-center justify-center">
               <div className="arrowMiddle"></div>
               <div>

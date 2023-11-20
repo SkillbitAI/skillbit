@@ -81,7 +81,7 @@ export default function Home() {
                 Introducing Skillbit
               </p> */}
               <h1 className="text-7xl mt-4">
-                Technical interviews, reimagined.
+                Technical interviews, reimagined
               </h1>
               <p className="mt-4">
                 Take your company's technical recruitment to the next level with
@@ -181,6 +181,170 @@ export default function Home() {
           </div>
         </div>
         <About></About>
+        <div className="text-left relative bg-gradient-to-b to-slate-950 from-transparent">
+          {/* <div className="bg-slate-950 h-[900px] absolute -top-36 -right-96 -left-96 -rotate-6 z-0"></div> */}
+          <div className="px-6 max-w-7xl m-auto relative z-20 pt-40 pb-64 flex justify-between gap-20 items-center flex-col lg:flex-row">
+            <div className="flex-1">
+              <h1 className="text-6xl">How it works</h1>
+              <ul className="flex flex-col gap-12 mt-12">
+                <li className="flex gap-6">
+                  <div className="rounded-2xl bg-indigo-600 text-xl min-w-[50px] min-h-[50px] max-w-[50px] max-h-[50px] flex justify-center items-center">
+                    <h1>1</h1>
+                  </div>
+                  <div className="">
+                    <h1>Customize your question configurations</h1>
+                    <p>
+                      Our streamlined question customization interface will
+                      ensure all candidates receive a unique but comparable
+                      question, ensuring everyone plays on the same field.
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-6">
+                  <div className="rounded-2xl bg-indigo-600 text-xl min-w-[50px] min-h-[50px] max-w-[50px] max-h-[50px] flex justify-center items-center">
+                    <h1>2</h1>
+                  </div>
+                  <div className="">
+                    <h1>Generate a unique link</h1>
+                    <p>
+                      Skillbit generates a unique link that is automatically
+                      sent to candidates so you can save valuable time.
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-6">
+                  <div className="rounded-2xl bg-indigo-600 text-xl min-w-[50px] min-h-[50px] max-w-[50px] max-h-[50px] flex justify-center items-center">
+                    <h1>3</h1>
+                  </div>
+                  <div className="">
+                    <h1>Organize and analyze results</h1>
+                    <p>
+                      After candidates complete their assigned question, view
+                      detailed analytics on each candidate to help you make the
+                      right hiring decisions.
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div className="flex-1 flex justify-center items-center">
+              <div className="flex">
+                <motion.div
+                  className="w-32 h-32 rounded-3xl rotate-45 -mr-2 border border-dashed"
+                  initial={{ opacity: 0, y: 200, rotate: 0, scale: 0 }}
+                  animate={{ opacity: 1, y: 0, rotate: 45, scale: 1 }}
+                  transition={{ duration: 1, delay: 0, ease: "backOut" }}
+                ></motion.div>
+                <motion.div
+                  className="w-32 h-32 rounded-3xl rotate-45 -ml-2 border border-dashed"
+                  initial={{ opacity: 0, y: -200, rotate: 0, scale: 0 }}
+                  animate={{ opacity: 1, y: 0, rotate: 45, scale: 1 }}
+                  transition={{ duration: 1, delay: 0.2, ease: "backOut" }}
+                ></motion.div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-indigo-600 text-left">
+          <div className="px-6 max-w-7xl m-auto relative z-20 p-40">
+            <h1 className="text-6xl">Ready to get started?</h1>
+            <p className="mt-4">
+              Register with us today for a limited free trial.
+            </p>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="bg-white bg-opacity-10 px-6 py-3 rounded-lg flex justify-center items-center backdrop-blur-lg mt-12"
+            >
+              Get Started{" "}
+              <div className=" arrow flex items-center justify-center">
+                <div className="arrowMiddle"></div>
+                <div>
+                  <Image
+                    src={Arrow}
+                    alt=""
+                    width={14}
+                    height={14}
+                    className="arrowSide"
+                  ></Image>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div className="bg-slate-950 text-left">
+          <div className="px-6 max-w-7xl m-auto relative z-20 py-20 flex justify-between flex-col lg:flex-row gap-12">
+            <div className="flex flex-col justify-between items-start gap-6 max-w-sm">
+              <div className="flex justify-center items-center gap-2">
+                <Image
+                  src={Logo}
+                  alt=""
+                  width={100}
+                  height={100}
+                  style={{ margin: "-30px" }}
+                ></Image>
+                <h1 className="">Skillbit</h1>
+              </div>
+              <div className="">
+                <p>
+                  © 2023 Skillbit @ University of Florida Research Foundation,
+                  Inc. All Commercial Rights Reserved.
+                </p>
+              </div>
+            </div>
+            <hr className="h-0 w-20 border opacity-10 rounded-full lg:w-0 lg:h-40" />
+            <div className="">
+              <ul className="flex flex-col gap-3">
+                <li>
+                  <h1 className="text-base">Recruiters</h1>
+                </li>
+                <li>
+                  <p>Dashboard</p>
+                </li>
+                <li>
+                  <p>Applicants</p>
+                </li>
+                <li>
+                  <p>Company Profile</p>
+                </li>
+                <li>
+                  <p>Question Workshop</p>
+                </li>
+              </ul>
+            </div>
+            <div className="">
+              <ul className="flex flex-col gap-3">
+                <li>
+                  <h1 className="text-base">About</h1>
+                </li>
+                <li>
+                  <p>Our Story</p>
+                </li>
+                <li>
+                  <p>Our Mission</p>
+                </li>
+                <li>
+                  <p>Meet the Team</p>
+                </li>
+              </ul>
+            </div>
+            <div className="">
+              <ul className="flex flex-col gap-3">
+                <li>
+                  <h1 className="text-base">Contact</h1>
+                </li>
+                <li>
+                  <p>555-555-5555</p>
+                </li>
+                <li>
+                  <p>skillbit@example.com</p>
+                </li>
+                <li>
+                  <p>Support Form</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
