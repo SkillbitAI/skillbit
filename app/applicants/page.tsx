@@ -48,6 +48,7 @@ const Applicants = () => {
   }, []);
 
   const getApplicants = async () => {
+    toast.loading("Loading applicants...");
     //getting applicants from the database
     try {
       const response = await fetch("/api/database", {
@@ -65,6 +66,7 @@ const Applicants = () => {
     } catch (error) {
       console.error(error);
     }
+    toast.remove();
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
