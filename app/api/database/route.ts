@@ -15,7 +15,8 @@ export async function POST(req: Request) {
       data.email,
       data.password,
       data.firstName,
-      data.lastName
+      data.lastName,
+      data.company
     );
     if (response == "User already exists") {
       return NextResponse.json(

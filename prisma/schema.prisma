@@ -47,7 +47,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  companyID String @default("Skillbit")
+  companyID String
   company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
 
@@ -63,7 +63,7 @@ model testID {
   uid String @id
   applicantID String
   applicant         Applicant     @relation(fields: [applicantID], references: [id], onDelete: Cascade)
-  companyID String @default("Skillbit")
+  companyID String
   company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
 

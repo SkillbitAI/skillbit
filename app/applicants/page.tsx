@@ -41,6 +41,8 @@ const Applicants = () => {
     selected: boolean;
   }
 
+  const [recruiterEmail, setRecruiterEmail] = useState("");
+
   useEffect(() => {
     getApplicants();
   }, []);
@@ -108,6 +110,7 @@ const Applicants = () => {
         },
         body: JSON.stringify({
           applicants: applicants,
+          recruiterEmail: recruiterEmail,
         }),
       });
       if (!response.ok) {
@@ -150,6 +153,7 @@ const Applicants = () => {
       if (session) {
         // console.log("Hello world!");
         //other than print hello world, set user data here
+        setRecruiterEmail(session.user?.email || "");
       }
     };
     if (status === "authenticated") {

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "companyID" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "testID" ALTER COLUMN "companyID" DROP DEFAULT;

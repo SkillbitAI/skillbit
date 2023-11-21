@@ -20,6 +20,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [company, setCompany] = useState("Choose One");
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,7 +35,9 @@ const Auth = () => {
       email.length > 0 &&
       password.length > 0 &&
       firstName.length > 0 &&
-      lastName.length > 0
+      lastName.length > 0 &&
+      company.length > 0 &&
+      company != "Choose One"
     ) {
       const response = await addUser();
       if (response.message == "User already exists! Please sign in.") {
@@ -89,6 +92,7 @@ const Auth = () => {
           password: password,
           firstName: firstName,
           lastName: lastName,
+          company: company,
         }),
       });
       const data = await response.json();
@@ -255,6 +259,23 @@ const Auth = () => {
                 transition={{ duration: 0.5, delay: 0.9, ease: "backOut" }}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <label htmlFor="company">
+                <p>Company</p>
+              </label>
+              <select
+                name=""
+                id="company"
+                className="p-2 rounded-lg placeholder:text-gray-500 bg-white bg-opacity-10 outline-none"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+              >
+                <option value="Choose One" className="text-gray-500">
+                  Choose One
+                </option>
+                <option value="Skillbit" className="text-white">
+                  Skillbit
+                </option>
+              </select>
               <motion.div
                 className="flex justify-between"
                 initial={{ opacity: 0, y: 30 }}

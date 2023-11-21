@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { applicants } = body;
+  const { applicants, recruiterEmail } = body;
 
   // console.log(applicants);
 
@@ -20,7 +20,8 @@ export async function POST(req: Request) {
       firstName,
       lastName,
       email,
-      testID
+      testID,
+      recruiterEmail
     );
     if (result == null) {
       return NextResponse.json(
@@ -37,7 +38,8 @@ async function insertApplicantWithTestID(
   firstName: string,
   lastName: string,
   email: string,
-  testID: string
+  testID: string,
+  recruiterEmail: string
 ) {
   try {
     //preset applicant data
@@ -65,25 +67,38 @@ async function insertApplicantWithTestID(
       },
     });
 
-    // Step 2: Create a new test ID
-    const newTestID = await prisma.testID.create({
-      data: {
-        uid: testID,
-        applicantID: newOrExistingApplicant.id,
+    //get the company ID of the recruiter who uploaded the document
+    const recruiter = await prisma.user.findFirst({
+      where: {
+        email: recruiterEmail,
       },
     });
 
-    // Step 3: Associate the test ID with the applicant
-    await prisma.applicant.update({
-      where: { id: newOrExistingApplicant.id },
-      data: {
-        testIDs: {
-          connect: [{ uid: newTestID.uid }],
+    if (recruiter) {
+      // Step 2: Create a new test ID
+      const newTestID = await prisma.testID.create({
+        data: {
+          uid: testID,
+          applicantID: newOrExistingApplicant.id,
+          companyID: recruiter.companyID,
         },
-      },
-    });
-    console.log("Applicant details inserted successfully.");
-    return testID;
+      });
+
+      // Step 3: Associate the test ID with the applicant
+      await prisma.applicant.update({
+        where: { id: newOrExistingApplicant.id },
+        data: {
+          testIDs: {
+            connect: [{ uid: newTestID.uid }],
+          },
+        },
+      });
+      console.log("Applicant details inserted successfully.");
+      return testID;
+    } else {
+      console.error("Error inserting applicant details: No recruiter found.");
+      return null;
+    }
   } catch (error) {
     console.error("Error inserting applicant details:", error);
     return null;

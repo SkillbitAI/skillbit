@@ -9,7 +9,8 @@ export async function addUser(
   email: string,
   password: string,
   firstName: string,
-  lastName: string
+  lastName: string,
+  company: string
 ) {
   try {
     // Check if a user with the provided email already exists
@@ -26,16 +27,42 @@ export async function addUser(
     // Hash the password
     const encryptedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user record using Prisma
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        password: encryptedPassword,
-        firstName,
-        lastName,
+    // Check to see if the company exists
+    const existingCompany = await prisma.company.findFirst({
+      where: {
+        name: company,
       },
     });
 
+    if (existingCompany) {
+      // Create a new user record using Prisma
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          password: encryptedPassword,
+          firstName,
+          lastName,
+          companyID: existingCompany.id,
+        },
+      });
+    } else {
+      //Create a new company
+      const newCompany = await prisma.company.create({
+        data: {
+          name: company,
+        },
+      });
+      // Create a new user record using Prisma
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          password: encryptedPassword,
+          firstName,
+          lastName,
+          companyID: newCompany.id,
+        },
+      });
+    }
     return "Success";
   } catch (error) {
     console.error("Error inserting data:", error);
