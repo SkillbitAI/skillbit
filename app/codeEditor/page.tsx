@@ -94,7 +94,7 @@ export default function CodeEditor() {
         socket.emit("codeChange", { fileName, value: file.value });
       });
       socket.on("data", (data) => {
-        console.log(data);
+        // console.log(data);
         termRef.current.write(
           String.fromCharCode.apply(null, new Uint8Array(data))
         );

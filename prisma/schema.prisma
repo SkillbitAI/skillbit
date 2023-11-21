@@ -47,6 +47,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  companyID String @default("Skillbit")
+  company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -59,4 +61,25 @@ model VerificationToken {
 
 model testID {
   uid String @id
+  applicantID String
+  applicant         Applicant     @relation(fields: [applicantID], references: [id], onDelete: Cascade)
+  companyID String @default("Skillbit")
+  company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+}
+
+model Applicant {
+  id String @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String    @unique
+  testIDs       testID[]
+  status        String
+  score         String
+}
+
+model Company {
+  id String @id @default(cuid())
+  name String
+  testIDs testID[]
+  employees User[]
 }

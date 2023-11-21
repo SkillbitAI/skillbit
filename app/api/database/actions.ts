@@ -90,3 +90,12 @@ export async function userSignIn(email: string, password: string) {
     return error;
   }
 }
+
+export async function getApplicants() {
+  try {
+    const applicants = await prisma.applicant.findMany();
+    return applicants;
+  } catch (error) {
+    return error;
+  }
+}

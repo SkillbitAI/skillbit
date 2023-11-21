@@ -37,8 +37,7 @@ const CompanyProfile = () => {
   useEffect(() => {
     const fetch = async () => {
       if (session) {
-        console.log("Hello world!");
-
+        // console.log("Hello world!");
         //other than print hello world, set user data here
       }
     };

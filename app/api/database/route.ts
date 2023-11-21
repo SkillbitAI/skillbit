@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { addUser, findUserById, findUserByEmail, userSignIn } from "./actions";
+import {
+  addUser,
+  findUserById,
+  findUserByEmail,
+  userSignIn,
+  getApplicants,
+} from "./actions";
 
 export async function POST(req: Request) {
   const data = await req.json();
@@ -52,6 +58,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "getApplicants") {
+    const response = await getApplicants();
     return NextResponse.json({ message: response }, { status: 200 });
   } else {
     return NextResponse.json(

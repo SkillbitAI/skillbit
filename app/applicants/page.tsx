@@ -41,8 +41,29 @@ const Applicants = () => {
     selected: boolean;
   }
 
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [csvData, setCsvData] = useState<ApplicantDataInterface[]>([]);
+  useEffect(() => {
+    getApplicants();
+  }, []);
+
+  const getApplicants = async () => {
+    //getting applicants from the database
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "getApplicants",
+        }),
+      });
+      const data = await response.json();
+      console.log(data);
+      setApplicantData(data.message);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -51,7 +72,6 @@ const Applicants = () => {
       const file = files[0];
 
       if (file && file.type === "text/csv") {
-        setCsvFile(file);
         parseCSV(file);
       } else {
         alert("Please upload a valid CSV file.");
@@ -61,7 +81,7 @@ const Applicants = () => {
 
   const parseCSV = (file: File) => {
     Papa.parse(file, {
-      complete: (results) => {
+      complete: async (results) => {
         const rows = results.data;
         const combinedData = rows.map((row) => ({
           ...(row as Omit<
@@ -72,12 +92,36 @@ const Applicants = () => {
           score: "90%",
           selected: false,
         }));
-        console.log("Parsed CSV data: ", combinedData);
-        setApplicantData(combinedData);
-        //setCsvData(results.data as ApplicantDataInterface[]);
+        await updateApplicants(combinedData);
       },
       header: true,
     });
+  };
+
+  const updateApplicants = async (applicants: any) => {
+    try {
+      toast.loading("Importing applicants...");
+      const response = await fetch("/api/codeEditor/createTestID", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          applicants: applicants,
+        }),
+      });
+      if (!response.ok) {
+        toast.remove();
+        toast.error("Error loading applicants.");
+        console.error("Error setting applicants!");
+      } else {
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.remove();
+      toast.error("Error loading applicants.");
+      console.error(error);
+    }
   };
 
   const path = usePathname();
@@ -99,43 +143,12 @@ const Applicants = () => {
     setApplicantData(updatedData);
   };
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const rows = await getData();
-  //     const combinedData = rows.map((row) => ({
-  //       ...(row as Omit<
-  //         ApplicantDataInterface,
-  //         "status" | "score" | "selected"
-  //       >),
-  //       status: "Expired",
-  //       score: "90%",
-  //       selected: false,
-  //     }));
-  //     setApplicantData(combinedData);
-
-  //   }
-  //   fetchData();
-  // }, []);
-
-  async function getData() {
-    const response = await fetch("/assets/documents/MOCK_DATA.csv");
-
-    const reader = response?.body?.getReader();
-    const result = await reader?.read();
-    const decoder = new TextDecoder("utf-8");
-    const csv = decoder.decode(result?.value);
-    const results = Papa.parse(csv, { header: true });
-    const rows = results.data;
-    return rows;
-  }
-
   const { data: session, status } = useSession();
 
   useEffect(() => {
     const fetch = async () => {
       if (session) {
-        console.log("Hello world!");
-
+        // console.log("Hello world!");
         //other than print hello world, set user data here
       }
     };

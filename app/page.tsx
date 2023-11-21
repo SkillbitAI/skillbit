@@ -26,7 +26,6 @@ export default function Home() {
       method: "GET",
     });
     const data = await response.text();
-    console.log(data);
   };
 
   //code for tilt effect
