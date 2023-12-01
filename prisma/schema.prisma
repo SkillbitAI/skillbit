@@ -58,7 +58,9 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-
+//date and time created & completed
+//score should be an attribute of a test id
+//when CSV uploaded, prepopulate applicants but do not automatically send test to applicant
 model testID {
   uid String @id
   applicantID String
