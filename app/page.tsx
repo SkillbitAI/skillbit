@@ -73,7 +73,7 @@ export default function Home() {
       {/* PAGE */}
       <div className="text-white graphPaper text-center bg-slate-900">
         {/* PAGE COVER */}
-        <div className="px-6 max-w-7xl m-auto" id="top">
+        <div className="px-6 pt-24 max-w-7xl m-auto" id="top">
           <div className="loginAccentBackground h-[900px] absolute -top-96 -right-96 -left-96 -rotate-6 z-0"></div>
           <Nav></Nav>
           <div className="flex justify-between items-center relative gap-20 z-10 adjustFlex mt-36">

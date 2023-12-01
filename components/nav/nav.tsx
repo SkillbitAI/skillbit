@@ -3,21 +3,41 @@ import Logo from "../../public/assets/branding/logos/logo_mini_transparent_white
 import Arrow from "../../public/assets/icons/arrow.svg";
 import { useRouter } from "next/navigation";
 import Button from "@/components/button/button";
+import { useState, useEffect } from "react";
 
-const scrolltoHash = function (element_id: string) {
-  const element = document.getElementById(element_id);
-  element?.scrollIntoView({
-    behavior: "smooth",
-    block: "end",
-    inline: "nearest",
-  });
-};
 const Nav = () => {
   const router = useRouter();
+  const scrolltoHash = function (element_id: string) {
+    const element = document.getElementById(element_id);
+    element?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+      inline: "nearest",
+    });
+  };
+
+  const [scrolling, setScrolling] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 500;
+      setScrolling(isScrolled);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const backgroundClass = scrolling
+    ? "bg-slate-900 bg-opacity-50 py-3"
+    : "py-6";
 
   return (
-    <div>
-      <div className="backdrop-blur-md justify-between items-center gap-20 z-20 flex flex-row py-6">
+    <div
+      className={`fixed top-0 left-0 right-0 backdrop-blur-lg z-50 duration-200 border-b border-white/10 px-6 ${backgroundClass}`}
+    >
+      <div className="justify-between items-center gap-20 flex flex-row max-w-7xl m-auto">
         <div className="flex justify-center items-center gap-2">
           <Image
             src={Logo}
