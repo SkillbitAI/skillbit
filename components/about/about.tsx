@@ -33,6 +33,25 @@ const About = () => {
           Our simplified interface makes technical interviewing practical for
           recruiters in need of quality question assessment.
         </p>
+        <div className="mt-6 flex flex-col lg:flex-row items-center justify-center gap-28">
+          <div className="border-2 border-white/[.10] rounded-3xl relative group p-6">
+            <div className="hover:font-bold duration-100 rounded-xl flex justify-left gap-6">
+              <div className="transition ease-out duration-100 delay-100 opacity-0 group-hover:opacity-100 ">
+                <Image src={Card1} alt="" />
+              </div>
+              <div className="transition ease-out duration-200 delay-150 opacity-0 group-hover:opacity-100">
+                <Image src={Card1} alt="" />
+              </div>
+              <div className="transition ease-out duration-300 delay-200 opacity-0 group-hover:opacity-100">
+                <Image src={Card1} alt="" />
+              </div>
+            </div>
+            <div className="mt-6">
+              <h1> Specification is Key</h1>
+              <p>Maybe we can put some cool demos here?</p>
+            </div>
+          </div>
+        </div>
         <div className="flex flex-col lg:flex-row justify-center gap-6 mt-16">
           <motion.div
             className="rounded-2xl relative text-left flex flex-col gap-6 flex-1 p-3"
