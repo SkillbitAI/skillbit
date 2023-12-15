@@ -31,14 +31,21 @@ const Auth = () => {
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
     if (
       email.length > 0 &&
-      password.length > 0 &&
       firstName.length > 0 &&
       lastName.length > 0 &&
       company.length > 0 &&
       company != "Choose One"
     ) {
+      if (
+        password.length < 8
+      ) {
+        toast.error("Please enter at least 8 characters for the password.");
+        setIsLoading(false);
+        return;
+      }
       const response = await addUser();
       if (response.message == "User already exists! Please sign in.") {
         toast.error(response.message);
