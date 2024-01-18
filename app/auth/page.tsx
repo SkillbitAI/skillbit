@@ -193,7 +193,7 @@ const Auth = () => {
               onSubmit={(e) => {
                 handleRegister(e);
               }}
-              className="flex flex-col gap-2 mt-6 max-w-sm m-auto"
+              className="flex flex-col gap-2 mt-5 max-w-sm m-auto"
             >
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
