@@ -364,7 +364,7 @@ export default function Home() {
                   <p>555-555-5555</p>
                 </li>
                 <li>
-                  <p>skillbit@example.com</p>
+                  <p>skillbitcontact@gmail.com</p>
                 </li>
                 <li>
                   <p>Support Form</p>
