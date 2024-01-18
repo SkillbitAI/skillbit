@@ -331,17 +331,23 @@ const Auth = () => {
                   <p>Remember me</p>
                 </div>
               </motion.div>
-              <PasswordChecklist
-                rules={["minLength","specialChar","number","capital","match"]}
-                minLength={8}
-                value={password}
-                valueAgain={confirmPassword}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.5, ease: "backOut" }}
+              >
+                <PasswordChecklist
+                  rules={["minLength","specialChar","number","capital","match"]}
+                  minLength={8}
+                  value={password}
+                  valueAgain={confirmPassword}
+                />
+              </motion.div>
               <motion.button
                 className="mt-2 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.5, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.6, ease: "backOut" }}
               >
                 {!isLoading && (
                   <>
@@ -373,7 +379,7 @@ const Auth = () => {
                 className="text-gray-500"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.6, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.7, ease: "backOut" }}
               >
                 Need to login?{" "}
                 <Link href="" onClick={() => setRequestType("login")}>
