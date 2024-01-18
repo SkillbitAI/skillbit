@@ -4,7 +4,7 @@ import Nav from "@/components/nav/nav";
 import Arrow from "../../public/assets/icons/arrow.svg";
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useEffect, useState, useRef } from "react";
+import React, { FormEvent, useEffect, useState, useRef } from "react";
 import LoginGraphic1 from "../../public/assets/images/loginGraphic1.png";
 import LoginGraphic2 from "../../public/assets/images/loginGraphic2.png";
 import { motion } from "framer-motion";
@@ -12,6 +12,7 @@ import Logo from "../../public/assets/branding/logos/logo_mini_transparent_white
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import { signIn } from "next-auth/react";
+import PasswordChecklist from "react-password-checklist"
 
 const Auth = () => {
   const router = useRouter();
@@ -290,28 +291,37 @@ const Auth = () => {
                 transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
-              <label htmlFor="company">
-                <p>Company</p>
-              </label>
-              <select
-                name=""
-                id="company"
-                className="p-2 rounded-lg placeholder:text-gray-500 bg-white bg-opacity-10 outline-none"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-              >
-                <option value="Choose One" className="text-gray-500">
-                  Choose One
-                </option>
-                <option value="Skillbit" className="text-white">
-                  Skillbit
-                </option>
-              </select>
+                <label htmlFor="company">
+                  <motion.p
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
+                  >
+                    Company
+                  </motion.p>
+                </label>
+                <motion.select
+                  name=""
+                  id="company"
+                  className="p-2 rounded-lg placeholder:text-gray-500 bg-white bg-opacity-10 outline-none"
+                  value={company}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 1.3, ease: "backOut" }}
+                  onChange={(e) => setCompany(e.target.value)}
+                >
+                  <option value="Choose One" className="text-gray-500">
+                    Choose One
+                  </option>
+                  <option value="Skillbit" className="text-white">
+                    Skillbit
+                  </option>
+                </motion.select>
               <motion.div
                 className="flex justify-between"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.4, ease: "backOut" }}
               >
                 <div className="flex gap-2 items-center text-gray-500 relative">
                   <input
@@ -325,7 +335,7 @@ const Auth = () => {
                 className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.5, ease: "backOut" }}
               >
                 {!isLoading && (
                   <>
@@ -357,7 +367,7 @@ const Auth = () => {
                 className="text-gray-500"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.8, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.6, ease: "backOut" }}
               >
                 Need to login?{" "}
                 <Link href="" onClick={() => setRequestType("login")}>
