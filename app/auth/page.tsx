@@ -193,7 +193,7 @@ const Auth = () => {
               onSubmit={(e) => {
                 handleRegister(e);
               }}
-              className="flex flex-col gap-2 max-w-sm m-auto"
+              className="flex flex-col gap-2 mt-6 max-w-sm m-auto"
             >
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
@@ -206,7 +206,7 @@ const Auth = () => {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: "backOut" }}
-                className="text-gray-500 mb-10"
+                className="text-gray-500 mb-"
               >
                 Create an account to start reimagining your company's technical
                 interview process.
@@ -331,8 +331,14 @@ const Auth = () => {
                   <p>Remember me</p>
                 </div>
               </motion.div>
+              <PasswordChecklist
+                rules={["minLength","specialChar","number","capital","match"]}
+                minLength={8}
+                value={password}
+                valueAgain={confirmPassword}
+              />
               <motion.button
-                className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                className="mt-2 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 1.5, ease: "backOut" }}
