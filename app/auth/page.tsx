@@ -20,6 +20,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [company, setCompany] = useState("Choose One");
 
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,12 @@ const Auth = () => {
         password.length < 8
       ) {
         toast.error("Please enter at least 8 characters for the password.");
+        setIsLoading(false);
+        return;
+      } else if (
+        password != confirmPassword
+      ) {
+        toast.error("Passwords do not match.");
         setIsLoading(false);
         return;
       }
@@ -97,6 +104,7 @@ const Auth = () => {
           action: "addUser",
           email: email,
           password: password,
+          confirmPassword: confirmPassword,
           firstName: firstName,
           lastName: lastName,
           company: company,
@@ -259,12 +267,28 @@ const Auth = () => {
               </motion.p>
               <motion.input
                 type="password"
-                placeholder="Minimum 8 Characters"
+                placeholder="New Password"
                 className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.9, ease: "backOut" }}
                 onChange={(e) => setPassword(e.target.value)}
+              />
+              <motion.p
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1, ease: "backOut" }}
+              >
+                Re-type Password
+              </motion.p>
+              <motion.input
+                type="password"
+                placeholder="Comfirm Password"
+                className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <label htmlFor="company">
                 <p>Company</p>
