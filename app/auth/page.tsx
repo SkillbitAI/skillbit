@@ -275,10 +275,22 @@ const Auth = () => {
                 transition={{ duration: 0.5, delay: 0.9, ease: "backOut" }}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.0, ease: "backOut" }}
+              >
+                <PasswordChecklist
+                  rules={["minLength","specialChar","number","capital","match"]}
+                  minLength={8}
+                  value={password}
+                  valueAgain={confirmPassword}
+                />
+              </motion.div>
               <motion.p
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
               >
                 Re-type Password
               </motion.p>
@@ -288,14 +300,14 @@ const Auth = () => {
                 className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
                 <label htmlFor="company">
                   <motion.p
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
+                    transition={{ duration: 0.5, delay: 1.3, ease: "backOut" }}
                   >
                     Company
                   </motion.p>
@@ -307,7 +319,7 @@ const Auth = () => {
                   value={company}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 1.3, ease: "backOut" }}
+                  transition={{ duration: 0.5, delay: 1.4, ease: "backOut" }}
                   onChange={(e) => setCompany(e.target.value)}
                 >
                   <option value="Choose One" className="text-gray-500">
@@ -321,7 +333,7 @@ const Auth = () => {
                 className="flex justify-between"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.4, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.5, ease: "backOut" }}
               >
                 <div className="flex gap-2 items-center text-gray-500 relative">
                   <input
@@ -330,18 +342,6 @@ const Auth = () => {
                   />
                   <p>Remember me</p>
                 </div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.5, ease: "backOut" }}
-              >
-                <PasswordChecklist
-                  rules={["minLength","specialChar","number","capital","match"]}
-                  minLength={8}
-                  value={password}
-                  valueAgain={confirmPassword}
-                />
               </motion.div>
               <motion.button
                 className="mt-2 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
