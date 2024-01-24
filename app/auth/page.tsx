@@ -39,7 +39,7 @@ const Auth = () => {
       firstName.length > 0 &&
       lastName.length > 0 &&
       company.length > 0 &&
-      company != "Choose One"
+      company == 'Skillbit'
     ) {
       if (
         password.length < 8
@@ -206,7 +206,7 @@ const Auth = () => {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1, ease: "backOut" }}
-                className="text-gray-500 mb-"
+                className="text-gray-500 mb-5"
               >
                 Create an account to start reimagining your company's technical
                 interview process.
@@ -275,10 +275,26 @@ const Auth = () => {
                 transition={{ duration: 0.5, delay: 0.9, ease: "backOut" }}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <motion.div
+              <motion.p
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 1.0, ease: "backOut" }}
+              >
+                Re-type Password
+              </motion.p>
+              <motion.input
+                type="password"
+                placeholder="Confirm Password"
+                className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              /> 
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
               >
                 <PasswordChecklist
                   rules={["minLength","specialChar","number","capital","match"]}
@@ -286,68 +302,12 @@ const Auth = () => {
                   value={password}
                   valueAgain={confirmPassword}
                 />
-              </motion.div>
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
-              >
-                Re-type Password
-              </motion.p>
-              <motion.input
-                type="password"
-                placeholder="Comfirm Password"
-                className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-                <label htmlFor="company">
-                  <motion.p
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 1.3, ease: "backOut" }}
-                  >
-                    Company
-                  </motion.p>
-                </label>
-                <motion.select
-                  name=""
-                  id="company"
-                  className="p-2 rounded-lg placeholder:text-gray-500 bg-white bg-opacity-10 outline-none"
-                  value={company}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 1.4, ease: "backOut" }}
-                  onChange={(e) => setCompany(e.target.value)}
-                >
-                  <option value="Choose One" className="text-gray-500">
-                    Choose One
-                  </option>
-                  <option value="Skillbit" className="text-white">
-                    Skillbit
-                  </option>
-                </motion.select>
-              <motion.div
-                className="flex justify-between"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.5, ease: "backOut" }}
-              >
-                <div className="flex gap-2 items-center text-gray-500 relative">
-                  <input
-                    type="checkbox"
-                    className="before:content[''] peer relative h-4 w-4 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-transparent before:opacity-0 before:transition-opacity checked:border-indigo-600 checked:bg-indigo-600 checked:before:bg-indigo-600 hover:before:opacity-10"
-                  />
-                  <p>Remember me</p>
-                </div>
-              </motion.div>
+              </motion.div>              
               <motion.button
-                className="mt-2 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                className="mt-8 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.6, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.3, ease: "backOut" }}
               >
                 {!isLoading && (
                   <>
@@ -379,7 +339,7 @@ const Auth = () => {
                 className="text-gray-500"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.7, ease: "backOut" }}
+                transition={{ duration: 0.5, delay: 1.4, ease: "backOut" }}
               >
                 Need to login?{" "}
                 <Link href="" onClick={() => setRequestType("login")}>
