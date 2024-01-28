@@ -38,7 +38,7 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(cuid()) @unique
   firstName     String
   lastName      String
   password      String
@@ -47,8 +47,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  companyID String
-  company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  companyID String?
+  company         Company?     @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -70,7 +70,7 @@ model testID {
 }
 
 model Applicant {
-  id String @id @default(cuid())
+  id String @id @default(cuid()) @unique
   firstName     String
   lastName      String
   email         String    @unique
@@ -80,7 +80,7 @@ model Applicant {
 }
 
 model Company {
-  id String @id @default(cuid())
+  id String @id @default(cuid()) @unique
   name String
   testIDs testID[]
   employees User[]

@@ -9,12 +9,11 @@ export async function addUser(
   email: string,
   password: string,
   firstName: string,
-  lastName: string,
-  company: string
+  lastName: string
 ) {
   try {
     // Check if a user with the provided email already exists
-    const existingUser = await prisma.user.findFirst({
+    const existingUser = await prisma.user.findUnique({
       where: {
         email: email,
       },
@@ -27,42 +26,16 @@ export async function addUser(
     // Hash the password
     const encryptedPassword = await bcrypt.hash(password, 10);
 
-    // Check to see if the company exists
-    const existingCompany = await prisma.company.findFirst({
-      where: {
-        name: company,
+    // Create a new user record using Prisma
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: encryptedPassword,
+        firstName,
+        lastName,
       },
     });
 
-    if (existingCompany) {
-      // Create a new user record using Prisma
-      const newUser = await prisma.user.create({
-        data: {
-          email,
-          password: encryptedPassword,
-          firstName,
-          lastName,
-          companyID: existingCompany.id,
-        },
-      });
-    } else {
-      //Create a new company
-      const newCompany = await prisma.company.create({
-        data: {
-          name: company,
-        },
-      });
-      // Create a new user record using Prisma
-      const newUser = await prisma.user.create({
-        data: {
-          email,
-          password: encryptedPassword,
-          firstName,
-          lastName,
-          companyID: newCompany.id,
-        },
-      });
-    }
     return "Success";
   } catch (error) {
     console.error("Error inserting data:", error);
@@ -70,11 +43,120 @@ export async function addUser(
   }
 }
 
-export async function findUserByEmail(email: string) {
+export async function joinCompany(email: string, companyId: string) {
   try {
-    const user = await prisma.user.findFirst({
+    const user = await prisma.user.update({
       where: {
         email: email,
+      },
+      data: {
+        company: {
+          connect: {
+            id: companyId,
+          },
+        },
+      },
+    });
+    console.log(user);
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    return null;
+  }
+}
+
+export async function leaveCompany(email: string, companyId: string) {
+  try {
+    const user = await prisma.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        company: {
+          disconnect: {
+            id: companyId,
+          },
+        },
+      },
+    });
+    console.log(user);
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    return null;
+  }
+}
+
+export async function addCompany(email: string, companyName: string) {
+  try {
+    const company = await prisma.company.findFirst({
+      where: {
+        name: companyName,
+      },
+    });
+    if (company) {
+      return "Company already exists.";
+    } else {
+      const user = await prisma.user.update({
+        where: {
+          email: email,
+        },
+        data: {
+          company: {
+            create: {
+              name: companyName,
+            },
+          },
+        },
+      });
+      console.log(user);
+    }
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    return null;
+  }
+}
+
+export async function findCompanies() {
+  try {
+    const company = await prisma.company.findMany();
+    console.log(company);
+    return company;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function findCompanyById(id: string) {
+  try {
+    const company = await prisma.company.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    console.log(company);
+    return company;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function findUserByEmail(email: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+      select: {
+        id: true,
+        email: true,
+        companyID: true,
+        image: true,
+        firstName: true,
+        lastName: true,
       },
     });
     return user;
@@ -85,7 +167,7 @@ export async function findUserByEmail(email: string) {
 
 export async function findUserById(id: string) {
   try {
-    const user = await prisma.user.findFirst({
+    const user = await prisma.user.findUnique({
       where: {
         id: id,
       },
@@ -98,7 +180,7 @@ export async function findUserById(id: string) {
 
 export async function userSignIn(email: string, password: string) {
   try {
-    const user = await prisma.user.findFirst({
+    const user = await prisma.user.findUnique({
       where: {
         email: email,
       },

@@ -12,7 +12,7 @@ import Logo from "../../public/assets/branding/logos/logo_mini_transparent_white
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "react-hot-toast";
 import { signIn } from "next-auth/react";
-import PasswordChecklist from "react-password-checklist"
+import PasswordChecklist from "react-password-checklist";
 
 const Auth = () => {
   const router = useRouter();
@@ -21,8 +21,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [company, setCompany] = useState("Choose One");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,22 +33,12 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (
-      email.length > 0 &&
-      firstName.length > 0 &&
-      lastName.length > 0 &&
-      company.length > 0 &&
-      company == 'Skillbit'
-    ) {
-      if (
-        password.length < 8
-      ) {
+    if (email.length > 0 && firstName.length > 0 && lastName.length > 0) {
+      if (password.length < 8) {
         toast.error("Please enter at least 8 characters for the password.");
         setIsLoading(false);
         return;
-      } else if (
-        password != confirmPassword
-      ) {
+      } else if (password != confirmPassword) {
         toast.error("Passwords do not match.");
         setIsLoading(false);
         return;
@@ -108,7 +97,6 @@ const Auth = () => {
           confirmPassword: confirmPassword,
           firstName: firstName,
           lastName: lastName,
-          company: company,
         }),
       });
       const data = await response.json();
@@ -170,6 +158,23 @@ const Auth = () => {
       throw error;
     }
   };
+
+  const validationCSS = `
+  .invalid .checklist-icon{
+    scale: 0.6;
+    margin-top: 5px;
+  }
+  .invalid .checklist-icon path{
+    fill: #cc3333;
+  }
+  .valid .checklist-icon{
+    scale: 0.6;
+    margin-top: 5px;
+  }
+  .valid .checklist-icon path{
+    fill: #33cc33;
+  }
+  `;
 
   return (
     <>
@@ -290,19 +295,26 @@ const Auth = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 1.1, ease: "backOut" }}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-              /> 
+              />
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 1.2, ease: "backOut" }}
               >
                 <PasswordChecklist
-                  rules={["minLength","specialChar","number","capital","match"]}
+                  rules={[
+                    "minLength",
+                    "specialChar",
+                    "number",
+                    "capital",
+                    "match",
+                  ]}
                   minLength={8}
                   value={password}
                   valueAgain={confirmPassword}
                 />
-              </motion.div>              
+                <style>{validationCSS}</style>
+              </motion.div>
               <motion.button
                 className="mt-8 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
                 initial={{ opacity: 0, y: 30 }}
