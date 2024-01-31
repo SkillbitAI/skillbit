@@ -38,7 +38,7 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(cuid()) @unique
   firstName     String
   lastName      String
   password      String
@@ -47,8 +47,17 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  employee Employee?
+}
+
+//Pivot table to connect user and company
+model Employee {
+  id Int @id @default(autoincrement())
+  userId String @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isApproved Boolean @default(false)
   companyID String
-  company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -70,7 +79,7 @@ model testID {
 }
 
 model Applicant {
-  id String @id @default(cuid())
+  id String @id @default(cuid()) @unique
   firstName     String
   lastName      String
   email         String    @unique
@@ -80,8 +89,8 @@ model Applicant {
 }
 
 model Company {
-  id String @id @default(cuid())
+  id String @id @default(cuid()) @unique
   name String
   testIDs testID[]
-  employees User[]
+  employees Employee[]
 }

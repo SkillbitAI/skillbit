@@ -151,7 +151,7 @@ const Applicants = () => {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    const fetch = async () => {
+    const getData = async () => {
       if (session) {
         // console.log("Hello world!");
         //other than print hello world, set user data here
@@ -159,7 +159,7 @@ const Applicants = () => {
       }
     };
     if (status === "authenticated") {
-      fetch();
+      getData();
     }
   }, [session, status]);
   if (status === "loading") {
