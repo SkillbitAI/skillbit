@@ -18,6 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="theme-color" content="#fff" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
