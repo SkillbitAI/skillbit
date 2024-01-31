@@ -1,6 +1,7 @@
 //this file will be used to store methods to help us do backend actions like adding a user
 
 // Import Prisma to use the database query tools
+import { experimental_useOptimistic } from "react";
 import prisma from "../database/prismaConnection";
 
 const bcrypt = require("bcrypt");
@@ -43,6 +44,105 @@ export async function addUser(
   }
 }
 
+export async function findEmployees(companyId: string) {
+  try {
+    const employees = await prisma.user.findMany({
+      where: {
+        employee: {
+          company: {
+            id: companyId,
+          },
+          isApproved: true,
+        },
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+    });
+    return employees;
+  } catch (error) {
+    console.error("Error finding employees:", error);
+    return null;
+  }
+}
+
+export async function findRecruiterRequests(companyId: string) {
+  try {
+    const employees = await prisma.user.findMany({
+      where: {
+        employee: {
+          company: {
+            id: companyId,
+          },
+          isApproved: false,
+        },
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+    });
+    return employees;
+  } catch (error) {
+    console.error("Error finding recruiter requests:", error);
+    return null;
+  }
+}
+
+export async function approveRecruitrer(email: string, companyId: string) {
+  try {
+    console.log(companyId);
+    const user = await prisma.user.update({
+      where: {
+        email: email,
+        employee: {
+          company: {
+            id: companyId,
+          },
+        },
+      },
+      data: {
+        employee: {
+          update: {
+            isApproved: true,
+          },
+        },
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    return null;
+  }
+}
+
+export async function denyRecruiter(email: string, companyId: string) {
+  try {
+    const user = await prisma.user.update({
+      where: {
+        email: email,
+        employee: {
+          company: {
+            id: companyId,
+          },
+        },
+      },
+      data: {
+        employee: {
+          delete: true,
+        },
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    return null;
+  }
+}
+
 export async function joinCompany(email: string, companyId: string) {
   try {
     const user = await prisma.user.update({
@@ -50,9 +150,13 @@ export async function joinCompany(email: string, companyId: string) {
         email: email,
       },
       data: {
-        company: {
-          connect: {
-            id: companyId,
+        employee: {
+          create: {
+            company: {
+              connect: {
+                id: companyId,
+              },
+            },
           },
         },
       },
@@ -70,13 +174,31 @@ export async function leaveCompany(email: string, companyId: string) {
     const user = await prisma.user.update({
       where: {
         email: email,
-      },
-      data: {
-        company: {
-          disconnect: {
+        employee: {
+          company: {
             id: companyId,
           },
         },
+      },
+      data: {
+        employee: {
+          delete: true,
+        },
+      },
+    });
+    console.log(user);
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    return null;
+  }
+}
+
+export async function leaveAndDeleteCompany(email: string, companyId: string) {
+  try {
+    const user = await prisma.company.delete({
+      where: {
+        id: companyId,
       },
     });
     console.log(user);
@@ -102,9 +224,14 @@ export async function addCompany(email: string, companyName: string) {
           email: email,
         },
         data: {
-          company: {
+          employee: {
             create: {
-              name: companyName,
+              company: {
+                create: {
+                  name: companyName,
+                },
+              },
+              isApproved: true,
             },
           },
         },
@@ -153,23 +280,20 @@ export async function findUserByEmail(email: string) {
       select: {
         id: true,
         email: true,
-        companyID: true,
         image: true,
         firstName: true,
         lastName: true,
-      },
-    });
-    return user;
-  } catch (error) {
-    return error;
-  }
-}
-
-export async function findUserById(id: string) {
-  try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id: id,
+        employee: {
+          select: {
+            isApproved: true,
+            company: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
     return user;

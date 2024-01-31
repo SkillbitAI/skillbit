@@ -47,8 +47,17 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  companyID String?
-  company         Company?     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  employee Employee?
+}
+
+//Pivot table to connect user and company
+model Employee {
+  id Int @id @default(autoincrement())
+  userId String @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isApproved Boolean @default(false)
+  companyID String
+  company Company @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -83,5 +92,5 @@ model Company {
   id String @id @default(cuid()) @unique
   name String
   testIDs testID[]
-  employees User[]
+  employees Employee[]
 }
