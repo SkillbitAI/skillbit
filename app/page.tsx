@@ -366,7 +366,9 @@ export default function Home() {
                 <li>
                   <p>skillbitcontact@gmail.com</p>
                 </li>
-                <li>
+                <li 
+                  className="hover:cursor-pointer"
+                  onClick={() => router.push("/contact")}>
                   <p>Support Form</p>
                 </li>
               </ul>
