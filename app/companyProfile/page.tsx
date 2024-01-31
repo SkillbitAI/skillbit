@@ -476,6 +476,12 @@ const CompanyProfile = () => {
                       </div>
                     ))}
                 </div>
+                {companies.length == 0 && (
+                  <p>
+                    No companies exist yet! Add your company to Skillbit today
+                    using the "New company" button.
+                  </p>
+                )}
               </div>
             )}
             {companyDataLoaded &&
@@ -552,12 +558,13 @@ const CompanyProfile = () => {
                   <h1>{userCompanyName}</h1>
                   <p>Company profile</p>
                   <div className="mt-6 pt-6 border-t border-slate-900">
-                    <h2>Company Information</h2>
+                    <h2>Team Management</h2>
                     <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 mt-3 max-w-xl">
                       <h1>Recruiter Requests</h1>
                       {recruiterRequests.length == 0 && (
                         <p className="text-slate-400">
-                          You don't have any recruiter requests.
+                          Join requests from your company's employees will
+                          appear here. You don't have any recruiter requests.
                         </p>
                       )}
                       {recruiterRequests &&
