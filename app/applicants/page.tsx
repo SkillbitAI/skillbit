@@ -1,11 +1,14 @@
 "use client";
-
+import React from 'react';
+import Link from 'next/link';
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState, ChangeEvent } from "react";
 import { motion } from "framer-motion";
 import Loader from "@/components/loader/loader";
 import Papa from "papaparse";
-
+import {Page, Text, View, Document, StyleSheet} from '@react-pdf/renderer';
+import ReactDOM from 'react-dom';
+import { PDFViewer } from '@react-pdf/renderer';
 import Nav from "@/components/nav/nav";
 import Image from "next/image";
 import Arrow from "../../public/assets/icons/arrow.svg";
@@ -30,6 +33,7 @@ import ProfileIcon from "../../public/assets/icons/profile.svg";
 import QuestionIcon from "../../public/assets/icons/question.svg";
 import SearchIcon from "../../public/assets/icons/search.svg";
 
+
 const Applicants = () => {
   interface ApplicantDataInterface {
     id: string;
@@ -40,7 +44,8 @@ const Applicants = () => {
     score: string;
     selected: boolean;
   }
-
+  
+  
   const [recruiterEmail, setRecruiterEmail] = useState("");
 
   useEffect(() => {
@@ -102,9 +107,99 @@ const Applicants = () => {
     });
   };
 
+//ADD APPLICANT FUNCITONALITY///////////////////////////////////////////////////////////////////
+
+  const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    status: '',
+    score: '',
+    selected: false,
+  });
+
+  const toggleAddApplicantModal = () => {
+    setIsAddApplicantModalOpen((prev) => !prev);
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    // Validate form fields
+    if (formData.firstName === '' && formData.lastName === '' && formData.email === '') {
+      // Display an error message or handle the validation error as needed
+      toast.error('Please fill out all required fields.');
+      
+    } 
+    if (!formData?.firstName)
+    {
+      toast.error('Please fill out the first name.')
+    }
+    if (!formData?.lastName)
+    {
+      toast.error('Please fill out the last name.')
+    }
+    if (!formData?.email)
+    {
+      toast.error('Please fill out the email.')
+    }
+    else if (!regex.test(formData?.email))
+    {
+      toast.error('That is not a valid email.')
+    }
+    else {
+      // Proceed with form submission logic (e.g., sending data to the database)
+      handleAddApplicant();
+    }
+  };
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleAddApplicant = async () => {
+    try {
+      const { status, score, selected, id, ...applicantData } = formData as ApplicantDataInterface;
+  
+      // Update individual applicant
+      await updateApplicants([applicantData]);
+  
+      // Send data to the server
+      const response = await fetch("/api/codeEditor/createTestID", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          applicants: [applicantData], // Wrap the individual applicant data in an array
+          recruiterEmail: recruiterEmail,
+        }),
+      });
+  
+      if (response.ok) {
+        // Show success toast
+        toast.success('Applicant added successfully');
+        toggleAddApplicantModal();
+        // Optionally, you can trigger a data refresh or take other actions after a successful addition
+      } else {
+        // Show error toast
+        toast.error('Failed to add applicant');
+        // Handle error cases if needed
+      }
+    } catch (error) {
+      // Show error toast for network or unexpected errors
+      toast.error('Error adding applicant');
+      // Handle other errors if needed
+    }
+  };
+  
+  ////////////////////////////////////////////////////////////
   const updateApplicants = async (applicants: any) => {
     try {
-      toast.loading("Importing applicants...");
+      toast.loading("Importing applicant(s)...");
       const response = await fetch("/api/codeEditor/createTestID", {
         method: "POST",
         headers: {
@@ -128,7 +223,7 @@ const Applicants = () => {
       console.error(error);
     }
   };
-
+  
   const path = usePathname();
   const router = useRouter();
 
@@ -147,6 +242,16 @@ const Applicants = () => {
     }));
     setApplicantData(updatedData);
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const applicantsPerPage = 25;
+  const totalPages = Math.ceil(applicantData.length / applicantsPerPage);
+
+  //Function to handle page change
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  
 
   const { data: session, status } = useSession();
 
@@ -169,6 +274,12 @@ const Applicants = () => {
     router.push("/auth");
     return;
   }
+
+
+
+  
+
+
 
   return (
     <>
@@ -204,6 +315,68 @@ const Applicants = () => {
                       Clear Failed
                     </p>
                   </li>
+                  <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
+                    <button onClick={toggleAddApplicantModal} className="text-sm flex gap-2 items-center justify-center">
+                      Add Applicant
+                    </button>
+                  </li>
+                  {/* Add Applicant Modal */}                 
+                  {isAddApplicantModalOpen && (
+      <div className="modal-container">
+        <div className="modal bg-white  min-h-[500px] min-w-[400px] py-30 rounded-2xl">  
+          <div className="modal-content ">
+            <h2 className="text-center text-2xl font-semibold py-6 text-black">Add Applicant</h2>
+            <form className=" flex m-10 flex-col gap-3 items-left justify-left "onSubmit={handleSubmit}>
+              
+              <label className="text-black">
+              First Name:
+              </label>
+              <input placeholder="John" className="p-3 rounded-lg placeholder:text-gray-600 text-black bg-black bg-opacity-20 outline-none" type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} />
+              
+              <label className="text-black">
+              Last Name:
+              </label>
+              <input placeholder="Doe" className="p-3 rounded-lg placeholder:text-gray-600 text-black bg-black bg-opacity-20 outline-none" type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} />
+              
+              <label className="text-black">
+              Email:
+              </label>
+              <input placeholder="mail@example.com" className="p-3 rounded-lg placeholder:text-gray-600 text-black bg-black bg-opacity-20 outline-none" type="email" name="email" value={formData.email} onChange={handleInputChange} />
+              
+              {/* Additional fields based on the interface */}
+              <div className="flex flex-col py-2 gap-5 mx-20 text-center">
+              
+            <button type="submit" className="flex items-center  justify-center w-full hover:cursor-pointer transition bg-indigo-600 p-2 rounded-xl" >
+            <span className="justify-center">Submit</span>
+            <div className="arrow flex items-center justify-center ml-2">
+            <div className="arrowMiddle"></div>
+            <div>
+            <Image
+                  src={Arrow}
+                  alt=""
+                  width={14}
+                  height={14}
+                  className="arrowSide">
+            </Image>
+            </div>
+            </div>
+            </button>
+              
+              
+            
+            <Link className="text-gray-500 mb-5" href="" onClick={toggleAddApplicantModal}>
+                  Cancel
+            </Link>
+           
+            </div>
+            </form>
+            
+            
+            
+          </div>
+        </div>
+        </div>
+      )}
                 </div>
                 <div className="flex gap-3 items-center justify-center">
                   <label
@@ -270,7 +443,9 @@ const Applicants = () => {
                 </div>
               </ul>
               <ul className="flex flex-col gap-2 mt-6">
-                {applicantData.map((item, index) => (
+              {applicantData
+          .slice((currentPage - 1) * applicantsPerPage, currentPage * applicantsPerPage)
+          .map((item, index) => (
                   <li
                     key={index}
                     className={
@@ -375,7 +550,7 @@ const Applicants = () => {
                         </motion.li>
                         <motion.li
                           className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
-                          onClick={() => toast.success("Interview resent.")}
+                          onClick={() => toast.success("Email sent.")}
                           initial={{ opacity: 0, y: -20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
@@ -384,15 +559,32 @@ const Applicants = () => {
                             ease: "backOut",
                           }}
                         >
-                          <p className="text-sm">Resend Interview</p>
+                          <p className="text-sm">Send Interview Email</p>
                         </motion.li>
+                        
+                       
                       </ul>
                     )}
                   </li>
                 ))}
               </ul>
+              <div className="flex justify-center mt-4">
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                  key={i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                  className={`mx-1 px-2 rounded-full bg-transparent ${
+                  currentPage === i + 1
+                  ? 'bg-indigo-500 text-white'
+                  : 'bg-gray-200 text-gray-700'
+                  }`}
+                  >
+                {i + 1}
+                </button>
+              ))}
+              </div>
             </div>
-            <div className="p-6 w-80 border-l border-slate-800">
+            <div className="p-6 w-80  h-screen border-l border-slate-800">
               <div className="flex flex-col gap-2">
                 <h1>Applicant Analytics</h1>
                 <div className="">{/* DONUT CHART HERE */}</div>

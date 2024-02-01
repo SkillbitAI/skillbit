@@ -53,7 +53,7 @@ const TopMenuBar = () => {
   }
 
   return (
-    <div className="bg-slate-900 border-b border-slate-800 flex justify-between p-3 relative z-30">
+    <div className="bg-slate-900 border-b border-slate-800 flex justify-between p-3 relative ">
       <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-800">
         <input
           className="text-white bg-transparent focus:outline-none w-full placeholder:text-white text-ellipsis"
