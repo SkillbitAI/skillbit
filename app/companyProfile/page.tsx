@@ -328,7 +328,7 @@ const CompanyProfile = () => {
                         ></Image>
                       </motion.button>
                       <motion.form
-                        className="bg-slate-900 p-6 rounded-xl"
+                        className="bg-slate-900 p-6 rounded-xl border border-slate-800"
                         onSubmit={handleCompanyEnroll}
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -503,7 +503,7 @@ const CompanyProfile = () => {
                         exit={{ opacity: 0 }}
                       >
                         <motion.div
-                          className="bg-slate-900 p-6 rounded-xl"
+                          className="bg-slate-900 p-6 rounded-xl border border-slate-800"
                           initial={{ opacity: 0, y: 30 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{
