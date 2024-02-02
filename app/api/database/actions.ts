@@ -4,34 +4,90 @@
 import { experimental_useOptimistic } from "react";
 import prisma from "../database/prismaConnection";
 const nodemailer = require("nodemailer");
-
 const bcrypt = require("bcrypt");
+import "dotenv";
 
-export async function sendMail() {
-  
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.USERNAME, // Replace with your email address
-        pass: process.env.APP_PASSWORD, // Replace with your app password
+export async function sendMail(firstName: string, email: string) {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.GMAIL_USERNAME,
+      pass: process.env.GMAIL_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: "Skillbit <skillbitassessment@gmail.com>",
+    to: email,
+    subject: "Skillbit Assessment",
+    text: `Hi ${firstName},
+    Hello world!`,
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+  console.log("Email Sent:", info.response);
+  transporter.close();
+}
+
+export async function addApplicant(
+  firstName: string,
+  lastName: string,
+  email: string,
+  recruiterEmail: string
+) {
+  try {
+    console.log(recruiterEmail);
+    // Check if a user with the provided email already exists
+    const existingUser = await prisma.applicant.findUnique({
+      where: {
+        email: email,
       },
     });
 
-    const mailOptions = {
-      from: process.env.USERNAME, // Replace with your email address
-      to: "davidnoq15@gmail.com",
-      subject: "Skillbit Assessment",
-      text: "Hello world?",
-    };
+    if (existingUser) {
+      return "Applicant already exists";
+    }
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email Sent:", info.response);
-    transporter.close();
+    //finding company id from recruiter email
+    const company = await prisma.user.findUnique({
+      where: {
+        email: recruiterEmail,
+      },
+      include: {
+        employee: {
+          include: {
+            company: true,
+          },
+        },
+      },
+    });
 
-  
-  
+    const companyId = company.employee.companyID;
+
+    // Create a new user record using Prisma
+    const newApplicant = await prisma.applicant.create({
+      data: {
+        email,
+        firstName,
+        lastName,
+        testId: {
+          create: {
+            company: {
+              connect: {
+                id: companyId,
+              },
+            },
+          },
+        },
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    throw error;
+  }
 }
 
 export async function addUser(
