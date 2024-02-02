@@ -3,8 +3,36 @@
 // Import Prisma to use the database query tools
 import { experimental_useOptimistic } from "react";
 import prisma from "../database/prismaConnection";
+const nodemailer = require("nodemailer");
 
 const bcrypt = require("bcrypt");
+
+export async function sendMail() {
+  
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.USERNAME, // Replace with your email address
+        pass: process.env.APP_PASSWORD, // Replace with your app password
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.USERNAME, // Replace with your email address
+      to: "davidnoq15@gmail.com",
+      subject: "Skillbit Assessment",
+      text: "Hello world?",
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email Sent:", info.response);
+    transporter.close();
+
+  
+  
+}
 
 export async function addUser(
   email: string,

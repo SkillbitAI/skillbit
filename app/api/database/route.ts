@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   addUser,
+  sendMail,
   findUserByEmail,
   userSignIn,
   getApplicants,
@@ -15,6 +16,7 @@ import {
   findEmployees,
   leaveAndDeleteCompany,
 } from "./actions";
+import { send } from "process";
 
 export async function POST(req: Request) {
   const data = await req.json();
@@ -36,6 +38,16 @@ export async function POST(req: Request) {
       { message: "Registration successful." },
       { status: 200 }
     );
+  } else if (data.action === "sendMail") {
+    const response = await sendMail();
+    console.log("email went to data action");
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error sending mail." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "findEmployees") {
     const response = await findEmployees(data.company);
     if (response == null) {

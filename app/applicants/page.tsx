@@ -1,9 +1,13 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState, ChangeEvent } from "react";
-import { motion } from "framer-motion";
+
+//import mail file
+import { sendMail } from '../mailer/page';
+//
 import Loader from "@/components/loader/loader";
 import Papa from "papaparse";
 import {Page, Text, View, Document, StyleSheet} from '@react-pdf/renderer';
@@ -23,6 +27,7 @@ import { Toaster, toast } from "react-hot-toast";
 import FilterIcon from "../../public/assets/icons/filter.svg";
 
 //dashboard icons
+import Plus from "../../public/assets/icons/plus.svg";
 import DashboardIcon from "../../public/assets/icons/dashboard.svg";
 import DashboardIconWhite from "../../public/assets/icons/dashboard_white.svg";
 import ApplicantsIcon from "../../public/assets/icons/applicants.svg";
@@ -274,11 +279,29 @@ const Applicants = () => {
     router.push("/auth");
     return;
   }
+////////////////////
+const handleButtonClick = async () => {
+    try {
+      const response = await fetch('/api/database', {
+        method: 'POST',
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "sendMail",
+        }),
+      });
+
+      
+    } catch (error) {
+      console.error('Error in handle');
+    }
+  }
 
 
 
   
-
+///////////////////
 
 
   return (
@@ -320,63 +343,135 @@ const Applicants = () => {
                       Add Applicant
                     </button>
                   </li>
-                  {/* Add Applicant Modal */}                 
+                  <AnimatePresence>           
                   {isAddApplicantModalOpen && (
-      <div className="modal-container">
-        <div className="modal bg-white  min-h-[500px] min-w-[400px] py-30 rounded-2xl">  
-          <div className="modal-content ">
-            <h2 className="text-center text-2xl font-semibold py-6 text-black">Add Applicant</h2>
-            <form className=" flex m-10 flex-col gap-3 items-left justify-left "onSubmit={handleSubmit}>
-              
-              <label className="text-black">
+      
+          
+      <motion.div
+      className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: 0.5,
+        ease: "backOut",
+      }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.button
+      className="bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center gap-2 mt-3"
+      onClick={() => toggleAddApplicantModal()}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.7,
+        ease: "backOut",
+      }}
+      exit={{ opacity: 0, y: 30 }}
+    >
+      <Image
+        src={Plus}
+        width={14}
+        height={14}
+        className="rotate-45"
+        alt="Exit"
+      ></Image>
+    </motion.button>
+            <motion.form 
+            className="bg-slate-900  flex flex-col p-6 rounded-xl border border-slate-800"
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.5,
+                          ease: "backOut",
+                        }}
+            exit={{ opacity: 0, y: 30 }}
+            >
+              <h1>Enter all required fields</h1>
+              <motion.label className="text-white mt-5 mb-2"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                ease: "backOut",
+              }}>
               First Name:
-              </label>
-              <input placeholder="John" className="p-3 rounded-lg placeholder:text-gray-600 text-black bg-black bg-opacity-20 outline-none" type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} />
+              </motion.label>
+              <motion.input placeholder="John" className="my-2 p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none w-full mt-1" type="text"
+               name="firstName" 
+               value={formData.firstName} 
+               onChange={handleInputChange} 
+               initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.5,
+                            ease: "backOut",
+                          }}/>
               
-              <label className="text-black">
+              <motion.label className="text-white my-2"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                ease: "backOut",
+              }}>
               Last Name:
-              </label>
-              <input placeholder="Doe" className="p-3 rounded-lg placeholder:text-gray-600 text-black bg-black bg-opacity-20 outline-none" type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} />
+              </motion.label>
+              <motion.input placeholder="Doe" className="my-2 p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none w-full mt-1" type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                ease: "backOut",
+              }}/>
               
-              <label className="text-black">
+              <motion.label className="text-white my-2"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                ease: "backOut",
+              }}>
               Email:
-              </label>
-              <input placeholder="mail@example.com" className="p-3 rounded-lg placeholder:text-gray-600 text-black bg-black bg-opacity-20 outline-none" type="email" name="email" value={formData.email} onChange={handleInputChange} />
-              
-              {/* Additional fields based on the interface */}
-              <div className="flex flex-col py-2 gap-5 mx-20 text-center">
-              
-            <button type="submit" className="flex items-center  justify-center w-full hover:cursor-pointer transition bg-indigo-600 p-2 rounded-xl" >
-            <span className="justify-center">Submit</span>
-            <div className="arrow flex items-center justify-center ml-2">
-            <div className="arrowMiddle"></div>
-            <div>
-            <Image
-                  src={Arrow}
-                  alt=""
-                  width={14}
-                  height={14}
-                  className="arrowSide">
-            </Image>
-            </div>
-            </div>
-            </button>
+              </motion.label>
+              <motion.input placeholder="mail@example.com" className="my-2 p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none w-full mt-1" type="email" name="email" value={formData.email} onChange={handleInputChange} 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                ease: "backOut",
+              }}/>
               
               
+              
+              
+            <motion.button type="submit" className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100" 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              ease: "backOut",
+            }}
+          >
+            Submit{" "}
+                              <div className=" arrow flex items-center justify-center">
+                                <div className="arrowMiddle"></div>
+                                <div>
+                                  <Image
+                                    src={Arrow}
+                                    alt=""
+                                    width={14}
+                                    height={14}
+                                    className="arrowSide"
+                                  ></Image>
+                                </div>
+                              </div>
+            </motion.button>
+            </motion.form>
             
-            <Link className="text-gray-500 mb-5" href="" onClick={toggleAddApplicantModal}>
-                  Cancel
-            </Link>
-           
-            </div>
-            </form>
-            
-            
-            
-          </div>
-        </div>
-        </div>
+            </motion.div>
       )}
+      </AnimatePresence>   
                 </div>
                 <div className="flex gap-3 items-center justify-center">
                   <label
@@ -523,31 +618,8 @@ const Applicants = () => {
                         className="flex gap-3 border-t w-full pt-3 border-t-slate-800 hover:cursor-auto"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <motion.li
-                          className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.2,
-                            delay: 0,
-                            ease: "backOut",
-                          }}
-                        >
-                          <p className="text-sm">View Interview Interface</p>
-                        </motion.li>
-                        <motion.li
-                          className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
-                          onClick={() => toast.success("Email address copied.")}
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.2,
-                            delay: 0,
-                            ease: "backOut",
-                          }}
-                        >
-                          <p className="text-sm">Copy Email Address</p>
-                        </motion.li>
+                        
+                        
                         <motion.li
                           className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                           onClick={() => toast.success("Email sent.")}
@@ -559,7 +631,7 @@ const Applicants = () => {
                             ease: "backOut",
                           }}
                         >
-                          <p className="text-sm">Send Interview Email</p>
+                          <button className="text-sm" onClick={handleButtonClick}>Send Interview Email</button>
                         </motion.li>
                         
                        
