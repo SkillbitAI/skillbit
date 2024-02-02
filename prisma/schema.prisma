@@ -71,9 +71,9 @@ model VerificationToken {
 //score should be an attribute of a test id
 //when CSV uploaded, prepopulate applicants but do not automatically send test to applicant
 model testID {
-  uid String @id
-  applicantID String
-  applicant         Applicant     @relation(fields: [applicantID], references: [id], onDelete: Cascade)
+  uid String @id @default(cuid()) 
+  applicantID String @unique
+  applicant       Applicant    @relation(fields: [applicantID], references: [id], onDelete: Cascade)
   companyID String
   company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
@@ -83,9 +83,9 @@ model Applicant {
   firstName     String
   lastName      String
   email         String    @unique
-  testIDs       testID[]
-  status        String
-  score         String
+  testId       testID?
+  status        String @default("Sent")
+  score         String?
 }
 
 model Company {

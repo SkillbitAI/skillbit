@@ -15,6 +15,7 @@ import {
   findRecruiterRequests,
   findEmployees,
   leaveAndDeleteCompany,
+  addApplicant,
 } from "./actions";
 import { send } from "process";
 
@@ -38,9 +39,22 @@ export async function POST(req: Request) {
       { message: "Registration successful." },
       { status: 200 }
     );
+  } else if (data.action === "addApplicant") {
+    const response = await addApplicant(
+      data.firstName,
+      data.lastName,
+      data.email,
+      data.recruiterEmail
+    );
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error adding applicant." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "sendMail") {
-    const response = await sendMail();
-    console.log("email went to data action");
+    const response = await sendMail(data.firstName, data.email);
     if (response == null) {
       return NextResponse.json(
         { message: "Error sending mail." },
