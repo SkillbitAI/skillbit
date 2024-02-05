@@ -88,9 +88,19 @@ model Applicant {
   score         String
 }
 
+model Question {
+  id String @id @default(cuid()) @unique
+  companyID String
+  company Company @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  title String
+  language String
+  framework String?
+  type String
+}
 model Company {
   id String @id @default(cuid()) @unique
   name String
   testIDs testID[]
   employees Employee[]
+  questions Question[]
 }
