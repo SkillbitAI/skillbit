@@ -16,6 +16,7 @@ import {
   findEmployees,
   leaveAndDeleteCompany,
   addApplicant,
+  addQuestion,
 } from "./actions";
 import { send } from "process";
 
@@ -49,6 +50,22 @@ export async function POST(req: Request) {
     if (response == null) {
       return NextResponse.json(
         { message: "Error adding applicant." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "addQuestion") {
+    const response = await addQuestion(
+      data.email,
+      data.company,
+      data.title,
+      data.language,
+      data.framework,
+      data.type
+    );
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error adding question." },
         { status: 400 }
       );
     }

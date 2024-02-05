@@ -64,26 +64,29 @@ export async function addApplicant(
       },
     });
 
-    const companyId = company.employee.companyID;
-
-    // Create a new user record using Prisma
-    const newApplicant = await prisma.applicant.create({
-      data: {
-        email,
-        firstName,
-        lastName,
-        testId: {
-          create: {
-            company: {
-              connect: {
-                id: companyId,
+    if (company && company.employee) {
+      const companyId = company.employee.companyID;
+      // Create a new user record using Prisma
+      const newApplicant = await prisma.applicant.create({
+        data: {
+          email,
+          firstName,
+          lastName,
+          testId: {
+            create: {
+              company: {
+                connect: {
+                  id: companyId,
+                },
               },
             },
           },
         },
-      },
-    });
-    return "Success";
+      });
+      return "Success";
+    } else {
+      return null;
+    }
   } catch (error) {
     console.error("Error inserting data:", error);
     throw error;
@@ -125,6 +128,42 @@ export async function addUser(
   } catch (error) {
     console.error("Error inserting data:", error);
     throw error;
+  }
+}
+
+export async function addQuestion(
+  email: string,
+  companyId: string,
+  title: string,
+  language: string,
+  framework: string,
+  type: string
+) {
+  try {
+    const question = await prisma.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        questions: {
+          create: {
+            company: {
+              connect: {
+                id: companyId,
+              },
+            },
+            title: title,
+            language: language,
+            framework: framework,
+            type: type,
+          },
+        },
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error finding employees:", error);
+    return null;
   }
 }
 

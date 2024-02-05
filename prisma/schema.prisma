@@ -48,6 +48,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   employee Employee?
+  questions Question[]
 }
 
 //Pivot table to connect user and company
@@ -92,10 +93,12 @@ model Question {
   id String @id @default(cuid()) @unique
   companyID String
   company Company @relation(fields: [companyID], references: [id], onDelete: Cascade)
-  title String
+  title String @unique
   language String
   framework String?
   type String
+  userId String @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 model Company {
   id String @id @default(cuid()) @unique
