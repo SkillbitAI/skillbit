@@ -39,16 +39,19 @@ export async function addApplicant(
 ) {
   try {
     console.log(recruiterEmail);
-    // Check if a user with the provided email already exists
-    const existingUser = await prisma.applicant.findUnique({
-      where: {
-        email: email,
-      },
-    });
 
-    if (existingUser) {
-      return "Applicant already exists";
-    }
+    //WILL NOT BE IMPLEMENTING THIS SINCE THERE CAN BE MULTIPLE TEST IDS TO ONE APPLICANT
+
+    // Check if a user with the provided email already exists
+    // const existingUser = await prisma.applicant.findUnique({
+    //   where: {
+    //     email: email,
+    //   },
+    // });
+
+    // if (existingUser) {
+    //   return "Applicant already exists";
+    // }
 
     //finding company id from recruiter email
     const company = await prisma.user.findUnique({
@@ -66,19 +69,19 @@ export async function addApplicant(
 
     if (company && company.employee) {
       const companyId = company.employee.companyID;
-      // Create a new user record using Prisma
-      const newApplicant = await prisma.applicant.create({
+      // Create a new test id record (INSTEAD OF APPLICANT)
+      const newApplicant = await prisma.testID.create({
         data: {
-          email,
-          firstName,
-          lastName,
-          testId: {
+          applicant: {
             create: {
-              company: {
-                connect: {
-                  id: companyId,
-                },
-              },
+              email: email,
+              firstName: firstName,
+              lastName: lastName,
+            },
+          },
+          company: {
+            connect: {
+              id: companyId,
             },
           },
         },
@@ -524,11 +527,21 @@ export async function userSignIn(email: string, password: string) {
   }
 }
 
-export async function getApplicants() {
+export async function getApplicants(company: string) {
   try {
-    const applicants = await prisma.applicant.findMany();
+    const applicants = await prisma.testID.findMany({
+      where: {
+        company: {
+          id: company,
+        },
+      },
+      include: {
+        applicant: true,
+      },
+    });
     return applicants;
   } catch (error) {
-    return error;
+    console.error(error);
+    return null;
   }
 }

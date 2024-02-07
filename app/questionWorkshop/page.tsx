@@ -125,6 +125,9 @@ const QuestionWorkshop = () => {
       toast.error(
         "Title already exists. Please choose a unique question title."
       );
+    } else if (newTitle == "") {
+      toast.remove();
+      toast.error("Please enter a title.");
     } else {
       try {
         const response = await fetch("/api/database", {
@@ -418,14 +421,8 @@ const QuestionWorkshop = () => {
                             className="border-b border-slate-800 bg-transparent outline-none placeholder:text-white font-['h1'] text-[24px] w-full"
                             ref={questionTitleRef}
                             type="text"
-                            placeholder={currentQuestion.title}
-                            onChange={(e) => {
-                              if (e.target.value == "") {
-                                setNewTitle(currentQuestion.title);
-                              } else {
-                                setNewTitle(e.target.value);
-                              }
-                            }}
+                            onChange={(e) => setNewTitle(e.target.value)}
+                            value={newTitle}
                           />
                           <Image
                             src={Edit}
