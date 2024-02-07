@@ -239,7 +239,7 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "getApplicants") {
-    const response = await getApplicants();
+    const response = await getApplicants(data.company);
     return NextResponse.json({ message: response }, { status: 200 });
   } else {
     return NextResponse.json(
