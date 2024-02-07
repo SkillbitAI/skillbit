@@ -17,6 +17,7 @@ import {
   leaveAndDeleteCompany,
   addApplicant,
   addQuestion,
+  findQuestions,
 } from "./actions";
 import { send } from "process";
 
@@ -76,6 +77,15 @@ export async function POST(req: Request) {
     if (response == null) {
       return NextResponse.json(
         { message: "Error adding question." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "findQuestions") {
+    const response = await findQuestions(data.company);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error finding questions." },
         { status: 400 }
       );
     }

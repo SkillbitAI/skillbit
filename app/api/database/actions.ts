@@ -131,6 +131,22 @@ export async function addUser(
   }
 }
 
+export async function findQuestions(companyId: string) {
+  try {
+    const questions = await prisma.question.findMany({
+      where: {
+        company: {
+          id: companyId,
+        },
+      },
+    });
+    return questions;
+  } catch (error) {
+    console.error("Error finding questions:", error);
+    return null;
+  }
+}
+
 export async function addQuestion(
   email: string,
   title: string,
@@ -155,7 +171,7 @@ export async function addQuestion(
     });
 
     if (user?.employee?.companyID) {
-      const questionTitle = await prisma.question.findUnique({
+      const questionTitle = await prisma.question.findFirst({
         where: {
           user: {
             email: email,
