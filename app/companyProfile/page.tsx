@@ -231,6 +231,7 @@ const CompanyProfile = () => {
         toast.loading("Looking for company...");
         // console.log("Hello world!");
         //other than print hello world, set user data here
+        setEmail(session.user?.email || "");
         const userResponse = await fetch("/api/database", {
           method: "POST",
           headers: {
@@ -242,7 +243,6 @@ const CompanyProfile = () => {
           }),
         });
         const userData = await userResponse.json();
-        setEmail(userData.message.email);
 
         console.log(userData);
 

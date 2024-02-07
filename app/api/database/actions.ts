@@ -133,33 +133,63 @@ export async function addUser(
 
 export async function addQuestion(
   email: string,
-  companyId: string,
   title: string,
   language: string,
   framework: string,
   type: string
 ) {
   try {
-    const question = await prisma.user.update({
+    //getting user company
+    const user = await prisma.user.findUnique({
       where: {
         email: email,
       },
-      data: {
-        questions: {
-          create: {
-            company: {
-              connect: {
-                id: companyId,
-              },
-            },
-            title: title,
-            language: language,
-            framework: framework,
-            type: type,
+      include: {
+        questions: true,
+        employee: {
+          include: {
+            company: true,
           },
         },
       },
     });
+
+    if (user?.employee?.companyID) {
+      const questionTitle = await prisma.question.findUnique({
+        where: {
+          user: {
+            email: email,
+          },
+          title: title,
+        },
+      });
+      if (questionTitle && questionTitle?.title == title) {
+        return "Title already exists. Please choose a unique question title.";
+      } else {
+        const question = await prisma.user.update({
+          where: {
+            email: email,
+          },
+          data: {
+            questions: {
+              create: {
+                company: {
+                  connect: {
+                    id: user?.employee?.companyID,
+                  },
+                },
+                title: title,
+                language: language,
+                framework: framework,
+                type: type,
+              },
+            },
+          },
+        });
+      }
+    } else {
+      return null;
+    }
     return "Success";
   } catch (error) {
     console.error("Error finding employees:", error);

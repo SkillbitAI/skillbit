@@ -57,12 +57,22 @@ export async function POST(req: Request) {
   } else if (data.action === "addQuestion") {
     const response = await addQuestion(
       data.email,
-      data.company,
       data.title,
       data.language,
       data.framework,
       data.type
     );
+    if (
+      response == "Title already exists. Please choose a unique question title."
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Title already exists. Please choose a unique question title.",
+        },
+        { status: 400 }
+      );
+    }
     if (response == null) {
       return NextResponse.json(
         { message: "Error adding question." },

@@ -93,11 +93,11 @@ model Question {
   id String @id @default(cuid()) @unique
   companyID String
   company Company @relation(fields: [companyID], references: [id], onDelete: Cascade)
-  title String @unique
+  title String
   language String
   framework String?
   type String
-  userId String @unique
+  userId String
   user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 model Company {
