@@ -37,6 +37,14 @@ h2 {
   font-size: 16px;
 }
 
+button {
+  font-family: p;
+}
+
+div {
+  font-family: p;
+}
+
 button .arrow {
   transition: 0.2s;
 }
@@ -217,10 +225,3 @@ button:hover .arrowMiddle {
     justify-content: center;
   }
 }
-
-
-
-
-
-
-

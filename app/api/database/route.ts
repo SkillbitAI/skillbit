@@ -18,6 +18,8 @@ import {
   addApplicant,
   addQuestion,
   findQuestions,
+  deleteQuestion,
+  updateQuestion,
 } from "./actions";
 import { send } from "process";
 
@@ -77,6 +79,24 @@ export async function POST(req: Request) {
     if (response == null) {
       return NextResponse.json(
         { message: "Error adding question." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "updateQuestion") {
+    const response = await updateQuestion(data.id, data.title);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error updating question." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "deleteQuestion") {
+    const response = await deleteQuestion(data.id);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error deleting question." },
         { status: 400 }
       );
     }

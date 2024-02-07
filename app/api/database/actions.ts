@@ -147,6 +147,37 @@ export async function findQuestions(companyId: string) {
   }
 }
 
+export async function updateQuestion(id: string, title: string) {
+  try {
+    const questions = await prisma.question.update({
+      where: {
+        id: id,
+      },
+      data: {
+        title: title,
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    return null;
+  }
+}
+
+export async function deleteQuestion(id: string) {
+  try {
+    const questions = await prisma.question.delete({
+      where: {
+        id: id,
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    return null;
+  }
+}
+
 export async function addQuestion(
   email: string,
   title: string,

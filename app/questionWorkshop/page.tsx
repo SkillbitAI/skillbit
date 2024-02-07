@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, createRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "@/components/loader/loader";
 
@@ -29,6 +29,8 @@ import ProfileIcon from "../../public/assets/icons/profile.svg";
 import QuestionIcon from "../../public/assets/icons/question.svg";
 import SearchIcon from "../../public/assets/icons/search.svg";
 
+import Edit from "../../public/assets/icons/edit.svg";
+
 interface Question {
   title: string;
   language: string;
@@ -51,14 +53,22 @@ const QuestionWorkshop = () => {
   const [userCompanyName, setUserCompanyName] = useState(null);
   const [userCompanyId, setUserCompanyId] = useState(null);
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
+  const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [deleteQuestionWarning, setDeleteQuestionWarning] = useState(false);
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question>();
 
   const [title, setTitle] = useState("");
+  const [newTitle, setNewTitle] = useState("");
   const [language, setLanguage] = useState("");
   const [framework, setFramework] = useState("");
   const [type, setType] = useState("");
+  const [showQuestionOptions, setShowQuestionOptions] = useState("");
+
+  const questionTitleRef = createRef<HTMLInputElement>();
 
   const { data: session, status } = useSession();
 
@@ -77,10 +87,64 @@ const QuestionWorkshop = () => {
       const data = await response.json();
       setQuestions(data.message.reverse());
       setCurrentQuestion(data.message[0]);
+      setNewTitle(data.message[0].title);
       console.log(data);
     } catch (error) {
       console.error("Error finding questions: ", error);
     }
+  };
+
+  const deleteQuestion = async (id: string) => {
+    toast.loading("Deleting question...");
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "deleteQuestion",
+          id: id,
+        }),
+      });
+      await findQuestions(userCompanyId || "");
+      setDeleteQuestionWarning(false);
+      toast.remove();
+      toast.success("Question template deleted.");
+    } catch (error) {
+      toast.remove();
+      toast.error("Error deleting question.");
+      console.error("Error deleting question: ", error);
+    }
+  };
+
+  const updateQuestion = async (id: string) => {
+    setIsSaving(true);
+    if (questions.find((question) => question.title == newTitle)) {
+      toast.remove();
+      toast.error(
+        "Title already exists. Please choose a unique question title."
+      );
+    } else {
+      try {
+        const response = await fetch("/api/database", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "updateQuestion",
+            id: id,
+            title: newTitle,
+          }),
+        });
+        await findQuestions(userCompanyId || "");
+        toast.success("Question template updated.");
+      } catch (error) {
+        console.error("Error updating question: ", error);
+      }
+    }
+    setIsSaving(false);
   };
 
   const addQuestion = async () => {
@@ -123,6 +187,7 @@ const QuestionWorkshop = () => {
         console.error("Error adding question: ", error);
       }
     } else {
+      toast.remove();
       if (title == "") {
         toast.error("Please choose a title.");
       }
@@ -165,6 +230,7 @@ const QuestionWorkshop = () => {
           setUserApprovalStatus(userData.message.employee.isApproved);
           await findQuestions(userData.message.employee.company.id);
         }
+        setCompanyDataLoaded(true);
         toast.remove();
       }
     };
@@ -187,13 +253,23 @@ const QuestionWorkshop = () => {
         <div className="bg-slate-950 flex-1">
           <TopMenuBar></TopMenuBar>
           {/* Dashboard content */}
-          {userApprovalStatus && (
+          {!companyDataLoaded && (
+            <div className="flex justify-center items-center scale-150 mt-6">
+              <div className="lds-ring">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+          )}
+          {companyDataLoaded && userApprovalStatus && (
             <div className="p-6 flex gap-6">
               <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 w-64">
                 <div className="flex justify-between items-center mb-3">
                   <h1>Templates</h1>
                   <button
-                    className="hover:bg-slate-800 cursor-pointer rounded-xl p-3"
+                    className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100"
                     onClick={() => {
                       setNewQuestionButton(true);
                       setTitle("");
@@ -208,34 +284,222 @@ const QuestionWorkshop = () => {
                 <div className="flex flex-col gap-3">
                   {questions &&
                     questions.map((question) => (
-                      <div
-                        className={
-                          currentQuestion?.id == question.id
-                            ? "flex justify-between items-center p-3 bg-indigo-600 border border-indigo-600 rounded-xl cursor-pointer duration-100"
-                            : "flex justify-between items-center p-3 hover:bg-slate-700 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer duration-100"
-                        }
-                        onClick={() => setCurrentQuestion(question)}
-                        key={question.id}
-                      >
-                        {question.title}
-                        <Image src={Dots} alt="" width={14} height={14}></Image>
+                      <div className="relative">
+                        <div
+                          className={
+                            currentQuestion?.id == question.id
+                              ? "flex justify-between items-center p-3 bg-indigo-600 border border-indigo-600 rounded-lg cursor-pointer duration-100"
+                              : "flex justify-between items-center p-3 hover:bg-slate-700 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer duration-100"
+                          }
+                          onClick={() => {
+                            setCurrentQuestion(question);
+                            setNewTitle(question.title);
+                          }}
+                          key={question.id}
+                        >
+                          <p>{question.title}</p>
+                          <Image
+                            src={Dots}
+                            alt=""
+                            width={14}
+                            height={14}
+                            onClick={() => {
+                              if (showQuestionOptions == "") {
+                                setShowQuestionOptions(question.id);
+                              } else {
+                                setShowQuestionOptions("");
+                              }
+                            }}
+                          ></Image>
+                        </div>
+                        {showQuestionOptions == question.id && (
+                          <motion.div
+                            className="flex flex-col bg-slate-800 border border-slate-700 rounded-lg absolute z-20 right-0 mt-1"
+                            onClick={() => setShowQuestionOptions("")}
+                            initial={{ opacity: 0, y: -30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                              duration: 0.2,
+                              ease: "backOut",
+                            }}
+                            exit={{ opacity: 0, y: -30 }}
+                          >
+                            <div
+                              className="p-3 hover:bg-slate-700 duration-100 rounded-lg cursor-pointer"
+                              onClick={() => questionTitleRef.current?.focus()}
+                            >
+                              <p>Rename</p>
+                            </div>
+                            <div
+                              className="p-3 hover:bg-slate-700 duration-100 rounded-lg cursor-pointer text-red-500"
+                              onClick={() => setDeleteQuestionWarning(true)}
+                            >
+                              <p>Delete</p>
+                            </div>
+                          </motion.div>
+                        )}
+                        {/* DELETE QUESTION WARNING */}
+                        <AnimatePresence>
+                          {deleteQuestionWarning && (
+                            <motion.div
+                              className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{
+                                duration: 0.5,
+                                ease: "backOut",
+                              }}
+                              exit={{ opacity: 0 }}
+                            >
+                              <motion.div
+                                className="bg-slate-900 p-6 rounded-xl border border-slate-800"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                exit={{ opacity: 0, y: 30 }}
+                              >
+                                <h1>Are you sure?</h1>
+                                <p className="mb-6">
+                                  You will not be able to recover this question
+                                  template once you delete it.
+                                </p>
+                                <motion.button
+                                  className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: "backOut",
+                                  }}
+                                  onClick={() => deleteQuestion(question.id)}
+                                >
+                                  Yes, delete {question.title}
+                                </motion.button>
+                                <motion.button
+                                  className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: "backOut",
+                                  }}
+                                  onClick={() =>
+                                    setDeleteQuestionWarning(false)
+                                  }
+                                >
+                                  Cancel
+                                </motion.button>
+                              </motion.div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     ))}
                   {(!questions || questions.length == 0) && (
                     <p className="text-slate-400">
-                      Your company has no questions.
+                      Your company has no question templates.
                     </p>
                   )}
                 </div>
               </div>
-              <div className="border-l border-slate-900 pl-6 flex-1">
+              <div className="flex-1">
                 <div
                   className="bg-slate-900 rounded-xl border border-slate-800 p-6 min-h-full overflow-hidden flex justify-center items-center flex-col gap-6"
                   style={{ height: "calc(100vh - 116px)" }}
                 >
                   {currentQuestion && (
-                    <div className="w-full">
-                      <h1>{currentQuestion?.title}</h1>
+                    <div className="w-full h-full flex flex-col justify-between">
+                      <div className="">
+                        <div className="flex items-end gap-2">
+                          <input
+                            className="border-b border-slate-800 bg-transparent outline-none placeholder:text-white font-['h1'] text-[24px] w-full"
+                            ref={questionTitleRef}
+                            type="text"
+                            placeholder={currentQuestion.title}
+                            onChange={(e) => {
+                              if (e.target.value == "") {
+                                setNewTitle(currentQuestion.title);
+                              } else {
+                                setNewTitle(e.target.value);
+                              }
+                            }}
+                          />
+                          <Image
+                            src={Edit}
+                            alt="Edit title"
+                            width={14}
+                            height={14}
+                          ></Image>
+                        </div>
+                        <div className="flex gap-3 items-center flex-wrap mt-3">
+                          <div className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
+                            <p>{currentQuestion.language}</p>
+                          </div>
+                          {currentQuestion.framework != "" && (
+                            <div className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
+                              <p>{currentQuestion.framework}</p>
+                            </div>
+                          )}
+                          <div className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
+                            <p>{currentQuestion.type}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-center items-center flex-col gap-6 text-center">
+                        <div className="flex justify-center items-center scale-150 mt-6">
+                          <div className="lds-ring">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                          </div>
+                        </div>
+                        <motion.p
+                          initial={{ opacity: 1 }}
+                          animate={{ opacity: [1, 0.4, 1] }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1,
+                            ease: "linear",
+                          }}
+                        >
+                          Generating question...
+                        </motion.p>
+                      </div>
+                      <div className="">
+                        <AnimatePresence>
+                          {currentQuestion.title != newTitle && (
+                            <motion.button
+                              className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.2, ease: "backOut" }}
+                              exit={{ opacity: 0, y: 30 }}
+                              onClick={() => updateQuestion(currentQuestion.id)}
+                            >
+                              {!isSaving && <>Save changes</>}
+                              {isSaving && (
+                                <div className="lds-ring">
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                  <div></div>
+                                </div>
+                              )}
+                            </motion.button>
+
+                            // <button
+                            //   className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                            //   onClick={() => updateQuestion(currentQuestion.id)}
+                            // >
+                            //   Save changes
+                            // </button>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
                   )}
                   {!currentQuestion && (
@@ -504,7 +768,7 @@ const QuestionWorkshop = () => {
               </AnimatePresence>
             </div>
           )}
-          {!userApprovalStatus && (
+          {companyDataLoaded && !userApprovalStatus && (
             <div className="p-6">
               <h1>Welcome to the Question Workshop!</h1>
               <p className="text-slate-400">
