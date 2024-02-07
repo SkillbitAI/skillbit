@@ -16,6 +16,10 @@ import {
   findEmployees,
   leaveAndDeleteCompany,
   addApplicant,
+  addQuestion,
+  findQuestions,
+  deleteQuestion,
+  updateQuestion,
 } from "./actions";
 import { send } from "process";
 
@@ -49,6 +53,59 @@ export async function POST(req: Request) {
     if (response == null) {
       return NextResponse.json(
         { message: "Error adding applicant." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "addQuestion") {
+    const response = await addQuestion(
+      data.email,
+      data.title,
+      data.language,
+      data.framework,
+      data.type
+    );
+    if (
+      response == "Title already exists. Please choose a unique question title."
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Title already exists. Please choose a unique question title.",
+        },
+        { status: 400 }
+      );
+    }
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error adding question." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "updateQuestion") {
+    const response = await updateQuestion(data.id, data.title);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error updating question." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "deleteQuestion") {
+    const response = await deleteQuestion(data.id);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error deleting question." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "findQuestions") {
+    const response = await findQuestions(data.company);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error finding questions." },
         { status: 400 }
       );
     }

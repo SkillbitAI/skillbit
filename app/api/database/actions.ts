@@ -64,26 +64,29 @@ export async function addApplicant(
       },
     });
 
-    const companyId = company.employee.companyID;
-
-    // Create a new user record using Prisma
-    const newApplicant = await prisma.applicant.create({
-      data: {
-        email,
-        firstName,
-        lastName,
-        testId: {
-          create: {
-            company: {
-              connect: {
-                id: companyId,
+    if (company && company.employee) {
+      const companyId = company.employee.companyID;
+      // Create a new user record using Prisma
+      const newApplicant = await prisma.applicant.create({
+        data: {
+          email,
+          firstName,
+          lastName,
+          testId: {
+            create: {
+              company: {
+                connect: {
+                  id: companyId,
+                },
               },
             },
           },
         },
-      },
-    });
-    return "Success";
+      });
+      return "Success";
+    } else {
+      return null;
+    }
   } catch (error) {
     console.error("Error inserting data:", error);
     throw error;
@@ -125,6 +128,119 @@ export async function addUser(
   } catch (error) {
     console.error("Error inserting data:", error);
     throw error;
+  }
+}
+
+export async function findQuestions(companyId: string) {
+  try {
+    const questions = await prisma.question.findMany({
+      where: {
+        company: {
+          id: companyId,
+        },
+      },
+    });
+    return questions;
+  } catch (error) {
+    console.error("Error finding questions:", error);
+    return null;
+  }
+}
+
+export async function updateQuestion(id: string, title: string) {
+  try {
+    const questions = await prisma.question.update({
+      where: {
+        id: id,
+      },
+      data: {
+        title: title,
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    return null;
+  }
+}
+
+export async function deleteQuestion(id: string) {
+  try {
+    const questions = await prisma.question.delete({
+      where: {
+        id: id,
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    return null;
+  }
+}
+
+export async function addQuestion(
+  email: string,
+  title: string,
+  language: string,
+  framework: string,
+  type: string
+) {
+  try {
+    //getting user company
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+      include: {
+        questions: true,
+        employee: {
+          include: {
+            company: true,
+          },
+        },
+      },
+    });
+
+    if (user?.employee?.companyID) {
+      const questionTitle = await prisma.question.findFirst({
+        where: {
+          user: {
+            email: email,
+          },
+          title: title,
+        },
+      });
+      if (questionTitle && questionTitle?.title == title) {
+        return "Title already exists. Please choose a unique question title.";
+      } else {
+        const question = await prisma.user.update({
+          where: {
+            email: email,
+          },
+          data: {
+            questions: {
+              create: {
+                company: {
+                  connect: {
+                    id: user?.employee?.companyID,
+                  },
+                },
+                title: title,
+                language: language,
+                framework: framework,
+                type: type,
+              },
+            },
+          },
+        });
+      }
+    } else {
+      return null;
+    }
+    return "Success";
+  } catch (error) {
+    console.error("Error finding employees:", error);
+    return null;
   }
 }
 
