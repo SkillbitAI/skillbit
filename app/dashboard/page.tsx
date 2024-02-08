@@ -57,7 +57,7 @@ const Dashboard = () => {
       <div className="max-w-screen text-white flex overflow-x-hidden">
         <Sidebar></Sidebar>
         <div className="bg-slate-950 flex-1">
-          <TopMenuBar></TopMenuBar>
+          {/* <TopMenuBar></TopMenuBar> */}
 
           {/* Dashboard content */}
           <div className=""></div>

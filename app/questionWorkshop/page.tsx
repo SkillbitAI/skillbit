@@ -254,7 +254,7 @@ const QuestionWorkshop = () => {
       <div className="max-w-screen text-white flex overflow-x-hidden">
         <Sidebar></Sidebar>
         <div className="bg-slate-950 flex-1">
-          <TopMenuBar></TopMenuBar>
+          {/* <TopMenuBar></TopMenuBar> */}
           {/* Dashboard content */}
           {!companyDataLoaded && (
             <div className="flex justify-center items-center scale-150 mt-6">
@@ -411,7 +411,8 @@ const QuestionWorkshop = () => {
               <div className="flex-1">
                 <div
                   className="bg-slate-900 rounded-xl border border-slate-800 p-6 min-h-full overflow-hidden flex justify-center items-center flex-col gap-6"
-                  style={{ height: "calc(100vh - 116px)" }}
+                  // style={{ height: "calc(100vh - 116px)" }}
+                  style={{ height: "calc(100vh - 48px)" }}
                 >
                   {currentQuestion && (
                     <div className="w-full h-full flex flex-col justify-between">

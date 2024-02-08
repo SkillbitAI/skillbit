@@ -336,7 +336,7 @@ const Applicants = () => {
       <div className="max-w-screen text-white flex overflow-x-hidden">
         <Sidebar></Sidebar>
         <div className="bg-slate-950 flex-1">
-          <TopMenuBar></TopMenuBar>
+          {/* <TopMenuBar></TopMenuBar> */}
           <div className="flex">
             {/* Applicants content */}
             {companyDataLoaded && !userApprovalStatus && (
