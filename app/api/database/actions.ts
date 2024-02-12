@@ -422,6 +422,15 @@ export async function addCompany(email: string, companyName: string) {
     if (company) {
       return "Company already exists.";
     } else {
+      //creating new join code
+      const characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+      const codeLength = 6;
+      let randomCode = "";
+      for (let i = 0; i < codeLength; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomCode += characters.charAt(randomIndex);
+      }
+
       const user = await prisma.user.update({
         where: {
           email: email,
@@ -432,6 +441,7 @@ export async function addCompany(email: string, companyName: string) {
               company: {
                 create: {
                   name: companyName,
+                  join_code: randomCode,
                 },
               },
               isApproved: true,
@@ -493,6 +503,7 @@ export async function findUserByEmail(email: string) {
               select: {
                 id: true,
                 name: true,
+                join_code: true,
               },
             },
           },

@@ -106,4 +106,5 @@ model Company {
   testIDs testID[]
   employees Employee[]
   questions Question[]
+  join_code String @unique
 }
