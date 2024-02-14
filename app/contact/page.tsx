@@ -10,14 +10,35 @@ import { FormEvent, useEffect, useState, useRef } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { handleClientScriptLoad } from "next/script";
 
-const Contact = () => {
-  const router = useRouter();
+export default function Contact () {
   
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  async function handleSubmit(e: any) {
+    e.preventDefault();
 
-  
+    const data = {
+      firstName: String(e.target.firstName.value),
+      lastName: String(e.target.lastName.value),
+      email: String(e.target.email.value),
+      message: String(e.target.message.value)
+    }
+
+    console.log(data);
+
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (response.ok) {
+      toast.success("Ticket submitted successfully!");
+    }
+    else {
+      toast.error("An error occurred while submitting the ticket.");
+    }
+  }
 
   return (
     <>
@@ -35,6 +56,7 @@ const Contact = () => {
             <h1 className="">Skillbit</h1>
           </div>
             <form 
+              onSubmit={handleSubmit}
               className="flex flex-col gap-2 max-w-sm m-auto"
             >
               <motion.h1
@@ -61,6 +83,7 @@ const Contact = () => {
               </motion.p>
               <motion.input
                 type="text"
+                id="firstName"
                 placeholder="Daniel"
                 className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
                 initial={{ opacity: 0, y: 30 }}
@@ -76,6 +99,7 @@ const Contact = () => {
               </motion.p>
               <motion.input
                 type="text"
+                id="lastName"
                 placeholder="Lai"
                 className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
                 initial={{ opacity: 0, y: 30 }}
@@ -91,6 +115,7 @@ const Contact = () => {
               </motion.p>
               <motion.input
                 type="email"
+                id="email"
                 placeholder="mail@example.com"
                 className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
                 initial={{ opacity: 0, y: 30 }}
@@ -107,6 +132,7 @@ const Contact = () => {
 
               <motion.textarea
                 placeholder="Maximum 250 characters"
+                id="message"
                 className="p-2 h-48 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none no-resize"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -131,12 +157,10 @@ const Contact = () => {
                   ></Image>
                 </div>
               </div>
-                </motion.button>
+              </motion.button>
               </form>
         </div> 
       </div>
     </>
   )
 }
-
-export default Contact;
