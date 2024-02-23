@@ -164,10 +164,6 @@ const Applicants = () => {
       const { status, score, selected, id, ...applicantData } =
         formData as ApplicantDataInterface;
 
-      // Update individual applicant
-      // await updateApplicants([applicantData]);
-
-      // Send data to the server
       const response = await fetch("/api/database", {
         method: "POST",
         headers: {
@@ -181,14 +177,14 @@ const Applicants = () => {
           recruiterEmail: recruiterEmail,
         }),
       });
-
-      const data = await response.json();
-      console.log(data.message);
+      //await updateApplicants([applicantData]);
+      
       toggleAddApplicantModal();
 
-      // if (response.ok) {
-      //   // Show success toast
-      //   toast.success("Applicant added successfully");
+      if (response.ok) {
+        // Show success toast
+        toast.success("Applicant added successfully");
+      }
       //   toggleAddApplicantModal();
       //   // Optionally, you can trigger a data refresh or take other actions after a successful addition
       // } else {
@@ -203,33 +199,33 @@ const Applicants = () => {
     }
   };
 
-  ////////////////////////////////////////////////////////////
-  // const updateApplicants = async (applicants: any) => {
-  //   try {
-  //     toast.loading("Importing applicant(s)...");
-  //     const response = await fetch("/api/codeEditor/createTestID", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         applicants: applicants,
-  //         recruiterEmail: recruiterEmail,
-  //       }),
-  //     });
-  //     if (!response.ok) {
-  //       toast.remove();
-  //       toast.error("Error loading applicants.");
-  //       console.error("Error setting applicants!");
-  //     } else {
-  //       window.location.reload();
-  //     }
-  //   } catch (error) {
-  //     toast.remove();
-  //     toast.error("Error loading applicants.");
-  //     console.error(error);
-  //   }
-  // };
+  //////////////////////////////////////////////////////////
+  const updateApplicants = async (applicants: any) => {
+    try {
+      toast.loading("Importing applicant(s)...");
+      const response = await fetch("/api/codeEditor/createTestID", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          applicants: applicants,
+          recruiterEmail: recruiterEmail,
+        }),
+      });
+      if (!response.ok) {
+        toast.remove();
+        toast.error("Error loading applicants.");
+        console.error("Error setting applicants!");
+      } else {
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.remove();
+      toast.error("Error loading applicants.");
+      console.error(error);
+    }
+  };
 
   const path = usePathname();
   const router = useRouter();
@@ -280,7 +276,7 @@ const Applicants = () => {
     return;
   }
 
-  const handleSendEmail = async (firstName: string, email: string) => {
+  const handleSendEmail = async (firstName: string, email: string, companyemail: string) => {
     try {
       const response = await fetch("/api/database", {
         method: "POST",
@@ -291,6 +287,7 @@ const Applicants = () => {
           action: "sendMail",
           firstName: firstName,
           email: email,
+          companyemail: companyemail,
         }),
       });
     } catch (error) {
@@ -616,10 +613,10 @@ const Applicants = () => {
                               <p className="text-sm">Passed | {item.score}</p>
                             </div>
                           )}
-                          {item.status == "Expired" && (
+                          {item.status == "Not Sent" && (
                             <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                               <div className="w-2 h-2 rounded-full bg-gray-500"></div>
-                              <p className="text-sm">Expired</p>
+                              <p className="text-sm">Not Sent</p>
                             </div>
                           )}
                           <Image
@@ -654,7 +651,7 @@ const Applicants = () => {
                             <button
                               className="text-sm"
                               onClick={() =>
-                                handleSendEmail(item.firstName, item.email)
+                                handleSendEmail(item.firstName, item.email, recruiterEmail)
                               }
                             >
                               Send Interview Email

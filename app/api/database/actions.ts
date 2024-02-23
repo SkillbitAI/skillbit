@@ -2,12 +2,14 @@
 
 // Import Prisma to use the database query tools
 import { experimental_useOptimistic } from "react";
+import { render } from '@react-email/render';
+import logo_full_transparent_blue from "/public/assets/branding/logos/logo_full_transparent_blue.png"
 import prisma from "../database/prismaConnection";
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 import "dotenv";
 
-export async function sendMail(firstName: string, email: string) {
+export async function sendMail(firstName: string, email: string, companyemail: string) {
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
@@ -17,19 +19,112 @@ export async function sendMail(firstName: string, email: string) {
       pass: process.env.GMAIL_PASSWORD,
     },
   });
+  const company = await prisma.user.findUnique({
+    where: {
+      email: companyemail,
+    },
+    include: {
+      employee: {
+        include: {
+          company: true,
+        },
+      },
+    },
+  });
 
+ const companyId = company.employee.company.name;
+  
   const mailOptions = {
     from: "Skillbit <skillbitassessment@gmail.com>",
     to: email,
     subject: "Skillbit Assessment",
-    text: `Hi ${firstName},
-    Hello world!`,
+     attachments: [{
+      filename: 'logo_full_transparent_blue.png', // Adjust the filename accordingly
+      path: './public/assets/branding/logos/logo_full_transparent_blue.png',
+      cid: 'logo1'
+    }],
+    html: `
+    <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <!-- Include any necessary styles or head elements here -->
+    <style>
+        body {
+            text-align: center;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        }
+
+        .content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content" style="margin: 12px auto; font-family: sans-serif;">
+    <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
+        <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${firstName} !</p>
+        <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have been selected by ${companyId} to participate in a personalized assessment. Click the link below to access your
+        test dashboard.</p>
+        <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation"
+            style="text-align:center">
+            <tbody>
+                <tr>
+                    <td><a href="example.com"
+                            style="background-color:#008cff;border-radius:7px;color:#fff;font-size:16px;text-decoration:none;text-align:center;display:inline-block;margin:10px 0px 10px 0px;padding:12px 24px 12px 24px;line-height:100%;max-width:100%"
+                            target="_blank"><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span
+                            style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get
+                            started</span><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%" hidden>&nbsp;</i><![endif]--></span></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Best, The Skillbit Team</p>
+        <hr style="width:100%;border:none;border-top:1px solid #eaeaea;border-color:#cccccc;margin:20px 0" />
+        <p style="font-size: 12px; line-height: 24px; margin: 16px 0; color: #8898aa">University of Florida</p>
+    </div>
+</body>
+
+</html>
+    `,
   };
 
   const info = await transporter.sendMail(mailOptions);
   console.log("Email Sent:", info.response);
   transporter.close();
 }
+
+export async function updateApplicantStatus(email: string) {
+  try {
+    // Find the applicant by email
+    const applicant = await prisma.applicant.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!applicant) {
+      return "Applicant not found";
+    }
+
+    // Update the applicant status to "sent"
+    const updatedApplicant = await prisma.applicant.update({
+      where: {
+        email: email,
+      },
+      data: {
+        status: "Sent",
+      },
+    });
+
+    return "Applicant status updated successfully";
+  } catch (error) {
+    console.error("Error updating applicant status:", error);
+    throw error;
+  }
+}
+
 
 export async function addApplicant(
   firstName: string,
@@ -38,8 +133,9 @@ export async function addApplicant(
   recruiterEmail: string
 ) {
   try {
-    console.log(recruiterEmail);
-    // Check if a user with the provided email already exists
+    console.log(firstName);
+    
+    //Check if a user with the provided email already exists
     const existingUser = await prisma.applicant.findUnique({
       where: {
         email: email,
@@ -64,9 +160,9 @@ export async function addApplicant(
       },
     });
 
-    const companyId = company.employee.companyID;
+   const companyId = company.employee.companyID;
 
-    // Create a new user record using Prisma
+    //Create a new user record using Prisma
     const newApplicant = await prisma.applicant.create({
       data: {
         email,

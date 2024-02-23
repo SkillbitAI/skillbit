@@ -84,7 +84,7 @@ model Applicant {
   lastName      String
   email         String    @unique
   testId       testID?
-  status        String @default("Sent")
+  status        String @default("Not Sent")
   score         String?
 }
 

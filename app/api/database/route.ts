@@ -16,8 +16,10 @@ import {
   findEmployees,
   leaveAndDeleteCompany,
   addApplicant,
+  updateApplicantStatus,
 } from "./actions";
 import { send } from "process";
+import Email from "next-auth/providers/email";
 
 export async function POST(req: Request) {
   const data = await req.json();
@@ -40,11 +42,12 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } else if (data.action === "addApplicant") {
+
     const response = await addApplicant(
       data.firstName,
       data.lastName,
       data.email,
-      data.recruiterEmail
+      data.companyemail
     );
     if (response == null) {
       return NextResponse.json(
@@ -54,8 +57,9 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "sendMail") {
-    const response = await sendMail(data.firstName, data.email);
-    if (response == null) {
+    const response = await sendMail(data.firstName, data.email, data.companyemail);
+    const response2 = await updateApplicantStatus(data.email);
+    if (response == null && response2 == null) {
       return NextResponse.json(
         { message: "Error sending mail." },
         { status: 400 }
