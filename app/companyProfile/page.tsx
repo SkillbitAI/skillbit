@@ -226,6 +226,8 @@ const CompanyProfile = () => {
 
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
+  const [joinCode, setJoinCode] = useState("");
+
   const handleInput = (
     index: number,
     event: React.FormEvent<HTMLInputElement>
@@ -449,23 +451,25 @@ const CompanyProfile = () => {
                     </div>
                   </button>
                 </div>
-                <div className="mt-6 bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-center items-center text-center">
-                  <h1>Have a join code?</h1>
-                  <p>Enter your join code here.</p>
-                  <div className="mt-6 flex gap-3">
-                    {Array.from({ length: 6 }, (_, index) => (
-                      <input
-                        ref={(el) => (inputs.current[index] = el)}
-                        key={index}
-                        type="text"
-                        name={`code-${index}`}
-                        id={`code-${index}`}
-                        className="bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none flex-1 w-16 text-2xl flex justify-center items-center text-center"
-                        maxLength={1}
-                        onInput={(e) => handleInput(index, e)}
-                        onKeyDown={(e) => handleKeyDown(index, e)}
-                      />
-                    ))}
+                <div className="flex justify-center items-center">
+                  <div className="mt-6 bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-center items-center text-center">
+                    <h1>Have a join code?</h1>
+                    <p>Enter your join code here.</p>
+                    <div className="mt-6 flex gap-3">
+                      {Array.from({ length: 6 }, (_, index) => (
+                        <input
+                          ref={(el) => (inputs.current[index] = el)}
+                          key={index}
+                          type="text"
+                          name={`code-${index}`}
+                          id={`code-${index}`}
+                          className="bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none flex-1 w-16 text-2xl flex justify-center items-center text-center"
+                          maxLength={1}
+                          onInput={(e) => handleInput(index, e)}
+                          onKeyDown={(e) => handleKeyDown(index, e)}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
