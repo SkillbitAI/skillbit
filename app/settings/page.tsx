@@ -192,6 +192,9 @@ const Settings = () => {
         });
         const userData = await userResponse.json();
 
+        setFirstName(userData.message.firstName);
+        setLastName(userData.message.lastName);
+
         if (
           userData.message.employee &&
           userData.message.employee.company.name &&
@@ -202,8 +205,6 @@ const Settings = () => {
           setUserCompanyId(userData.message.employee.company.id);
           setUserCompanyJoinCode(userData.message.employee.company.join_code);
           setUserApprovalStatus(userData.message.employee.isApproved);
-          setFirstName(userData.message.firstName);
-          setLastName(userData.message.lastName);
           await findEmployees(userData.message.employee.company.id);
         }
         setCompanyDataLoaded(true);
@@ -307,8 +308,8 @@ const Settings = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-              <div className="flex justify-between items-start">
-                <h1>Account Settings</h1>
+              <div className="flex justify-between items-center">
+                <h2>Account Settings</h2>
                 <button
                   className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2"
                   onClick={handleSave}

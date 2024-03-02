@@ -246,6 +246,7 @@ const CompanyProfile = () => {
   useEffect(() => {
     const getData = async () => {
       if (session) {
+        toast.remove();
         toast.loading("Looking for company...");
         // console.log("Hello world!");
         //other than print hello world, set user data here

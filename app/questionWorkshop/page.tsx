@@ -171,7 +171,7 @@ const QuestionWorkshop = () => {
         const data = await response.json();
         if (data.message == "Success") {
           toast.remove();
-          toast.success("Question added.");
+          toast.success("Template added.");
           setTitle("");
           setLanguage("");
           setFramework("");
@@ -206,6 +206,7 @@ const QuestionWorkshop = () => {
   useEffect(() => {
     const getData = async () => {
       if (session) {
+        toast.remove();
         toast.loading("Looking for questions...");
         // console.log("Hello world!");
         //other than print hello world, set user data here
@@ -464,7 +465,7 @@ const QuestionWorkshop = () => {
                             ease: "linear",
                           }}
                         >
-                          Generating question...
+                          Generating questions...
                         </motion.p>
                       </div>
                       <div className="">
@@ -510,7 +511,7 @@ const QuestionWorkshop = () => {
                         className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
                         onClick={() => setNewQuestionButton(true)}
                       >
-                        New question
+                        New template
                         <div className="flex items-center justify-center">
                           <div>
                             <Image
@@ -592,7 +593,7 @@ const QuestionWorkshop = () => {
                       <div className="flex flex-col">
                         <h2>Programming language and framework</h2>
                         <p className="text-slate-400">
-                          Your question will test candidates using the
+                          Your questions will test candidates using the
                           programming language or framework you choose.
                         </p>
                         <div className="flex gap-3 mt-3 flex-wrap">
@@ -669,7 +670,7 @@ const QuestionWorkshop = () => {
                         <h2>Question type</h2>
                         <p className="text-slate-400">
                           We will customize your candidates' prompts to reflect
-                          this question type.
+                          this template's type.
                         </p>
                         <div className="flex gap-3 mt-3 flex-wrap">
                           <div

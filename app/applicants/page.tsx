@@ -283,7 +283,8 @@ const Applicants = () => {
       if (session) {
         // console.log("Hello world!");
         //other than print hello world, set user data here
-        toast.loading("Looking for applicants...");
+        toast.remove();
+        toast.loading("Looking for candidates...");
         // console.log("Hello world!");
         //other than print hello world, set user data here
         setEmail(session.user?.email || "");
