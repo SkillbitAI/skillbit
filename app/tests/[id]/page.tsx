@@ -156,7 +156,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-700 mb-3">
                 <input
                   className="text-white bg-transparent focus:outline-none w-full placeholder:text-white"
-                  placeholder="Search Anything..."
+                  placeholder="Search..."
                 ></input>
                 <Image src={SearchIcon} alt="" width={25} height={25}></Image>
               </div>

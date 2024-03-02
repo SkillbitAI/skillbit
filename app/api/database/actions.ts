@@ -6,6 +6,7 @@ import prisma from "../database/prismaConnection";
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 import "dotenv";
+import App from "next/app";
 
 export async function sendMail(firstName: string, email: string) {
   const transporter = nodemailer.createTransport({
@@ -85,6 +86,64 @@ export async function addApplicant(
             },
           },
         },
+      });
+      return "Success";
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    throw error;
+  }
+}
+
+interface Applicant {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+export async function addApplicants(
+  applicants: Array<Applicant>,
+  recruiterEmail: string
+) {
+  try {
+    console.log(recruiterEmail);
+
+    //finding company id from recruiter email
+    const company = await prisma.user.findUnique({
+      where: {
+        email: recruiterEmail,
+      },
+      include: {
+        employee: {
+          include: {
+            company: true,
+          },
+        },
+      },
+    });
+
+    if (company && company.employee) {
+      const companyId = company.employee.companyID;
+      // Create a new test id record (INSTEAD OF APPLICANT)
+      applicants.map(async (applicant) => {
+        const newApplicant = await prisma.testID.create({
+          data: {
+            applicant: {
+              create: {
+                email: applicant.email,
+                firstName: applicant.firstName,
+                lastName: applicant.lastName,
+              },
+            },
+            company: {
+              connect: {
+                id: companyId,
+              },
+            },
+          },
+        });
       });
       return "Success";
     } else {
@@ -357,14 +416,13 @@ export async function joinCompany(email: string, companyId: string) {
           create: {
             company: {
               connect: {
-                id: companyId,
+                join_code: companyId,
               },
             },
           },
         },
       },
     });
-    console.log(user);
     return "Success";
   } catch (error) {
     console.error("Error inserting data:", error);

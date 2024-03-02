@@ -20,6 +20,7 @@ import {
   findQuestions,
   deleteQuestion,
   updateQuestion,
+  addApplicants,
 } from "./actions";
 import { send } from "process";
 
@@ -53,6 +54,15 @@ export async function POST(req: Request) {
     if (response == null) {
       return NextResponse.json(
         { message: "Error adding applicant." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "addApplicants") {
+    const response = await addApplicants(data.applicants, data.recruiterEmail);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error adding applicants." },
         { status: 400 }
       );
     }

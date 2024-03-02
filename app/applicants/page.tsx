@@ -37,6 +37,7 @@ import ProfileIcon from "../../public/assets/icons/profile.svg";
 import QuestionIcon from "../../public/assets/icons/question.svg";
 import SearchIcon from "../../public/assets/icons/search.svg";
 import App from "next/app";
+import { Applicant } from "@prisma/client";
 
 interface TestIDInterface {
   applicant: ApplicantDataInterface;
@@ -109,13 +110,11 @@ const Applicants = () => {
           score: "90%",
           selected: false,
         }));
-        // await updateApplicants(combinedData);
+        await updateApplicants(combinedData);
       },
       header: true,
     });
   };
-
-  //ADD APPLICANT FUNCITONALITY///////////////////////////////////////////////////////////////////
 
   const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -192,17 +191,6 @@ const Applicants = () => {
       console.log(data.message);
       await getApplicants(userCompanyId || "");
       toggleAddApplicantModal();
-
-      // if (response.ok) {
-      //   // Show success toast
-      //   toast.success("Applicant added successfully");
-      //   toggleAddApplicantModal();
-      //   // Optionally, you can trigger a data refresh or take other actions after a successful addition
-      // } else {
-      //   // Show error toast
-      //   toast.error("Failed to add applicant");
-      //   // Handle error cases if needed
-      // }
     } catch (error) {
       // Show error toast for network or unexpected errors
       toast.error("Error adding applicant");
@@ -210,33 +198,40 @@ const Applicants = () => {
     }
   };
 
-  ////////////////////////////////////////////////////////////
-  // const updateApplicants = async (applicants: any) => {
-  //   try {
-  //     toast.loading("Importing applicant(s)...");
-  //     const response = await fetch("/api/codeEditor/createTestID", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         applicants: applicants,
-  //         recruiterEmail: recruiterEmail,
-  //       }),
-  //     });
-  //     if (!response.ok) {
-  //       toast.remove();
-  //       toast.error("Error loading applicants.");
-  //       console.error("Error setting applicants!");
-  //     } else {
-  //       window.location.reload();
-  //     }
-  //   } catch (error) {
-  //     toast.remove();
-  //     toast.error("Error loading applicants.");
-  //     console.error(error);
-  //   }
-  // };
+  //function for uploading from the CSV
+  const updateApplicants = async (
+    applicants: Array<ApplicantDataInterface>
+  ) => {
+    try {
+      toast.loading("Importing applicant(s)...");
+      // Send data to the server
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "addApplicants",
+          applicants: applicants,
+          recruiterEmail: email,
+        }),
+      });
+      if (!response.ok) {
+        toast.remove();
+        toast.error("Error loading applicants.");
+        console.error("Error setting applicants!");
+      } else {
+        toast.remove();
+        toast.success("Loaded applicants.");
+        // await getApplicants(userCompanyId || "");
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.remove();
+      toast.error("Error loading applicants.");
+      console.error(error);
+    }
+  };
 
   const path = usePathname();
   const router = useRouter();
@@ -340,7 +335,7 @@ const Applicants = () => {
           <div className="flex">
             {/* Applicants content */}
             {companyDataLoaded && !userApprovalStatus && (
-              <div className="p-6">
+              <div className="p-6 flex justify-center items-center flex-col w-full mt-20">
                 <h1>Welcome to the Applicants page!</h1>
                 <p className="text-slate-400">
                   To get started, please join a company in the Company Profile
@@ -762,26 +757,24 @@ const Applicants = () => {
                   </div>
                 )}
                 {applicantData.length == 0 && (
-                  <div className="">
+                  <div className="flex justify-center items-center flex-col mt-20">
                     <p className="text-slate-400">
                       Your company does not have any active test IDs.
                     </p>
-                    <button
-                      className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                      onClick={toggleAddApplicantModal}
-                    >
-                      New applicant
-                      <div className="flex items-center justify-center">
-                        <div>
-                          <Image
-                            src={Plus}
-                            alt=""
-                            width={14}
-                            height={14}
-                          ></Image>
-                        </div>
-                      </div>
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                        onClick={toggleAddApplicantModal}
+                      >
+                        Add applicant
+                      </button>
+                      <label
+                        htmlFor="fileInput"
+                        className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                      >
+                        <p>Import CSV</p>
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>

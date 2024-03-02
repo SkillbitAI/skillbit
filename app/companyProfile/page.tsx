@@ -181,7 +181,13 @@ const CompanyProfile = () => {
         company: companyId,
       }),
     });
-    location.reload();
+    const data = await response.json();
+    if (data.message == "Success") {
+      location.reload();
+    } else {
+      toast.remove();
+      toast.error("Invalid join code.");
+    }
   };
 
   const handleLeaveCompanySafety = async (companyId: string) => {
@@ -226,8 +232,6 @@ const CompanyProfile = () => {
 
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
-  const [joinCode, setJoinCode] = useState("");
-
   const handleInput = (
     index: number,
     event: React.FormEvent<HTMLInputElement>
@@ -239,6 +243,14 @@ const CompanyProfile = () => {
       if (inputs.current[index + 1]) {
         inputs.current[index + 1]?.focus();
       }
+    }
+
+    // Check if all six inputs have values
+    const allInputsFilled = inputs.current.every((input) => input?.value);
+
+    if (allInputsFilled) {
+      const joinCode = inputs.current.map((input) => input?.value).join("");
+      handleJoinCompany(joinCode);
     }
   };
 
@@ -437,22 +449,11 @@ const CompanyProfile = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="justify-between flex items-center w-full">
-                  <h1>Join your company on Skillbit!</h1>
-                  <button
-                    className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2"
-                    onClick={() => setNewCompanyButton(true)}
-                  >
-                    New company
-                    <div className="flex items-center justify-center">
-                      <div>
-                        <Image src={Plus} alt="" width={14} height={14}></Image>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-                <div className="flex justify-center items-center">
-                  <div className="mt-6 bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-center items-center text-center">
+                <div className="flex justify-center items-center w-full flex-col">
+                  <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 pb-20">
+                    <h1>Join your company on Skillbit!</h1>
+                  </div>
+                  <div className="mt-20 p-6 flex flex-col justify-center items-center text-center w-full">
                     <h1>Have a join code?</h1>
                     <p>Enter your join code here.</p>
                     <div className="mt-6 flex gap-3">
@@ -463,7 +464,7 @@ const CompanyProfile = () => {
                           type="text"
                           name={`code-${index}`}
                           id={`code-${index}`}
-                          className="bg-slate-800 border border-slate-700 rounded-xl p-3 outline-none flex-1 w-16 text-2xl flex justify-center items-center text-center"
+                          className="bg-slate-900 border border-slate-800 rounded-xl p-3 outline-none flex-1 w-16 text-2xl flex justify-center items-center text-center"
                           maxLength={1}
                           onInput={(e) => handleInput(index, e)}
                           onKeyDown={(e) => handleKeyDown(index, e)}
@@ -471,6 +472,22 @@ const CompanyProfile = () => {
                       ))}
                     </div>
                   </div>
+                  <div className="flex gap-3 justify-center items-center">
+                    <hr className="w-10 h-0 border-b-0 border-slate-700" />
+                    <p className="text-slate-700">or</p>
+                    <hr className="w-10 h-0 border-b-0 border-slate-700" />
+                  </div>
+                  <button
+                    className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-6"
+                    onClick={() => setNewCompanyButton(true)}
+                  >
+                    New company
+                    <div className="flex items-center justify-center">
+                      <div>
+                        <Image src={Plus} alt="" width={14} height={14}></Image>
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}

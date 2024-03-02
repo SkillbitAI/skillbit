@@ -57,7 +57,7 @@ const TopMenuBar = () => {
       <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-800">
         <input
           className="text-white bg-transparent focus:outline-none w-full placeholder:text-white text-ellipsis"
-          placeholder="Search Anything..."
+          placeholder="Search..."
         ></input>
         <Image src={SearchIcon} alt="" width={25} height={25}></Image>
       </div>

@@ -767,7 +767,7 @@ const QuestionWorkshop = () => {
             </div>
           )}
           {companyDataLoaded && !userApprovalStatus && (
-            <div className="p-6">
+            <div className="p-6 flex justify-center items-center flex-col w-full mt-20">
               <h1>Welcome to the Question Workshop!</h1>
               <p className="text-slate-400">
                 To get started, please join a company in the Company Profile
