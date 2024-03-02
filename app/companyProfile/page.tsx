@@ -59,7 +59,6 @@ const CompanyProfile = () => {
   const [recruiterRequests, setRecruiterRequests] = useState<Employee[]>([]);
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [lastEmployeeWarning, setLastEmployeeWarning] = useState(false);
 
   const findCompanies = async () => {
     const response = await fetch("/api/database", {
@@ -190,14 +189,6 @@ const CompanyProfile = () => {
     }
   };
 
-  const handleLeaveCompanySafety = async (companyId: string) => {
-    if (employees.length == 1) {
-      setLastEmployeeWarning(true);
-    } else {
-      handleLeaveCompany(companyId);
-    }
-  };
-
   const handleLeaveCompany = async (companyId: string) => {
     toast.loading("Leaving company...");
     const response = await fetch("/api/database", {
@@ -207,22 +198,6 @@ const CompanyProfile = () => {
       },
       body: JSON.stringify({
         action: "leaveCompany",
-        email: email,
-        company: companyId,
-      }),
-    });
-    location.reload();
-  };
-
-  const handleLeaveAndDeleteCompany = async (companyId: string) => {
-    toast.loading("Leaving and deleting company...");
-    const response = await fetch("/api/database", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "leaveAndDeleteCompany",
         email: email,
         company: companyId,
       }),
@@ -497,72 +472,6 @@ const CompanyProfile = () => {
               userCompanyId &&
               userApprovalStatus && (
                 <div className="">
-                  {/* LAST LEAVE COMPANY MENU */}
-                  <AnimatePresence>
-                    {lastEmployeeWarning && (
-                      <motion.div
-                        className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{
-                          duration: 0.5,
-                          ease: "backOut",
-                        }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <motion.div
-                          className="bg-slate-900 p-6 rounded-xl border border-slate-800"
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.5,
-                            ease: "backOut",
-                          }}
-                          exit={{ opacity: 0, y: 30 }}
-                        >
-                          <h1>Are you sure?</h1>
-                          <p className="mb-6">
-                            If you leave, this company will be deleted from
-                            Skillbit.
-                          </p>
-                          <motion.button
-                            className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.5,
-                              ease: "backOut",
-                            }}
-                            onClick={() =>
-                              handleLeaveAndDeleteCompany(userCompanyId)
-                            }
-                          >
-                            {!isLoading && <>Yes, leave {userCompanyName} </>}
-                            {isLoading && (
-                              <div className="lds-ring">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                              </div>
-                            )}
-                          </motion.button>
-                          <motion.button
-                            className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.5,
-                              ease: "backOut",
-                            }}
-                            onClick={() => setLastEmployeeWarning(false)}
-                          >
-                            Cancel
-                          </motion.button>
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                   <h1>{userCompanyName}</h1>
                   <p className="mt-2">
                     Join code:{" "}
@@ -651,12 +560,6 @@ const CompanyProfile = () => {
                       </div>
                     </div>
                   </div>
-                  <button
-                    className="bg-slate-900 border border-slate-800 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                    onClick={() => handleLeaveCompanySafety(userCompanyId)}
-                  >
-                    Leave company
-                  </button>
                 </div>
               )}
             {companyDataLoaded &&

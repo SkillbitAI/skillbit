@@ -193,6 +193,47 @@ export async function addUser(
   }
 }
 
+export async function updateUser(
+  oldEmail: string,
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string
+) {
+  try {
+    // Check if a user with the provided email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (existingUser) {
+      return "User already exists";
+    }
+
+    //CUERRENTLY HAVE NOT IMPLEMENTED CHANGE PASSWORD OR CHANGE EMAIL
+
+    // Hash the password
+    // const encryptedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user record using Prisma
+    const updatedUser = await prisma.user.update({
+      where: {
+        email: oldEmail,
+      },
+      data: {
+        firstName: firstName,
+        lastName: lastName,
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error updating data:", error);
+    throw error;
+  }
+}
+
 export async function findQuestions(companyId: string) {
   try {
     const questions = await prisma.question.findMany({

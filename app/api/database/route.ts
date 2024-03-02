@@ -21,6 +21,7 @@ import {
   deleteQuestion,
   updateQuestion,
   addApplicants,
+  updateUser,
 } from "./actions";
 import { send } from "process";
 
@@ -42,6 +43,24 @@ export async function POST(req: Request) {
     }
     return NextResponse.json(
       { message: "Registration successful." },
+      { status: 200 }
+    );
+  } else if (data.action === "updateUser") {
+    const response = await updateUser(
+      data.oldEmail,
+      data.email,
+      data.password,
+      data.firstName,
+      data.lastName
+    );
+    if (response == "User already exists") {
+      return NextResponse.json(
+        { message: "User already exists!" },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { message: "Update successful." },
       { status: 200 }
     );
   } else if (data.action === "addApplicant") {

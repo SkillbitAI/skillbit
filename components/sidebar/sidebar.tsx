@@ -134,7 +134,7 @@ const Sidebar = () => {
                     width={25}
                     height={25}
                   ></Image>
-                  <p>Applicants</p>
+                  <p>Candidate Manager</p>
                 </div>
               </li>
               <li
@@ -156,7 +156,7 @@ const Sidebar = () => {
                     width={25}
                     height={25}
                   ></Image>
-                  <p>Question Workshop</p>
+                  <p>Template Workshop</p>
                 </div>
               </li>
               <li
@@ -185,15 +185,15 @@ const Sidebar = () => {
             <ul className="list-none text-white flex flex-col gap-6 mt-4">
               <li
                 className={
-                  path == "/manageAccount"
+                  path == "/support"
                     ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
                     : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
                 }
-                onClick={() => router.push("/manageAccount")}
+                onClick={() => router.push("/support")}
               >
                 <div
                   className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/manageAccount" ? "1" : "0" }}
+                  style={{ opacity: path == "/support" ? "1" : "0" }}
                 ></div>
                 <div className="flex gap-2">
                   <Image
@@ -207,15 +207,15 @@ const Sidebar = () => {
               </li>
               <li
                 className={
-                  path == "/manageAccount"
+                  path == "/settings"
                     ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
                     : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
                 }
-                onClick={() => router.push("/manageAccount")}
+                onClick={() => router.push("/settings")}
               >
                 <div
                   className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/manageAccount" ? "1" : "0" }}
+                  style={{ opacity: path == "/settings" ? "1" : "0" }}
                 ></div>
                 <div className="flex gap-2">
                   <Image
@@ -235,7 +235,7 @@ const Sidebar = () => {
               >
                 <div
                   className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/manageAccount" ? "1" : "0" }}
+                  style={{ opacity: "0" }}
                 ></div>
                 <div className="flex gap-2">
                   <Image src={LogoutIcon} alt="" width={25} height={25}></Image>

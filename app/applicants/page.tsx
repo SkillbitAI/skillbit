@@ -335,8 +335,9 @@ const Applicants = () => {
           <div className="flex">
             {/* Applicants content */}
             {companyDataLoaded && !userApprovalStatus && (
-              <div className="p-6 flex justify-center items-center flex-col w-full mt-20">
-                <h1>Welcome to the Applicants page!</h1>
+              <div className="p-6 flex justify-center items-center flex-col w-full">
+                <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
+                <h1>Welcome to the Candidate Manager!</h1>
                 <p className="text-slate-400">
                   To get started, please join a company in the Company Profile
                   tab.
@@ -446,7 +447,7 @@ const Applicants = () => {
                             }}
                             exit={{ opacity: 0, y: 30 }}
                           >
-                            <h1>Enter all required fields</h1>
+                            <h1>Add applicant</h1>
                             <motion.label
                               className="text-white mt-5 mb-2"
                               initial={{ opacity: 0, y: 30 }}
@@ -770,7 +771,7 @@ const Applicants = () => {
                       </button>
                       <label
                         htmlFor="fileInput"
-                        className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                        className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3 cursor-pointer"
                       >
                         <p>Import CSV</p>
                       </label>
