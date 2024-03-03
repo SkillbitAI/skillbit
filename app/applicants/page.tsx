@@ -401,21 +401,8 @@ const Applicants = () => {
                     <hr className="border-l border-slate-800 h-5" />
                     <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
                       <p className="text-sm flex gap-2 items-center justify-center">
-                        Clear Selected
+                        Send Selected Tests
                       </p>
-                    </li>
-                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
-                      <p className="text-sm flex gap-2 items-center justify-center">
-                        Clear Failed
-                      </p>
-                    </li>
-                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
-                      <button
-                        onClick={toggleAddApplicantModal}
-                        className="text-sm flex gap-2 items-center justify-center"
-                      >
-                        Add Applicant
-                      </button>
                     </li>
                     <AnimatePresence>
                       {isAddApplicantModalOpen && (
@@ -568,6 +555,14 @@ const Applicants = () => {
                     </AnimatePresence>
                   </div>
                   <div className="flex gap-3 items-center justify-center">
+                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
+                      <button
+                        onClick={toggleAddApplicantModal}
+                        className="text-sm flex gap-2 items-center justify-center"
+                      >
+                        Add Applicant
+                      </button>
+                    </li>
                     <label
                       htmlFor="fileInput"
                       className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative"
@@ -616,11 +611,11 @@ const Applicants = () => {
                           </li>
                           <li className="flex gap-3 items-center justify-center  w-max">
                             <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                            <p className="text-sm">Failed</p>
+                            <p className="text-sm">Unsent</p>
                           </li>
                           <li className="flex gap-3 items-center justify-center  w-max">
                             <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                            <p className="text-sm">Passed</p>
+                            <p className="text-sm">Completed</p>
                           </li>
                           <li className="flex gap-3 items-center justify-center  w-max">
                             <div className="w-2 h-2 rounded-full bg-gray-500"></div>
@@ -744,7 +739,21 @@ const Applicants = () => {
                                       )
                                     }
                                   >
-                                    Send Interview Email
+                                    Send Test
+                                  </button>
+                                </motion.li>
+                                <motion.li
+                                  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
+                                  initial={{ opacity: 0, y: -20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.2,
+                                    delay: 0,
+                                    ease: "backOut",
+                                  }}
+                                >
+                                  <button className="text-sm">
+                                    View Submission Details
                                   </button>
                                 </motion.li>
                               </ul>

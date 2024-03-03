@@ -382,6 +382,9 @@ const Sidebar = () => {
                     No search results.
                   </p>
                 )}
+              {searchTerm.length >= 2 && isLoading && (
+                <p className="text-slate-400 text-center -mt-2">Searching...</p>
+              )}
             </motion.div>
             <div
               className="overflow-y-auto w-full"
