@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import {
   addUser,
-  sendMail,
   findUserByEmail,
   userSignIn,
   getApplicants,
@@ -142,15 +141,6 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({ message: response }, { status: 200 });
-  } else if (data.action === "sendMail") {
-    const response = await sendMail(data.firstName, data.email);
-    if (response == null) {
-      return NextResponse.json(
-        { message: "Error sending mail." },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "findEmployees") {
     const response = await findEmployees(data.company);
     if (response == null) {
@@ -274,7 +264,11 @@ export async function POST(req: Request) {
     const response = await getApplicants(data.company);
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "assignTemplate") {
-    const response = await assignTemplate(data.applicantData, data.template);
+    const response = await assignTemplate(
+      data.applicantData,
+      data.template,
+      data.company
+    );
     if (response == null) {
       return NextResponse.json(
         { message: "Error assigning templates." },

@@ -301,24 +301,6 @@ const Applicants = () => {
     setCurrentPage(newPage);
   };
 
-  const handleSendEmail = async (firstName: string, email: string) => {
-    try {
-      const response = await fetch("/api/database", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "sendMail",
-          firstName: firstName,
-          email: email,
-        }),
-      });
-    } catch (error) {
-      console.error("Error in handle");
-    }
-  };
-
   const findQuestions = async (company: string) => {
     try {
       const response = await fetch("/api/database", {
@@ -354,6 +336,7 @@ const Applicants = () => {
             action: "assignTemplate",
             applicantData: applicantData,
             template: template,
+            company: userCompanyName,
           }),
         });
         const data = await response.json();

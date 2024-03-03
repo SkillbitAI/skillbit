@@ -7,35 +7,8 @@ const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 import "dotenv";
 import App from "next/app";
-
-export async function sendMail(firstName: string, email: string) {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.GMAIL_USERNAME,
-        pass: process.env.GMAIL_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: "Skillbit <skillbitassessment@gmail.com>",
-      to: email,
-      subject: "Skillbit Assessment",
-      text: `Hi ${firstName},
-      Hello world!`,
-    };
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email Sent:", info.response);
-    transporter.close();
-    return "Success";
-  } catch (error) {
-    console.error("Error inserting data:", error);
-    return null;
-  }
-}
+import { render } from "@react-email/render";
+import logo_full_transparent_blue from "/public/assets/branding/logos/logo_full_transparent_blue.png";
 
 export async function addApplicant(
   firstName: string,
@@ -706,7 +679,8 @@ interface ApplicantDataInterface {
 
 export async function assignTemplate(
   applicantData: Array<TestIDInterface>,
-  templateID: string
+  templateID: string,
+  company: string
 ) {
   try {
     const template = await prisma.question.findUnique({
@@ -769,8 +743,55 @@ export async function assignTemplate(
             from: "Skillbit <skillbitassessment@gmail.com>",
             to: applicant.applicant.email,
             subject: "Skillbit Assessment",
-            text: `Hi ${applicant.applicant.firstName},
-            Hello world!`,
+            attachments: [
+              {
+                filename: "logo_full_transparent_blue.png",
+                path: "./public/assets/branding/logos/logo_full_transparent_blue.png",
+                cid: "logo1",
+              },
+            ],
+            html: `
+            <head>
+            <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+            <!-- Include any necessary styles or head elements here -->
+            <style>
+                body {
+                    text-align: center;
+                    background-color: #ffffff;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+                }
+                .content {
+                    max-width: 600px;
+                    margin: 0 auto;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="content" style="margin: 12px auto; font-family: sans-serif;">
+            <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
+                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${applicant.applicant.firstName} !</p>
+                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have been selected by ${company} to participate in a personalized assessment. Click the link below to access your
+                test dashboard.</p>
+                <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation"
+                    style="text-align:center">
+                    <tbody>
+                        <tr>
+                            <td><a href="example.com"
+                                    style="background-color:#008cff;border-radius:7px;color:#fff;font-size:16px;text-decoration:none;text-align:center;display:inline-block;margin:10px 0px 10px 0px;padding:12px 24px 12px 24px;line-height:100%;max-width:100%"
+                                    target="_blank"><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span
+                                    style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get
+                                    started</span><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%" hidden>&nbsp;</i><![endif]--></span></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Best, The Skillbit Team</p>
+                <hr style="width:100%;border:none;border-top:1px solid #eaeaea;border-color:#cccccc;margin:20px 0" />
+                <p style="font-size: 12px; line-height: 24px; margin: 16px 0; color: #8898aa">University of Florida</p>
+            </div>
+        </body>
+        </html>
+            `,
           };
           const info = await transporter.sendMail(mailOptions);
           console.log("Email Sent:", info.response);
