@@ -45,6 +45,7 @@ interface TestIDInterface {
   companyID: string;
   uid: string;
   selected: boolean;
+  created: Date;
 }
 interface ApplicantDataInterface {
   id: string;
@@ -55,12 +56,26 @@ interface ApplicantDataInterface {
   score: string;
 }
 
+interface Question {
+  title: string;
+  language: string;
+  framework: string;
+  type: string;
+  companyID: string;
+  userId: string;
+  id: string;
+}
+
 const Applicants = () => {
   const [email, setEmail] = useState("");
   const [userCompanyName, setUserCompanyName] = useState(null);
   const [userCompanyId, setUserCompanyId] = useState(null);
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
+  const [viewTemplateAssignOptions, setViewTemplateAssignOptions] =
+    useState(false);
+  const [template, setTemplate] = useState("Choose one");
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   const getApplicants = async (companyId: string) => {
     //getting applicants from the database
@@ -76,7 +91,21 @@ const Applicants = () => {
         }),
       });
       const data = await response.json();
-      console.log(data);
+      data.message.map((applicant: TestIDInterface) => {
+        applicant.selected = false;
+      });
+      data.message.sort((a: TestIDInterface, b: TestIDInterface) => {
+        const dateA = new Date(a.created);
+        const dateB = new Date(b.created);
+
+        if (dateA < dateB) {
+          return -1;
+        }
+        if (dateA > dateB) {
+          return 1;
+        }
+        return 0;
+      });
       setApplicantData(data.message);
     } catch (error) {
       console.error(error);
@@ -241,6 +270,20 @@ const Applicants = () => {
   const [applicantData, setApplicantData] = useState<TestIDInterface[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
+  useEffect(() => {
+    let count = 0;
+    applicantData.map((applicant) => {
+      if (applicant.selected) {
+        count++;
+      }
+    });
+    if (count == applicantData.length && applicantData.length != 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [applicantData]);
+
   const handleSelectAll = () => {
     setSelectAll((prevSelectAll) => !prevSelectAll);
     const updatedData = applicantData.map((item) => ({
@@ -273,6 +316,90 @@ const Applicants = () => {
       });
     } catch (error) {
       console.error("Error in handle");
+    }
+  };
+
+  const findQuestions = async (company: string) => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "findQuestions",
+          company: company,
+        }),
+      });
+      const data = await response.json();
+      setQuestions(data.message.reverse());
+      console.log(data);
+    } catch (error) {
+      console.error("Error finding questions: ", error);
+    }
+  };
+
+  const handleAssignTemplate = async () => {
+    if (template == "Choose one") {
+      toast.remove();
+      toast.error("Please choose a template to assign.");
+    } else {
+      try {
+        const response = await fetch("/api/database", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "assignTemplate",
+            applicantData: applicantData,
+            template: template,
+          }),
+        });
+        const data = await response.json();
+        if (data.message == "Success") {
+          toast.remove();
+          toast.success("Successfully set templates and sent tests.");
+          await getApplicants(userCompanyId || "");
+        } else if (data.message == "No candidates selected.") {
+          toast.remove();
+          toast.error(data.message);
+        } else {
+          toast.remove();
+          toast.error("An error occured while setting templates.");
+        }
+      } catch (error) {
+        console.error("Error setting templates: ", error);
+      }
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "deleteApplicants",
+          applicantData: applicantData,
+        }),
+      });
+      const data = await response.json();
+      if (data.message == "Success") {
+        toast.remove();
+        toast.success("Successfully deleted candidates.");
+        await getApplicants(userCompanyId || "");
+      } else if (data.message == "No candidates selected.") {
+        toast.remove();
+        toast.error(data.message);
+      } else {
+        toast.remove();
+        toast.error("An error occured while deleting candidates.");
+      }
+    } catch (error) {
+      console.error("Error finding questions: ", error);
     }
   };
 
@@ -310,6 +437,7 @@ const Applicants = () => {
           setUserCompanyId(userData.message.employee.company.id);
           setUserApprovalStatus(userData.message.employee.isApproved);
           await getApplicants(userData.message.employee.company.id);
+          await findQuestions(userData.message.employee.company.id);
         }
         setCompanyDataLoaded(true);
         toast.remove();
@@ -399,9 +527,72 @@ const Applicants = () => {
                       </div>
                     </li>
                     <hr className="border-l border-slate-800 h-5" />
-                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
+                    <div className="relative">
+                      <li
+                        className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
+                        onClick={() =>
+                          setViewTemplateAssignOptions(
+                            !viewTemplateAssignOptions
+                          )
+                        }
+                      >
+                        <p className="text-sm flex gap-2 items-center justify-center">
+                          Assign Templates
+                        </p>
+                      </li>
+                      {viewTemplateAssignOptions &&
+                        questions &&
+                        questions.length > 0 && (
+                          <motion.div
+                            className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80"
+                            initial={{ opacity: 0, y: -30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            <p>
+                              Choose a template to assign to the selected
+                              candidates.
+                            </p>
+                            <select
+                              id="template"
+                              value={template}
+                              onChange={(e) => setTemplate(e.target.value)}
+                              className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none mt-3"
+                            >
+                              <option value="Choose one">Choose one</option>
+                              {questions.map((question) => (
+                                <option value={question.id} key={question.id}>
+                                  {question.title}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3 w-full"
+                              onClick={handleAssignTemplate}
+                            >
+                              Assign templates and send tests
+                            </button>
+                          </motion.div>
+                        )}
+                      {viewTemplateAssignOptions &&
+                        questions &&
+                        questions.length == 0 && (
+                          <div className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80">
+                            <p>You don't have any question templates.</p>
+                            <button
+                              className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                              onClick={() => router.push("/questionWorkshop")}
+                            >
+                              Visit template workshop
+                            </button>
+                          </div>
+                        )}
+                    </div>
+                    <li
+                      className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
+                      onClick={handleDeleteSelected}
+                    >
                       <p className="text-sm flex gap-2 items-center justify-center">
-                        Send Selected Tests
+                        Delete selected
                       </p>
                     </li>
                     <AnimatePresence>
@@ -653,8 +844,9 @@ const Applicants = () => {
                                 <input
                                   type="checkbox"
                                   checked={item.selected}
-                                  onClick={(e) => {
+                                  onChange={(e) => {
                                     e.stopPropagation();
+                                    setShowOptionsIndex("");
                                     const updatedData = [...applicantData];
                                     updatedData[index].selected =
                                       !updatedData[index].selected;
@@ -679,20 +871,16 @@ const Applicants = () => {
                                     <p className="text-sm">Sent</p>
                                   </div>
                                 )}
-                                {item.applicant.status == "Failed" && (
+                                {item.applicant.status == "Unsent" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                    <p className="text-sm">
-                                      Failed | {item.applicant.score}
-                                    </p>
+                                    <p className="text-sm">Unsent</p>
                                   </div>
                                 )}
                                 {item.applicant.status == "Passed" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                                    <p className="text-sm">
-                                      Passed | {item.applicant.score}
-                                    </p>
+                                    <p className="text-sm">Completed</p>
                                   </div>
                                 )}
                                 {item.applicant.status == "Expired" && (
@@ -719,7 +907,7 @@ const Applicants = () => {
                                 className="flex gap-3 border-t w-full pt-3 border-t-slate-800 hover:cursor-auto"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <motion.li
+                                {/* <motion.li
                                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                                   onClick={() => toast.success("Email sent.")}
                                   initial={{ opacity: 0, y: -20 }}
@@ -741,7 +929,7 @@ const Applicants = () => {
                                   >
                                     Send Test
                                   </button>
-                                </motion.li>
+                                </motion.li> */}
                                 <motion.li
                                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                                   initial={{ opacity: 0, y: -20 }}

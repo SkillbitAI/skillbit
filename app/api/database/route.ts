@@ -22,6 +22,8 @@ import {
   updateQuestion,
   addApplicants,
   updateUser,
+  assignTemplate,
+  deleteApplicants,
 } from "./actions";
 import { send } from "process";
 
@@ -92,7 +94,8 @@ export async function POST(req: Request) {
       data.title,
       data.language,
       data.framework,
-      data.type
+      data.type,
+      data.expiration
     );
     if (
       response == "Title already exists. Please choose a unique question title."
@@ -269,6 +272,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "getApplicants") {
     const response = await getApplicants(data.company);
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "assignTemplate") {
+    const response = await assignTemplate(data.applicantData, data.template);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error assigning templates." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "deleteApplicants") {
+    const response = await deleteApplicants(data.applicantData);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error deleting applicants." },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({ message: response }, { status: 200 });
   } else {
     return NextResponse.json(

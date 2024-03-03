@@ -412,7 +412,7 @@ const Sidebar = () => {
                       >
                         {filteredApplicants.map((applicant) => (
                           <>
-                            <div className="flex justify-between items-center cursor-pointer duration-100 p-3">
+                            <div className="flex justify-between items-center duration-100 p-3">
                               <div className="flex flex-col gap-1 ">
                                 <h2>
                                   {applicant.applicant.firstName}{" "}
@@ -430,13 +430,13 @@ const Sidebar = () => {
                                   </p>
                                 </div>
                               </div>
-                              <Image
+                              {/* <Image
                                 src={Dropdown}
                                 alt="Dropdown menu arrow"
                                 width={15}
                                 height={15}
                                 className="-rotate-90"
-                              ></Image>
+                              ></Image> */}
                             </div>
                             {filteredApplicants.length != 1 && (
                               <hr className="border-t-0 border-b border-b-slate-800 w-full" />
@@ -465,7 +465,7 @@ const Sidebar = () => {
                       >
                         {filteredQuestions.map((question) => (
                           <>
-                            <div className="flex justify-between items-center cursor-pointer duration-100 p-3">
+                            <div className="flex justify-between items-center duration-100 p-3">
                               <div className="flex flex-col gap-1 ">
                                 <h2>{question.title}</h2>
                                 <div className="flex gap-3 flex-wrap">
@@ -482,13 +482,13 @@ const Sidebar = () => {
                                   )}
                                 </div>
                               </div>
-                              <Image
+                              {/* <Image
                                 src={Dropdown}
                                 alt="Dropdown menu arrow"
                                 width={15}
                                 height={15}
                                 className="-rotate-90"
-                              ></Image>
+                              ></Image> */}
                             </div>
                             {filteredQuestions.length != 1 && (
                               <hr className="border-t-0 border-b border-b-slate-800 w-full" />
@@ -518,7 +518,7 @@ const Sidebar = () => {
                       >
                         {filteredEmployees.map((employee) => (
                           <>
-                            <div className="flex justify-between items-center cursor-pointer duration-100 p-3">
+                            <div className="flex justify-between items-center duration-100 p-3">
                               <div className="flex flex-col gap-1 ">
                                 <h2>
                                   {employee.firstName} {employee.lastName}
@@ -529,13 +529,13 @@ const Sidebar = () => {
                                   </p>
                                 </div>
                               </div>
-                              <Image
+                              {/* <Image
                                 src={Dropdown}
                                 alt="Dropdown menu arrow"
                                 width={15}
                                 height={15}
                                 className="-rotate-90"
-                              ></Image>
+                              ></Image> */}
                             </div>
                             {filteredEmployees.length != 1 && (
                               <hr className="border-t-0 border-b border-b-slate-800 w-full" />

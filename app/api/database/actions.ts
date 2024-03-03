@@ -9,27 +9,32 @@ import "dotenv";
 import App from "next/app";
 
 export async function sendMail(firstName: string, email: string) {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.GMAIL_USERNAME,
-      pass: process.env.GMAIL_PASSWORD,
-    },
-  });
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.GMAIL_USERNAME,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
 
-  const mailOptions = {
-    from: "Skillbit <skillbitassessment@gmail.com>",
-    to: email,
-    subject: "Skillbit Assessment",
-    text: `Hi ${firstName},
-    Hello world!`,
-  };
-
-  const info = await transporter.sendMail(mailOptions);
-  console.log("Email Sent:", info.response);
-  transporter.close();
+    const mailOptions = {
+      from: "Skillbit <skillbitassessment@gmail.com>",
+      to: email,
+      subject: "Skillbit Assessment",
+      text: `Hi ${firstName},
+      Hello world!`,
+    };
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email Sent:", info.response);
+    transporter.close();
+    return "Success";
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    return null;
+  }
 }
 
 export async function addApplicant(
@@ -281,12 +286,37 @@ export async function deleteQuestion(id: string) {
   }
 }
 
+export async function deleteApplicants(applicantData: Array<TestIDInterface>) {
+  try {
+    let count = 0;
+    applicantData.map(async (applicant) => {
+      if (applicant.selected) {
+        count++;
+        const applicants = await prisma.testID.delete({
+          where: {
+            uid: applicant.uid,
+          },
+        });
+      }
+    });
+    if (count == 0) {
+      return "No candidates selected.";
+    } else {
+      return "Success";
+    }
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    return null;
+  }
+}
+
 export async function addQuestion(
   email: string,
   title: string,
   language: string,
   framework: string,
-  type: string
+  type: string,
+  expiration: string
 ) {
   try {
     //getting user company
@@ -332,6 +362,7 @@ export async function addQuestion(
                 language: language,
                 framework: framework,
                 type: type,
+                expiration: expiration,
               },
             },
           },
@@ -650,6 +681,125 @@ export async function getApplicants(company: string) {
       },
     });
     return applicants;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+interface TestIDInterface {
+  applicant: ApplicantDataInterface;
+  applicantID: string;
+  companyID: string;
+  uid: string;
+  selected: boolean;
+}
+
+interface ApplicantDataInterface {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  status: string;
+  score: string;
+}
+
+export async function assignTemplate(
+  applicantData: Array<TestIDInterface>,
+  templateID: string
+) {
+  try {
+    const template = await prisma.question.findUnique({
+      where: {
+        id: templateID,
+      },
+    });
+
+    const expiration = new Date();
+
+    switch (template?.expiration) {
+      case "1 day":
+        expiration.setDate(expiration.getDate() + 1);
+        break;
+      case "1 week":
+        expiration.setDate(expiration.getDate() + 7);
+        break;
+      case "2 weeks":
+        expiration.setDate(expiration.getDate() + 14);
+        break;
+      case "1 month":
+        expiration.setMonth(expiration.getMonth() + 1);
+        break;
+      case "2 months":
+        expiration.setMonth(expiration.getMonth() + 2);
+        break;
+      default:
+        return null;
+    }
+
+    let count = 0;
+    applicantData.map(async (applicant) => {
+      if (applicant.selected) {
+        count++;
+        await prisma.testID.update({
+          where: {
+            uid: applicant.uid,
+          },
+          data: {
+            template: {
+              connect: {
+                id: templateID,
+              },
+            },
+            expirationDate: expiration,
+          },
+        });
+        try {
+          const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+              user: process.env.GMAIL_USERNAME,
+              pass: process.env.GMAIL_PASSWORD,
+            },
+          });
+
+          const mailOptions = {
+            from: "Skillbit <skillbitassessment@gmail.com>",
+            to: applicant.applicant.email,
+            subject: "Skillbit Assessment",
+            text: `Hi ${applicant.applicant.firstName},
+            Hello world!`,
+          };
+          const info = await transporter.sendMail(mailOptions);
+          console.log("Email Sent:", info.response);
+          transporter.close();
+
+          await prisma.testID.update({
+            where: {
+              uid: applicant.uid,
+            },
+            data: {
+              applicant: {
+                update: {
+                  status: "Sent",
+                },
+              },
+            },
+          });
+        } catch (error) {
+          console.error("Error sending test:", error);
+          return null;
+        }
+      }
+    });
+
+    if (count == 0) {
+      return "No candidates selected.";
+    } else {
+      return "Success";
+    }
   } catch (error) {
     console.error(error);
     return null;

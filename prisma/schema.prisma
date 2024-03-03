@@ -70,12 +70,15 @@ model VerificationToken {
 }
 //date and time created & completed
 //score should be an attribute of a test id
-//when CSV uploaded, prepopulate applicants but do not automatically send test to applicant
 model testID {
   uid String @id @default(cuid()) @unique
   applicant Applicant?
   companyID String
   company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  templateID String?
+  template Question? @relation(fields: [templateID], references: [id], onDelete: Cascade)
+  expirationDate DateTime?
+  created DateTime @default(now())
 }
 
 model Applicant {
@@ -85,10 +88,11 @@ model Applicant {
   email         String
   testID String @unique
   test           testID    @relation(fields: [testID], references: [uid], onDelete: Cascade)
-  status        String @default("Sent")
+  status        String @default("Unsent")
   score         String?
 }
 
+//THIS IS THE TEMPLATE FOR THE QUESTION
 model Question {
   id String @id @default(cuid()) @unique
   companyID String
@@ -96,9 +100,11 @@ model Question {
   title String
   language String
   framework String?
+  expiration String @default("1 month")
   type String
   userId String
   user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testIDs testID[]
 }
 model Company {
   id String @id @default(cuid()) @unique

@@ -17,6 +17,7 @@ import TopMenuBar from "@/components/topmenubar/topmenubar";
 import Dots from "../../public/assets/icons/dots.svg";
 import Plus from "../../public/assets/icons/plus.svg";
 import { Toaster, toast } from "react-hot-toast";
+import Dropdown from "../../public/assets/icons/dropdown.svg";
 
 //dashboard icons
 import DashboardIcon from "../../public/assets/icons/dashboard.svg";
@@ -36,6 +37,7 @@ interface Question {
   language: string;
   framework: string;
   type: string;
+  expiration: string;
   companyID: string;
   userId: string;
   id: string;
@@ -55,6 +57,8 @@ const QuestionWorkshop = () => {
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [viewAdditionalSettings, setViewAdditionalSettings] = useState(false);
+  const [expiration, setExpiration] = useState("1 month");
 
   const [deleteQuestionWarning, setDeleteQuestionWarning] = useState(false);
 
@@ -166,6 +170,7 @@ const QuestionWorkshop = () => {
             language: language,
             framework: framework,
             type: type,
+            expiration: expiration,
           }),
         });
         const data = await response.json();
@@ -176,6 +181,8 @@ const QuestionWorkshop = () => {
           setLanguage("");
           setFramework("");
           setType("");
+          setExpiration("1 month");
+          setViewAdditionalSettings(false);
           setNewQuestionButton(false);
           await findQuestions(userCompanyId || "");
         } else if (
@@ -446,6 +453,12 @@ const QuestionWorkshop = () => {
                             <p>{currentQuestion.type}</p>
                           </div>
                         </div>
+                        <div className="mt-3 flex gap-2 items-center">
+                          <h2>Expiration: </h2>
+                          <p className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
+                            {currentQuestion.expiration}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex justify-center items-center flex-col gap-6 text-center">
                         <div className="flex justify-center items-center scale-150 mt-6">
@@ -541,7 +554,10 @@ const QuestionWorkshop = () => {
                   >
                     <motion.button
                       className="bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center gap-2"
-                      onClick={() => setNewQuestionButton(false)}
+                      onClick={() => {
+                        setNewQuestionButton(false);
+                        setViewAdditionalSettings(false);
+                      }}
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
@@ -581,7 +597,7 @@ const QuestionWorkshop = () => {
                       <div className="flex flex-col">
                         <h2>Title</h2>
                         <p className="text-slate-400">
-                          Name your template. Applicants will not see this.
+                          Name your template. Candidates will not see this.
                         </p>
                         <input
                           type="text"
@@ -734,6 +750,56 @@ const QuestionWorkshop = () => {
                             Real-world problem
                           </div>
                         </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <div
+                          className="flex justify-between items-center"
+                          onClick={() =>
+                            setViewAdditionalSettings(!viewAdditionalSettings)
+                          }
+                        >
+                          <h2>Additional settings</h2>
+                          <Image
+                            src={Dropdown}
+                            alt="Dropdown"
+                            width={15}
+                            height={15}
+                            className={
+                              viewAdditionalSettings
+                                ? "duration-100"
+                                : "-rotate-90 duration-100"
+                            }
+                          ></Image>
+                        </div>
+                        {viewAdditionalSettings && (
+                          <motion.div
+                            className=""
+                            initial={{ opacity: 0, y: -30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            <div className="flex items-center gap-3 mt-3">
+                              <p className="whitespace-nowrap">
+                                Test expires in:
+                              </p>
+                              <select
+                                id="expiration"
+                                value={expiration}
+                                onChange={(e) => setExpiration(e.target.value)}
+                                className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none"
+                              >
+                                <option value="1 day">1 day</option>
+                                <option value="1 week">1 week</option>
+                                <option value="2 weeks">2 weeks</option>
+                                <option value="1 month">1 month</option>
+                                <option value="2 months">2 months</option>
+                              </select>
+                              <p className="text-slate-400 text-sm">
+                                The test will expire {expiration} from the date
+                                it is sent to the candidate.
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
                       </div>
                       <motion.button
                         className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100"
