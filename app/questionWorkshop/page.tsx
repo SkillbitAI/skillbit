@@ -768,7 +768,7 @@ const QuestionWorkshop = () => {
             </div>
           )}
           {companyDataLoaded && !userApprovalStatus && (
-            <div className="p-6 flex justify-center items-center flex-col w-full">
+            <div className="p-6 flex justify-center items-center flex-col w-full text-center">
               <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
               <h1>Welcome to the Template Workshop!</h1>
               <p className="text-slate-400">

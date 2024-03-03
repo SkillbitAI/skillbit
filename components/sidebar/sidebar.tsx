@@ -398,7 +398,7 @@ const Sidebar = () => {
                     <motion.div className="flex flex-col gap-6 p-3 w-full">
                       <div className="flex gap-1">
                         <p>From:</p>
-                        <h2>Applicants</h2>
+                        <h2>Candidates</h2>
                       </div>
                       <div
                         className="bg-slate-900 rounded-xl flex flex-col border border-slate-800 px-6 py-3 max-h-96 overflow-y-auto"
@@ -472,9 +472,11 @@ const Sidebar = () => {
                                   <p className="p-2 bg-slate-800 border border-slate-700 rounded-xl w-fit text-slate-400">
                                     {question.language}
                                   </p>
-                                  <p className="p-2 bg-slate-800 border border-slate-700 rounded-xl w-fit text-slate-400">
-                                    {question.framework}
-                                  </p>
+                                  {question.framework.length > 0 && (
+                                    <p className="p-2 bg-slate-800 border border-slate-700 rounded-xl w-fit text-slate-400">
+                                      {question.framework}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                               <Image

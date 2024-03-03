@@ -141,33 +141,38 @@ const Settings = () => {
 
   const handleSave = async () => {
     //CUERRENTLY HAVE NOT IMPLEMENTED CHANGE PASSWORD OR CHANGE EMAIL
-    try {
-      const response = await fetch("/api/database", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "updateUser",
-          oldEmail: email,
-          email: "",
-          password: "",
-          firstName: firstName,
-          lastName: lastName,
-        }),
-      });
-      const data = await response.json();
-      if (data.message == "User already exists!") {
-        toast.remove();
-        toast.error(data.message);
+    if (firstName.length > 0 && lastName.length > 0) {
+      try {
+        const response = await fetch("/api/database", {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "updateUser",
+            oldEmail: email,
+            email: "",
+            password: "",
+            firstName: firstName,
+            lastName: lastName,
+          }),
+        });
+        const data = await response.json();
+        if (data.message == "User already exists!") {
+          toast.remove();
+          toast.error(data.message);
+        }
+        if (data.message == "Update successful.") {
+          toast.remove();
+          toast.success("User data saved!");
+        }
+      } catch (error) {
+        console.error(error);
+        throw error;
       }
-      if (data.message == "Update successful.") {
-        toast.remove();
-        toast.success("User data saved!");
-      }
-    } catch (error) {
-      console.error(error);
-      throw error;
+    } else {
+      toast.remove();
+      toast.error("Please enter a name.");
     }
   };
 

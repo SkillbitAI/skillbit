@@ -250,7 +250,7 @@ const Applicants = () => {
     setApplicantData(updatedData);
   };
   const [currentPage, setCurrentPage] = useState(1);
-  const applicantsPerPage = 25;
+  const applicantsPerPage = 50;
   const totalPages = Math.ceil(applicantData.length / applicantsPerPage);
 
   //Function to handle page change
@@ -347,7 +347,7 @@ const Applicants = () => {
               </div>
             )}
             {companyDataLoaded && !userApprovalStatus && (
-              <div className="p-6 flex justify-center items-center flex-col w-full">
+              <div className="p-6 flex justify-center items-center flex-col w-full text-center">
                 <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
                 <h1>Welcome to the Candidate Manager!</h1>
                 <p className="text-slate-400">
@@ -752,7 +752,7 @@ const Applicants = () => {
                           </li>
                         ))}
                     </ul>
-                    <div className="flex justify-center mt-4">
+                    <div className="flex justify-center mt-6 flex-wrap">
                       {Array.from({ length: totalPages }, (_, i) => (
                         <button
                           key={i + 1}

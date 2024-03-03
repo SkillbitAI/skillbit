@@ -301,7 +301,7 @@ const Dashboard = () => {
                 )}
                 {companyDataLoaded && userApprovalStatus && (
                   <div className="mt-6">
-                    <h1>Applicant Analytics</h1>
+                    <h1>Candidate Analytics</h1>
                     <div className="mt-6 flex flex-wrap gap-6">
                       <div className="border border-slate-800 rounded-xl p-6 bg-slate-900 flex items-center justify-center flex-col">
                         <div className="flex justify-center items-center flex-col">
@@ -337,12 +337,18 @@ const Dashboard = () => {
                       <div className="border border-slate-800 rounded-xl p-6 bg-slate-900 flex items-center justify-center flex-col">
                         <div className="flex justify-center items-center flex-col">
                           <h2>Completion Rate:</h2>
-                          <h1 className="text-5xl mt-3">
-                            {((completed / applicantData.length) * 100).toFixed(
-                              1
-                            )}
-                            %
-                          </h1>
+                          {applicantData.length > 0 && (
+                            <h1 className="text-5xl mt-3">
+                              {(
+                                (completed / applicantData.length) *
+                                100
+                              ).toFixed(1)}
+                              %
+                            </h1>
+                          )}
+                          {applicantData.length == 0 && (
+                            <h1 className="text-5xl mt-3">N/A</h1>
+                          )}
                         </div>
                       </div>
                       {/* <div className="border border-slate-800 rounded-xl p-6 bg-slate-900 flex items-center justify-center flex-col">

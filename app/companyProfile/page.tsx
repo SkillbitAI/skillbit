@@ -568,7 +568,8 @@ const CompanyProfile = () => {
               userCompanyJoinCode &&
               userCompanyId &&
               !userApprovalStatus && (
-                <div className="">
+                <div className="flex justify-center items-center flex-col text-center">
+                  <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
                   <h1>Your request is under review.</h1>
                   <p>
                     Your recruiter request is currently under review by{" "}
