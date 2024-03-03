@@ -335,6 +335,17 @@ const Applicants = () => {
           {/* <TopMenuBar></TopMenuBar> */}
           <div className="flex">
             {/* Applicants content */}
+
+            {!companyDataLoaded && (
+              <div className="flex justify-center items-center scale-150 mt-6 w-full">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            )}
             {companyDataLoaded && !userApprovalStatus && (
               <div className="p-6 flex justify-center items-center flex-col w-full">
                 <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
@@ -409,7 +420,7 @@ const Applicants = () => {
                     <AnimatePresence>
                       {isAddApplicantModalOpen && (
                         <motion.div
-                          className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+                          className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{

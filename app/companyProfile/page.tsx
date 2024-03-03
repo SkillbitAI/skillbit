@@ -305,7 +305,7 @@ const CompanyProfile = () => {
           {/* Dashboard content */}
           <div className="p-6 relative">
             {!companyDataLoaded && (
-              <div className="flex justify-center items-center scale-150 mt-6">
+              <div className="flex justify-center items-center scale-150">
                 <div className="lds-ring">
                   <div></div>
                   <div></div>
@@ -320,7 +320,7 @@ const CompanyProfile = () => {
                 <AnimatePresence>
                   {newCompanyButton && (
                     <motion.div
-                      className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+                      className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{
