@@ -76,6 +76,8 @@ const Applicants = () => {
     useState(false);
   const [template, setTemplate] = useState("Choose one");
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [assignTemplatesWarning, setAssignTemplatesWarning] = useState(false);
+  const [deleteCandidatesWarning, setDeleteCandidatesWarning] = useState(false);
 
   const getApplicants = async (companyId: string) => {
     //getting applicants from the database
@@ -321,44 +323,58 @@ const Applicants = () => {
     }
   };
 
-  const handleAssignTemplate = async () => {
+  const assignTemplateSafety = async () => {
     if (template == "Choose one") {
       toast.remove();
       toast.error("Please choose a template to assign.");
     } else {
-      try {
-        const response = await fetch("/api/database", {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "assignTemplate",
-            applicantData: applicantData,
-            template: template,
-            company: userCompanyName,
-          }),
+      setAssignTemplatesWarning(true);
+    }
+  };
+
+  const handleAssignTemplate = async () => {
+    try {
+      toast.loading("Loading...");
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "assignTemplate",
+          applicantData: applicantData,
+          template: template,
+          company: userCompanyName,
+        }),
+      });
+      const data = await response.json();
+      if (data.message == "Success") {
+        toast.remove();
+        toast("Refresh to view changes.", {
+          icon: "ⓘ",
         });
-        const data = await response.json();
-        if (data.message == "Success") {
-          toast.remove();
-          toast.success("Successfully set templates and sent tests.");
-          await getApplicants(userCompanyId || "");
-        } else if (data.message == "No candidates selected.") {
-          toast.remove();
-          toast.error(data.message);
-        } else {
-          toast.remove();
-          toast.error("An error occured while setting templates.");
-        }
-      } catch (error) {
-        console.error("Error setting templates: ", error);
+        toast.success("Successfully set templates and sent tests.");
+        await getApplicants(userCompanyId || "");
+        setAssignTemplatesWarning(false);
+        setViewTemplateAssignOptions(false);
+      } else if (data.message == "No candidates selected.") {
+        toast.remove();
+        toast.error(data.message);
+        setAssignTemplatesWarning(false);
+      } else {
+        toast.remove();
+        toast.error("An error occured while setting templates.");
+        setAssignTemplatesWarning(false);
       }
+    } catch (error) {
+      console.error("Error setting templates: ", error);
+      setAssignTemplatesWarning(false);
     }
   };
 
   const handleDeleteSelected = async () => {
     try {
+      toast.loading("Loading...");
       const response = await fetch("/api/database", {
         method: "POST",
         headers: {
@@ -374,15 +390,20 @@ const Applicants = () => {
         toast.remove();
         toast.success("Successfully deleted candidates.");
         await getApplicants(userCompanyId || "");
+        setDeleteCandidatesWarning(false);
+        setViewTemplateAssignOptions(false);
       } else if (data.message == "No candidates selected.") {
         toast.remove();
         toast.error(data.message);
+        setDeleteCandidatesWarning(false);
       } else {
         toast.remove();
         toast.error("An error occured while deleting candidates.");
+        setDeleteCandidatesWarning(false);
       }
     } catch (error) {
       console.error("Error finding questions: ", error);
+      setDeleteCandidatesWarning(false);
     }
   };
 
@@ -550,12 +571,69 @@ const Applicants = () => {
                             </select>
                             <button
                               className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3 w-full"
-                              onClick={handleAssignTemplate}
+                              onClick={assignTemplateSafety}
                             >
                               Assign templates and send tests
                             </button>
                           </motion.div>
                         )}
+                      {/* ASSIGN AND SEND TEMPLATES WARNING */}
+                      <AnimatePresence>
+                        {assignTemplatesWarning && (
+                          <motion.div
+                            className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                              duration: 0.5,
+                              ease: "backOut",
+                            }}
+                            exit={{ opacity: 0 }}
+                          >
+                            <motion.div
+                              className="bg-slate-900 p-6 rounded-xl border border-slate-800"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.5,
+                                ease: "backOut",
+                              }}
+                              exit={{ opacity: 0, y: 30 }}
+                            >
+                              <h1>Are you sure?</h1>
+                              <p className="mb-6">
+                                By completing this action, you will assign
+                                templates and send test invitations to all
+                                selected candidates.
+                              </p>
+                              <motion.button
+                                className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={handleAssignTemplate}
+                              >
+                                Yes, assign templates and send tests.
+                              </motion.button>
+                              <motion.button
+                                className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={() => setAssignTemplatesWarning(false)}
+                              >
+                                Cancel
+                              </motion.button>
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                       {viewTemplateAssignOptions &&
                         questions &&
                         questions.length == 0 && (
@@ -570,14 +648,74 @@ const Applicants = () => {
                           </div>
                         )}
                     </div>
-                    <li
-                      className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
-                      onClick={handleDeleteSelected}
-                    >
-                      <p className="text-sm flex gap-2 items-center justify-center">
-                        Delete selected
-                      </p>
-                    </li>
+                    <div className="">
+                      <li
+                        className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
+                        onClick={() => setDeleteCandidatesWarning(true)}
+                      >
+                        <p className="text-sm flex gap-2 items-center justify-center">
+                          Delete selected
+                        </p>
+                      </li>
+                      <AnimatePresence>
+                        {deleteCandidatesWarning && (
+                          <motion.div
+                            className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                              duration: 0.5,
+                              ease: "backOut",
+                            }}
+                            exit={{ opacity: 0 }}
+                          >
+                            <motion.div
+                              className="bg-slate-900 p-6 rounded-xl border border-slate-800"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.5,
+                                ease: "backOut",
+                              }}
+                              exit={{ opacity: 0, y: 30 }}
+                            >
+                              <h1>Are you sure?</h1>
+                              <p className="mb-6">
+                                You are about to delete all selected candidates.
+                                This action is permanent.
+                              </p>
+                              <motion.button
+                                className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={handleDeleteSelected}
+                              >
+                                Yes, delete all selected candidates.
+                              </motion.button>
+                              <motion.button
+                                className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={() =>
+                                  setDeleteCandidatesWarning(false)
+                                }
+                              >
+                                Cancel
+                              </motion.button>
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
                     <AnimatePresence>
                       {isAddApplicantModalOpen && (
                         <motion.div
