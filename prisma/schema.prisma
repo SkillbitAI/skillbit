@@ -38,7 +38,7 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(cuid()) @unique
   firstName     String
   lastName      String
   password      String
@@ -47,8 +47,18 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  employee Employee?
+  questions Question[]
+}
+
+//Pivot table to connect user and company
+model Employee {
+  id Int @id @default(autoincrement())
+  userId String @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isApproved Boolean @default(false)
   companyID String
-  company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyID], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -60,28 +70,47 @@ model VerificationToken {
 }
 //date and time created & completed
 //score should be an attribute of a test id
-//when CSV uploaded, prepopulate applicants but do not automatically send test to applicant
 model testID {
-  uid String @id
-  applicantID String
-  applicant         Applicant     @relation(fields: [applicantID], references: [id], onDelete: Cascade)
+  uid String @id @default(cuid()) @unique
+  applicant Applicant?
   companyID String
   company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  templateID String?
+  template Question? @relation(fields: [templateID], references: [id], onDelete: Cascade)
+  expirationDate DateTime?
+  created DateTime @default(now())
 }
 
 model Applicant {
-  id String @id @default(cuid())
+  id String @id @default(cuid()) @unique
   firstName     String
   lastName      String
-  email         String    @unique
-  testIDs       testID[]
-  status        String
-  score         String
+  email         String
+  testID String @unique
+  test           testID    @relation(fields: [testID], references: [uid], onDelete: Cascade)
+  status        String @default("Unsent")
+  score         String?
 }
 
+//THIS IS THE TEMPLATE FOR THE QUESTION
+model Question {
+  id String @id @default(cuid()) @unique
+  companyID String
+  company Company @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  title String
+  language String
+  framework String?
+  expiration String @default("1 month")
+  type String
+  userId String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testIDs testID[]
+}
 model Company {
-  id String @id @default(cuid())
+  id String @id @default(cuid()) @unique
   name String
   testIDs testID[]
-  employees User[]
+  employees Employee[]
+  questions Question[]
+  join_code String @unique
 }

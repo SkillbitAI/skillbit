@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "testID" ALTER COLUMN "templateID" DROP NOT NULL,
+ALTER COLUMN "expirationDate" DROP NOT NULL;

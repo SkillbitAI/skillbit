@@ -335,7 +335,7 @@ export default function Home() {
                   <p>Company Profile</p>
                 </li>
                 <li>
-                  <p>Question Workshop</p>
+                  <p>Template Workshop</p>
                 </li>
               </ul>
             </div>

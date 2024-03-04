@@ -34,14 +34,14 @@ const TopMenuBar = () => {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    const fetch = async () => {
+    const getData = async () => {
       if (session) {
         // console.log("Hello world!");
         //other than print hello world, set user data here
       }
     };
     if (status === "authenticated") {
-      fetch();
+      getData();
     }
   }, [session, status]);
   if (status === "loading") {
@@ -53,11 +53,11 @@ const TopMenuBar = () => {
   }
 
   return (
-    <div className="bg-slate-900 border-b border-slate-800 flex justify-between p-3 relative z-30">
+    <div className="bg-slate-900 border-b border-slate-800 flex justify-between p-3 relative ">
       <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-800">
         <input
           className="text-white bg-transparent focus:outline-none w-full placeholder:text-white text-ellipsis"
-          placeholder="Search Anything..."
+          placeholder="Search..."
         ></input>
         <Image src={SearchIcon} alt="" width={25} height={25}></Image>
       </div>

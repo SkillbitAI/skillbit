@@ -10,6 +10,10 @@
   font-family: h1;
   src: url(../public/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf);
 }
+@font-face {
+  font-family: h2;
+  src: url(../public/assets/fonts/Space_Grotesk/static/SpaceGrotesk-Bold.ttf);
+}
 body {
   font-family: p;
   color: #fff;
@@ -26,6 +30,19 @@ p {
 h1 {
   font-family: h1;
   font-size: 24px;
+}
+
+h2 {
+  font-family: h2;
+  font-size: 16px;
+}
+
+button {
+  font-family: p;
+}
+
+div {
+  font-family: p;
 }
 
 button .arrow {
