@@ -78,6 +78,7 @@ const Applicants = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [assignTemplatesWarning, setAssignTemplatesWarning] = useState(false);
   const [deleteCandidatesWarning, setDeleteCandidatesWarning] = useState(false);
+  const [numSelected, setNumSelected] = useState(0);
 
   const getApplicants = async (companyId: string) => {
     //getting applicants from the database
@@ -160,6 +161,7 @@ const Applicants = () => {
   const toggleAddApplicantModal = () => {
     setIsAddApplicantModalOpen((prev) => !prev);
   };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
@@ -224,6 +226,7 @@ const Applicants = () => {
       toggleAddApplicantModal();
     } catch (error) {
       // Show error toast for network or unexpected errors
+      toast.remove();
       toast.error("Error adding applicant");
       // Handle other errors if needed
     }
@@ -284,6 +287,7 @@ const Applicants = () => {
     } else {
       setSelectAll(false);
     }
+    setNumSelected(count);
   }, [applicantData]);
 
   const handleSelectAll = () => {
@@ -350,9 +354,6 @@ const Applicants = () => {
       const data = await response.json();
       if (data.message == "Success") {
         toast.remove();
-        toast("Refresh to view changes.", {
-          icon: "ⓘ",
-        });
         toast.success("Successfully set templates and sent tests.");
         await getApplicants(userCompanyId || "");
         setAssignTemplatesWarning(false);
@@ -392,6 +393,7 @@ const Applicants = () => {
         await getApplicants(userCompanyId || "");
         setDeleteCandidatesWarning(false);
         setViewTemplateAssignOptions(false);
+        // await getApplicants(userCompanyId || "");
       } else if (data.message == "No candidates selected.") {
         toast.remove();
         toast.error(data.message);
@@ -541,7 +543,7 @@ const Applicants = () => {
                         }
                       >
                         <p className="text-sm flex gap-2 items-center justify-center">
-                          Assign Templates
+                          Assign Templates and Send Tests
                         </p>
                       </li>
                       {viewTemplateAssignOptions &&
@@ -603,8 +605,10 @@ const Applicants = () => {
                               <h1>Are you sure?</h1>
                               <p className="mb-6">
                                 By completing this action, you will assign
-                                templates and send test invitations to all
-                                selected candidates.
+                                templates and send test invitations to{" "}
+                                <b className="font-[h2]">{numSelected}</b>{" "}
+                                selected{" "}
+                                {numSelected == 1 ? "candidate" : "candidates"}.
                               </p>
                               <motion.button
                                 className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
@@ -681,8 +685,11 @@ const Applicants = () => {
                             >
                               <h1>Are you sure?</h1>
                               <p className="mb-6">
-                                You are about to delete all selected candidates.
-                                This action is permanent.
+                                You are about to delete{" "}
+                                <b className="font-[h2]">{numSelected}</b>{" "}
+                                selected{" "}
+                                {numSelected == 1 ? "candidate" : "candidates"}.
+                                This action cannot be undone.
                               </p>
                               <motion.button
                                 className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
@@ -847,7 +854,7 @@ const Applicants = () => {
                                 ease: "backOut",
                               }}
                             >
-                              Submit{" "}
+                              Submit
                               <div className=" arrow flex items-center justify-center">
                                 <div className="arrowMiddle"></div>
                                 <div>

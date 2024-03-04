@@ -349,7 +349,7 @@ const Sidebar = () => {
               >
                 <input
                   className="text-white text-2xl bg-transparent focus:outline-none w-full placeholder:text-white text-ellipsis"
-                  placeholder="Search applicants, templates, or employees..."
+                  placeholder="Search candidates, templates, or employees..."
                   autoFocus
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
