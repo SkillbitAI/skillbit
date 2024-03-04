@@ -23,6 +23,7 @@ import {
   updateUser,
   assignTemplate,
   deleteApplicants,
+  contactForm,
 } from "./actions";
 import { send } from "process";
 
@@ -281,6 +282,20 @@ export async function POST(req: Request) {
     if (response == null) {
       return NextResponse.json(
         { message: "Error deleting applicants." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "contactForm") {
+    const response = await contactForm(
+      data.firstName,
+      data.lastName,
+      data.email,
+      data.message
+    );
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error submitting contact form." },
         { status: 400 }
       );
     }

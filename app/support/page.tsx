@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState, useRef } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { handleClientScriptLoad } from "next/script";
+import Nav from "@/components/nav/nav";
+import Footer from "@/components/footer/footer";
 
 export default function Contact() {
   const [firstName, setFirstName] = useState("");
@@ -18,50 +20,55 @@ export default function Contact() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    try {
-      const response = await fetch("/api/database", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          action: "contactForm",
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          message: message,
-        }),
-      });
-      if (response.ok) {
-        toast.success("Ticket submitted successfully!");
-      } else {
+    if (
+      firstName.length == 0 ||
+      lastName.length == 0 ||
+      email.length == 0 ||
+      message.length == 0
+    ) {
+      toast.remove();
+      toast.error("Please fill out all fields.");
+    } else {
+      toast.loading("Loading...");
+      try {
+        const response = await fetch("/api/database", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "contactForm",
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            message: message,
+          }),
+        });
+        const data = await response.json();
+        if (data.message == "Success") {
+          toast.remove();
+          toast.success("Ticket submitted successfully!");
+        } else {
+          toast.remove();
+          toast.error("An error occurred while submitting the ticket.");
+        }
+      } catch (error) {
+        console.error("Error submitting contact form: ", error);
+        toast.remove();
         toast.error("An error occurred while submitting the ticket.");
       }
-    } catch (error) {
-      console.error("Error submitting contact form: ", error);
-      toast.error("An error occurred while submitting the ticket.");
     }
   };
 
   return (
     <>
       <Toaster position="top-right"></Toaster>
-      <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen flex items-center justify-center overflow-x-hidden">
-        <div className="flex-1 p-6">
-          <div className="flex gap-2 items-center justify-center absolute top-6 left-6">
-            <Image
-              src={Logo}
-              alt=""
-              width={100}
-              height={100}
-              style={{ margin: "-30px" }}
-            ></Image>
-            <h1 className="">Skillbit</h1>
-          </div>
+      <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen flex items-center flex-col justify-center overflow-x-hidden">
+        <Nav></Nav>
+        <div className="flex-1 px-6 py-40">
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col gap-2 max-w-sm m-auto"
+            className="flex flex-col gap-2 max-w-lg m-auto"
           >
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
@@ -149,6 +156,7 @@ export default function Contact() {
               transition={{ duration: 0.5, delay: 0.9, ease: "backOut" }}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              maxLength={250}
             />
             <motion.button
               className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
@@ -172,6 +180,7 @@ export default function Contact() {
             </motion.button>
           </form>
         </div>
+        <Footer background="transparent"></Footer>
       </div>
     </>
   );
