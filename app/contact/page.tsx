@@ -10,35 +10,39 @@ import { FormEvent, useEffect, useState, useRef } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { handleClientScriptLoad } from "next/script";
 
-export default function Contact () {
-  
-  async function handleSubmit(e: any) {
+export default function Contact() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const data = {
-      firstName: String(e.target.firstName.value),
-      lastName: String(e.target.lastName.value),
-      email: String(e.target.email.value),
-      message: String(e.target.message.value)
-    }
-
-    console.log(data);
-
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(data),
-    })
-
-    if (response.ok) {
-      toast.success("Ticket submitted successfully!");
-    }
-    else {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "contactForm",
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          message: message,
+        }),
+      });
+      if (response.ok) {
+        toast.success("Ticket submitted successfully!");
+      } else {
+        toast.error("An error occurred while submitting the ticket.");
+      }
+    } catch (error) {
+      console.error("Error submitting contact form: ", error);
       toast.error("An error occurred while submitting the ticket.");
     }
-  }
+  };
 
   return (
     <>
@@ -55,95 +59,103 @@ export default function Contact () {
             ></Image>
             <h1 className="">Skillbit</h1>
           </div>
-            <form 
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-2 max-w-sm m-auto"
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-2 max-w-sm m-auto"
+          >
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0, ease: "backOut" }}
             >
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0, ease: "backOut" }}
-              >
-                Have any questions?
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1, ease: "backOut" }}
-                className="text-gray-500 mb-10"
-              >
-                Submit a ticket and we will get back to you as soon as possible.
-              </motion.p>
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
-              >
-                First Name
-              </motion.p>
-              <motion.input
-                type="text"
-                id="firstName"
-                placeholder="Daniel"
-                className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3, ease: "backOut" }}
-              />
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4, ease: "backOut" }}
-              >
-                Last Name
-              </motion.p>
-              <motion.input
-                type="text"
-                id="lastName"
-                placeholder="Lai"
-                className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5, ease: "backOut" }}
-              />
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6, ease: "backOut" }}
-              >
-                Email
-              </motion.p>
-              <motion.input
-                type="email"
-                id="email"
-                placeholder="mail@example.com"
-                className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.7, ease: "backOut" }}
-              />
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.8, ease: "backOut" }}
-              >
-                Message
-              </motion.p>
+              Have any questions?
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1, ease: "backOut" }}
+              className="text-slate-400 mb-10"
+            >
+              Submit a ticket, and we will get back to you as soon as possible.
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
+            >
+              First Name
+            </motion.p>
+            <motion.input
+              type="text"
+              id="firstName"
+              placeholder="Daniel"
+              className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3, ease: "backOut" }}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4, ease: "backOut" }}
+            >
+              Last Name
+            </motion.p>
+            <motion.input
+              type="text"
+              id="lastName"
+              placeholder="Lai"
+              className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5, ease: "backOut" }}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6, ease: "backOut" }}
+            >
+              Email
+            </motion.p>
+            <motion.input
+              type="email"
+              id="email"
+              placeholder="mail@example.com"
+              className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7, ease: "backOut" }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8, ease: "backOut" }}
+            >
+              Message
+            </motion.p>
 
-              <motion.textarea
-                placeholder="Maximum 250 characters"
-                id="message"
-                className="p-2 h-48 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none no-resize"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.9, ease: "backOut" }}
-              />
-              <motion.button
-                className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 1.0, ease: "backOut" }}
-              >
+            <motion.textarea
+              placeholder="Maximum 250 characters"
+              id="message"
+              className="p-2 h-48 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none no-resize"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.9, ease: "backOut" }}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+            <motion.button
+              className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.0, ease: "backOut" }}
+            >
               Submit Form
               <div className=" arrow flex items-center justify-center">
                 <div className="arrowMiddle"></div>
@@ -157,10 +169,10 @@ export default function Contact () {
                   ></Image>
                 </div>
               </div>
-              </motion.button>
-              </form>
-        </div> 
+            </motion.button>
+          </form>
+        </div>
       </div>
     </>
-  )
+  );
 }

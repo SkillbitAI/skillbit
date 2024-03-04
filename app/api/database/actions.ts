@@ -126,3 +126,16 @@ export async function getApplicants() {
     return error;
   }
 }
+
+export async function contactForm(
+  firstName: string,
+  lastName: string,
+  email: string,
+  message: string
+) {
+  try {
+  } catch (error) {
+    console.error(Error);
+    return null;
+  }
+}
