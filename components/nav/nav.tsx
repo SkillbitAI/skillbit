@@ -69,7 +69,7 @@ const Nav = () => {
           </li>
           <li
             className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-            onClick={() => scrolltoHash("footer")}
+            onClick={() => router.push("/support")}
           >
             Contact
           </li>
