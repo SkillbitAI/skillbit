@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "@/components/loader/loader";
 
@@ -47,6 +47,7 @@ const CompanyProfile = () => {
 
   const [accountMenuVisible, setAccountMenuVisible] = useState(false);
   const [userCompanyName, setUserCompanyName] = useState(null);
+  const [userCompanyJoinCode, setUserCompanyJoinCode] = useState(null);
   const [userCompanyId, setUserCompanyId] = useState(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [joinCompany, setJoinCompany] = useState("");
@@ -58,7 +59,6 @@ const CompanyProfile = () => {
   const [recruiterRequests, setRecruiterRequests] = useState<Employee[]>([]);
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [lastEmployeeWarning, setLastEmployeeWarning] = useState(false);
 
   const findCompanies = async () => {
     const response = await fetch("/api/database", {
@@ -86,7 +86,6 @@ const CompanyProfile = () => {
       toast.error('Please fill in the "Company Name" field.');
       setIsLoading(false);
     } else {
-      console.log(newCompanyName);
       const response = await fetch("/api/database", {
         method: "POST",
         headers: {
@@ -180,14 +179,12 @@ const CompanyProfile = () => {
         company: companyId,
       }),
     });
-    location.reload();
-  };
-
-  const handleLeaveCompanySafety = async (companyId: string) => {
-    if (employees.length == 1) {
-      setLastEmployeeWarning(true);
+    const data = await response.json();
+    if (data.message == "Success") {
+      location.reload();
     } else {
-      handleLeaveCompany(companyId);
+      toast.remove();
+      toast.error("Invalid join code.");
     }
   };
 
@@ -207,20 +204,40 @@ const CompanyProfile = () => {
     location.reload();
   };
 
-  const handleLeaveAndDeleteCompany = async (companyId: string) => {
-    toast.loading("Leaving and deleting company...");
-    const response = await fetch("/api/database", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "leaveAndDeleteCompany",
-        email: email,
-        company: companyId,
-      }),
-    });
-    location.reload();
+  const inputs = useRef<Array<HTMLInputElement | null>>([]);
+
+  const handleInput = (
+    index: number,
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    const input = event.currentTarget;
+    const maxLength = parseInt(input.getAttribute("maxlength") || "0");
+
+    if (input.value.length >= maxLength) {
+      if (inputs.current[index + 1]) {
+        inputs.current[index + 1]?.focus();
+      }
+    }
+
+    // Check if all six inputs have values
+    const allInputsFilled = inputs.current.every((input) => input?.value);
+
+    if (allInputsFilled) {
+      const joinCode = inputs.current.map((input) => input?.value).join("");
+      handleJoinCompany(joinCode);
+    }
+  };
+
+  const handleKeyDown = (
+    index: number,
+    event: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (event.key === "Backspace" && index > 0) {
+      const input = event.currentTarget;
+      if (input.value.length === 0 && inputs.current[index - 1]) {
+        inputs.current[index - 1]?.focus();
+      }
+    }
   };
 
   const { data: session, status } = useSession();
@@ -228,6 +245,7 @@ const CompanyProfile = () => {
   useEffect(() => {
     const getData = async () => {
       if (session) {
+        toast.remove();
         toast.loading("Looking for company...");
         // console.log("Hello world!");
         //other than print hello world, set user data here
@@ -243,16 +261,15 @@ const CompanyProfile = () => {
           }),
         });
         const userData = await userResponse.json();
-
-        console.log(userData);
-
         if (
           userData.message.employee &&
           userData.message.employee.company.name &&
+          userData.message.employee.company.join_code &&
           userData.message.employee.company.id &&
           userData.message.employee.isApproved != null
         ) {
           setUserCompanyName(userData.message.employee.company.name);
+          setUserCompanyJoinCode(userData.message.employee.company.join_code);
           setUserCompanyId(userData.message.employee.company.id);
           setUserApprovalStatus(userData.message.employee.isApproved);
           await findRecruiterRequests(userData.message.employee.company.id);
@@ -280,11 +297,11 @@ const CompanyProfile = () => {
       <div className="max-w-screen text-white flex overflow-x-hidden">
         <Sidebar></Sidebar>
         <div className="bg-slate-950 flex-1">
-          <TopMenuBar></TopMenuBar>
+          {/* <TopMenuBar></TopMenuBar> */}
           {/* Dashboard content */}
           <div className="p-6 relative">
             {!companyDataLoaded && (
-              <div className="flex justify-center items-center scale-150 mt-6">
+              <div className="flex justify-center items-center scale-150">
                 <div className="lds-ring">
                   <div></div>
                   <div></div>
@@ -294,12 +311,12 @@ const CompanyProfile = () => {
               </div>
             )}
             {companyDataLoaded && (!userCompanyName || !userCompanyId) && (
-              <div className="bg-slate-900 m-auto rounded-xl p-6 flex justify-center items-center flex-col border border-slate-800">
+              <div className="m-auto flex justify-center items-center flex-col">
                 {/* NEW COMPANY MENU */}
                 <AnimatePresence>
                   {newCompanyButton && (
                     <motion.div
-                      className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+                      className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{
@@ -404,10 +421,36 @@ const CompanyProfile = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <div className="justify-between flex items-center w-full">
-                  <h1>Join your company on Skillbit!</h1>
+                <div className="flex justify-center items-center w-full flex-col">
+                  <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 pb-20">
+                    <h1>Join your company on Skillbit!</h1>
+                  </div>
+                  <div className="mt-20 p-6 flex flex-col justify-center items-center text-center w-full">
+                    <h1>Have a join code?</h1>
+                    <p>Enter your join code here.</p>
+                    <div className="mt-6 flex gap-3">
+                      {Array.from({ length: 6 }, (_, index) => (
+                        <input
+                          ref={(el) => (inputs.current[index] = el)}
+                          key={index}
+                          type="text"
+                          name={`code-${index}`}
+                          id={`code-${index}`}
+                          className="bg-slate-900 border border-slate-800 rounded-xl p-3 outline-none flex-1 w-16 text-2xl flex justify-center items-center text-center"
+                          maxLength={1}
+                          onInput={(e) => handleInput(index, e)}
+                          onKeyDown={(e) => handleKeyDown(index, e)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-3 justify-center items-center">
+                    <hr className="w-10 h-0 border-b-0 border-slate-700" />
+                    <p className="text-slate-700">or</p>
+                    <hr className="w-10 h-0 border-b-0 border-slate-700" />
+                  </div>
                   <button
-                    className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2"
+                    className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-6"
                     onClick={() => setNewCompanyButton(true)}
                   >
                     New company
@@ -418,233 +461,111 @@ const CompanyProfile = () => {
                     </div>
                   </button>
                 </div>
-                <div className="flex-1 bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-white border-opacity-10 mb-3 w-full mt-6">
-                  <input
-                    className="text-white bg-transparent focus:outline-none w-full placeholder:text-white"
-                    placeholder="Search Companies..."
-                  ></input>
-                  <Image src={SearchIcon} alt="" width={25} height={25}></Image>
-                </div>
-                <div className="grid grid-cols-3 gap-3 w-full mt-3">
-                  {companies &&
-                    companies.map((company) => (
-                      <div
-                        className={
-                          joinCompany === company.id
-                            ? "bg-indigo-600 border-opacity-10 rounded-xl border border-indigo-600"
-                            : "bg-indigo-600 border-opacity-10 rounded-xl h-fit"
-                        }
-                      >
-                        <div
-                          className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex items-center justify-center hover:bg-slate-700 cursor-pointer"
-                          key={company.id}
-                          onClick={() => {
-                            if (joinCompany == company.id) {
-                              setJoinCompany("");
-                            } else {
-                              setJoinCompany(company.id);
-                            }
-                          }}
-                        >
-                          <p>{company.name}</p>
-                        </div>
-                        <AnimatePresence>
-                          {joinCompany === company.id && (
-                            <motion.div
-                              className="mt-3 p-3"
-                              initial={{ opacity: 0, y: -20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{
-                                duration: 0.2,
-                                ease: "backOut",
-                              }}
-                            >
-                              <h1>Join {company.name}?</h1>
-                              <p>
-                                We will send your request to the company for
-                                verification.
-                              </p>
-                              <button
-                                className="bg-white bg-opacity-10 border border-white border-opacity-20 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                                onClick={() => handleJoinCompany(company.id)}
-                              >
-                                Yes, join {company.name}
-                              </button>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ))}
-                </div>
-                {companies.length == 0 && (
-                  <p>
-                    No companies exist yet! Add your company to Skillbit today
-                    using the "New company" button.
-                  </p>
-                )}
               </div>
             )}
             {companyDataLoaded &&
               userCompanyName &&
+              userCompanyJoinCode &&
               userCompanyId &&
               userApprovalStatus && (
                 <div className="">
-                  {/* LAST LEAVE COMPANY MENU */}
-                  <AnimatePresence>
-                    {lastEmployeeWarning && (
-                      <motion.div
-                        className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{
-                          duration: 0.5,
-                          ease: "backOut",
-                        }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <motion.div
-                          className="bg-slate-900 p-6 rounded-xl border border-slate-800"
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.5,
-                            ease: "backOut",
-                          }}
-                          exit={{ opacity: 0, y: 30 }}
-                        >
-                          <h1>Are you sure?</h1>
-                          <p className="mb-6">
-                            If you leave, this company will be deleted from
-                            Skillbit.
-                          </p>
-                          <motion.button
-                            className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.5,
-                              ease: "backOut",
-                            }}
-                            onClick={() =>
-                              handleLeaveAndDeleteCompany(userCompanyId)
-                            }
-                          >
-                            {!isLoading && <>Yes, leave {userCompanyName} </>}
-                            {isLoading && (
-                              <div className="lds-ring">
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                                <div></div>
-                              </div>
-                            )}
-                          </motion.button>
-                          <motion.button
-                            className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.5,
-                              ease: "backOut",
-                            }}
-                            onClick={() => setLastEmployeeWarning(false)}
-                          >
-                            Cancel
-                          </motion.button>
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                   <h1>{userCompanyName}</h1>
-                  <p>Company profile</p>
+                  <p className="mt-2">
+                    Join code:{" "}
+                    <span className="bg-slate-900 border border-slate-800 py-1 px-2 rounded-xl">
+                      {userCompanyJoinCode}
+                    </span>
+                  </p>
                   <div className="mt-6 pt-6 border-t border-slate-900">
                     <h2>Team Management</h2>
-                    <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 mt-3 max-w-xl">
-                      <h1>Recruiter Requests</h1>
-                      {recruiterRequests.length == 0 && (
-                        <p className="text-slate-400">
-                          Join requests from your company's employees will
-                          appear here. You don't have any recruiter requests.
-                        </p>
-                      )}
-                      {recruiterRequests &&
-                        recruiterRequests.map((employee) => (
-                          <div className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center">
-                            <div className="">
-                              <p>
-                                {employee.firstName} {employee.lastName}
-                              </p>
-                              <p className="text-slate-400">{employee.email}</p>
-                            </div>
-                            <div className="flex gap-3">
-                              <button
-                                className="bg-slate-700 border border-slate-600 p-2 rounded-lg flex justify-center items-center gap-2"
-                                onClick={() =>
-                                  handleApproveRecruiter(employee.email)
-                                }
-                              >
-                                <div className="flex items-center justify-center">
-                                  <div>
-                                    <Image
-                                      src={Check}
-                                      alt=""
-                                      width={16}
-                                      height={16}
-                                    ></Image>
+                    <div className="flex gap-6">
+                      <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 mt-3 flex-1">
+                        <h1>Recruiter Requests</h1>
+                        {recruiterRequests.length == 0 && (
+                          <p className="text-slate-400">
+                            Join requests from your company's employees will
+                            appear here. You don't have any recruiter requests.
+                          </p>
+                        )}
+                        {recruiterRequests &&
+                          recruiterRequests.map((employee) => (
+                            <div className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center">
+                              <div className="">
+                                <p>
+                                  {employee.firstName} {employee.lastName}
+                                </p>
+                                <p className="text-slate-400">
+                                  {employee.email}
+                                </p>
+                              </div>
+                              <div className="flex gap-3">
+                                <button
+                                  className="bg-slate-700 border border-slate-600 p-2 rounded-lg flex justify-center items-center gap-2"
+                                  onClick={() =>
+                                    handleApproveRecruiter(employee.email)
+                                  }
+                                >
+                                  <div className="flex items-center justify-center">
+                                    <div>
+                                      <Image
+                                        src={Check}
+                                        alt=""
+                                        width={16}
+                                        height={16}
+                                      ></Image>
+                                    </div>
                                   </div>
-                                </div>
-                                Accept
-                              </button>
-                              <button
-                                className="bg-slate-700 border border-slate-600 p-2 rounded-lg flex justify-center items-center gap-2"
-                                onClick={() =>
-                                  handleDenyRecruiter(employee.email)
-                                }
-                              >
-                                <div className="flex items-center justify-center">
-                                  <div>
-                                    <Image
-                                      src={Cancel}
-                                      alt=""
-                                      width={16}
-                                      height={16}
-                                    ></Image>
+                                  Accept
+                                </button>
+                                <button
+                                  className="bg-slate-700 border border-slate-600 p-2 rounded-lg flex justify-center items-center gap-2"
+                                  onClick={() =>
+                                    handleDenyRecruiter(employee.email)
+                                  }
+                                >
+                                  <div className="flex items-center justify-center">
+                                    <div>
+                                      <Image
+                                        src={Cancel}
+                                        alt=""
+                                        width={16}
+                                        height={16}
+                                      ></Image>
+                                    </div>
                                   </div>
-                                </div>
-                                Reject
-                              </button>
+                                  Reject
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                    </div>
-                    <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 mt-3 max-w-xl">
-                      <h1>Employees</h1>
-                      {employees &&
-                        employees.map((employee) => (
-                          <div className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center">
-                            <div className="">
-                              <p>
-                                {employee.firstName} {employee.lastName}
-                              </p>
-                              <p className="text-slate-400">{employee.email}</p>
+                          ))}
+                      </div>
+                      <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 mt-3 flex-1">
+                        <h1>Employees</h1>
+                        {employees &&
+                          employees.map((employee) => (
+                            <div className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center">
+                              <div className="">
+                                <p>
+                                  {employee.firstName} {employee.lastName}
+                                </p>
+                                <p className="text-slate-400">
+                                  {employee.email}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                      </div>
                     </div>
-                    <button
-                      className="bg-slate-900 border border-slate-800 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                      onClick={() => handleLeaveCompanySafety(userCompanyId)}
-                    >
-                      Leave company
-                    </button>
                   </div>
                 </div>
               )}
             {companyDataLoaded &&
               userCompanyName &&
+              userCompanyJoinCode &&
               userCompanyId &&
               !userApprovalStatus && (
-                <div className="">
+                <div className="flex justify-center items-center flex-col text-center">
+                  <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
                   <h1>Your request is under review.</h1>
                   <p>
                     Your recruiter request is currently under review by{" "}

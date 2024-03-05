@@ -37,6 +37,7 @@ import ProfileIcon from "../../public/assets/icons/profile.svg";
 import QuestionIcon from "../../public/assets/icons/question.svg";
 import SearchIcon from "../../public/assets/icons/search.svg";
 import App from "next/app";
+import { Applicant } from "@prisma/client";
 
 interface TestIDInterface {
   applicant: ApplicantDataInterface;
@@ -44,6 +45,7 @@ interface TestIDInterface {
   companyID: string;
   uid: string;
   selected: boolean;
+  created: Date;
 }
 interface ApplicantDataInterface {
   id: string;
@@ -54,12 +56,29 @@ interface ApplicantDataInterface {
   score: string;
 }
 
+interface Question {
+  title: string;
+  language: string;
+  framework: string;
+  type: string;
+  companyID: string;
+  userId: string;
+  id: string;
+}
+
 const Applicants = () => {
   const [email, setEmail] = useState("");
   const [userCompanyName, setUserCompanyName] = useState(null);
   const [userCompanyId, setUserCompanyId] = useState(null);
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
+  const [viewTemplateAssignOptions, setViewTemplateAssignOptions] =
+    useState(false);
+  const [template, setTemplate] = useState("Choose one");
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [assignTemplatesWarning, setAssignTemplatesWarning] = useState(false);
+  const [deleteCandidatesWarning, setDeleteCandidatesWarning] = useState(false);
+  const [numSelected, setNumSelected] = useState(0);
 
   const getApplicants = async (companyId: string) => {
     //getting applicants from the database
@@ -75,7 +94,21 @@ const Applicants = () => {
         }),
       });
       const data = await response.json();
-      console.log(data);
+      data.message.map((applicant: TestIDInterface) => {
+        applicant.selected = false;
+      });
+      data.message.sort((a: TestIDInterface, b: TestIDInterface) => {
+        const dateA = new Date(a.created);
+        const dateB = new Date(b.created);
+
+        if (dateA < dateB) {
+          return -1;
+        }
+        if (dateA > dateB) {
+          return 1;
+        }
+        return 0;
+      });
       setApplicantData(data.message);
     } catch (error) {
       console.error(error);
@@ -109,13 +142,11 @@ const Applicants = () => {
           score: "90%",
           selected: false,
         }));
-        // await updateApplicants(combinedData);
+        await updateApplicants(combinedData);
       },
       header: true,
     });
   };
-
-  //ADD APPLICANT FUNCITONALITY///////////////////////////////////////////////////////////////////
 
   const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -130,6 +161,7 @@ const Applicants = () => {
   const toggleAddApplicantModal = () => {
     setIsAddApplicantModalOpen((prev) => !prev);
   };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
@@ -189,54 +221,50 @@ const Applicants = () => {
       });
 
       const data = await response.json();
-      console.log(data.message);
       await getApplicants(userCompanyId || "");
       toggleAddApplicantModal();
-
-      // if (response.ok) {
-      //   // Show success toast
-      //   toast.success("Applicant added successfully");
-      //   toggleAddApplicantModal();
-      //   // Optionally, you can trigger a data refresh or take other actions after a successful addition
-      // } else {
-      //   // Show error toast
-      //   toast.error("Failed to add applicant");
-      //   // Handle error cases if needed
-      // }
     } catch (error) {
       // Show error toast for network or unexpected errors
+      toast.remove();
       toast.error("Error adding applicant");
       // Handle other errors if needed
     }
   };
 
-  ////////////////////////////////////////////////////////////
-  // const updateApplicants = async (applicants: any) => {
-  //   try {
-  //     toast.loading("Importing applicant(s)...");
-  //     const response = await fetch("/api/codeEditor/createTestID", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         applicants: applicants,
-  //         recruiterEmail: recruiterEmail,
-  //       }),
-  //     });
-  //     if (!response.ok) {
-  //       toast.remove();
-  //       toast.error("Error loading applicants.");
-  //       console.error("Error setting applicants!");
-  //     } else {
-  //       window.location.reload();
-  //     }
-  //   } catch (error) {
-  //     toast.remove();
-  //     toast.error("Error loading applicants.");
-  //     console.error(error);
-  //   }
-  // };
+  //function for uploading from the CSV
+  const updateApplicants = async (
+    applicants: Array<ApplicantDataInterface>
+  ) => {
+    try {
+      toast.loading("Importing applicant(s)...");
+      // Send data to the server
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "addApplicants",
+          applicants: applicants,
+          recruiterEmail: email,
+        }),
+      });
+      if (!response.ok) {
+        toast.remove();
+        toast.error("Error loading applicants.");
+        console.error("Error setting applicants!");
+      } else {
+        toast.remove();
+        toast.success("Loaded applicants.");
+        // await getApplicants(userCompanyId || "");
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.remove();
+      toast.error("Error loading applicants.");
+      console.error(error);
+    }
+  };
 
   const path = usePathname();
   const router = useRouter();
@@ -245,6 +273,21 @@ const Applicants = () => {
   const [showOptionsIndex, setShowOptionsIndex] = useState("");
   const [applicantData, setApplicantData] = useState<TestIDInterface[]>([]);
   const [selectAll, setSelectAll] = useState(false);
+
+  useEffect(() => {
+    let count = 0;
+    applicantData.map((applicant) => {
+      if (applicant.selected) {
+        count++;
+      }
+    });
+    if (count == applicantData.length && applicantData.length != 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+    setNumSelected(count);
+  }, [applicantData]);
 
   const handleSelectAll = () => {
     setSelectAll((prevSelectAll) => !prevSelectAll);
@@ -255,7 +298,7 @@ const Applicants = () => {
     setApplicantData(updatedData);
   };
   const [currentPage, setCurrentPage] = useState(1);
-  const applicantsPerPage = 25;
+  const applicantsPerPage = 50;
   const totalPages = Math.ceil(applicantData.length / applicantsPerPage);
 
   //Function to handle page change
@@ -263,7 +306,7 @@ const Applicants = () => {
     setCurrentPage(newPage);
   };
 
-  const handleSendEmail = async (firstName: string, email: string) => {
+  const findQuestions = async (company: string) => {
     try {
       const response = await fetch("/api/database", {
         method: "POST",
@@ -271,13 +314,96 @@ const Applicants = () => {
           "Content-type": "application/json",
         },
         body: JSON.stringify({
-          action: "sendMail",
-          firstName: firstName,
-          email: email,
+          action: "findQuestions",
+          company: company,
         }),
       });
+      const data = await response.json();
+      setQuestions(data.message.reverse());
     } catch (error) {
-      console.error("Error in handle");
+      console.error("Error finding questions: ", error);
+    }
+  };
+
+  const assignTemplateSafety = async () => {
+    if (template == "Choose one") {
+      toast.remove();
+      toast.error("Please choose a template to assign.");
+    } else {
+      setAssignTemplatesWarning(true);
+    }
+  };
+
+  const handleAssignTemplate = async () => {
+    try {
+      toast.loading("Loading...");
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "assignTemplate",
+          applicantData: applicantData,
+          template: template,
+          company: userCompanyName,
+        }),
+      });
+      const data = await response.json();
+      if (data.message == "Success") {
+        toast.remove();
+        toast.success("Successfully set templates and sent tests.");
+        await getApplicants(userCompanyId || "");
+        setAssignTemplatesWarning(false);
+        setViewTemplateAssignOptions(false);
+      } else if (data.message == "No candidates selected.") {
+        toast.remove();
+        toast.error(data.message);
+        setAssignTemplatesWarning(false);
+      } else {
+        toast.remove();
+        toast.error("An error occured while setting templates.");
+        setAssignTemplatesWarning(false);
+      }
+    } catch (error) {
+      console.error("Error setting templates: ", error);
+      setAssignTemplatesWarning(false);
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    try {
+      toast.loading("Loading...");
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "deleteApplicants",
+          applicantData: applicantData,
+        }),
+      });
+      const data = await response.json();
+      if (data.message == "Success") {
+        toast.remove();
+        toast.success("Successfully deleted candidates.");
+        await getApplicants(userCompanyId || "");
+        setDeleteCandidatesWarning(false);
+        setViewTemplateAssignOptions(false);
+        // await getApplicants(userCompanyId || "");
+      } else if (data.message == "No candidates selected.") {
+        toast.remove();
+        toast.error(data.message);
+        setDeleteCandidatesWarning(false);
+      } else {
+        toast.remove();
+        toast.error("An error occured while deleting candidates.");
+        setDeleteCandidatesWarning(false);
+      }
+    } catch (error) {
+      console.error("Error finding questions: ", error);
+      setDeleteCandidatesWarning(false);
     }
   };
 
@@ -288,7 +414,8 @@ const Applicants = () => {
       if (session) {
         // console.log("Hello world!");
         //other than print hello world, set user data here
-        toast.loading("Looking for applicants...");
+        toast.remove();
+        toast.loading("Looking for candidates...");
         // console.log("Hello world!");
         //other than print hello world, set user data here
         setEmail(session.user?.email || "");
@@ -314,6 +441,7 @@ const Applicants = () => {
           setUserCompanyId(userData.message.employee.company.id);
           setUserApprovalStatus(userData.message.employee.isApproved);
           await getApplicants(userData.message.employee.company.id);
+          await findQuestions(userData.message.employee.company.id);
         }
         setCompanyDataLoaded(true);
         toast.remove();
@@ -336,12 +464,24 @@ const Applicants = () => {
       <div className="max-w-screen text-white flex overflow-x-hidden">
         <Sidebar></Sidebar>
         <div className="bg-slate-950 flex-1">
-          <TopMenuBar></TopMenuBar>
+          {/* <TopMenuBar></TopMenuBar> */}
           <div className="flex">
             {/* Applicants content */}
+
+            {!companyDataLoaded && (
+              <div className="flex justify-center items-center scale-150 mt-6 w-full">
+                <div className="lds-ring">
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            )}
             {companyDataLoaded && !userApprovalStatus && (
-              <div className="p-6">
-                <h1>Welcome to the Applicants page!</h1>
+              <div className="p-6 flex justify-center items-center flex-col w-full text-center">
+                <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
+                <h1>Welcome to the Candidate Manager!</h1>
                 <p className="text-slate-400">
                   To get started, please join a company in the Company Profile
                   tab.
@@ -391,28 +531,200 @@ const Applicants = () => {
                       </div>
                     </li>
                     <hr className="border-l border-slate-800 h-5" />
-                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
-                      <p className="text-sm flex gap-2 items-center justify-center">
-                        Clear Selected
-                      </p>
-                    </li>
-                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
-                      <p className="text-sm flex gap-2 items-center justify-center">
-                        Clear Failed
-                      </p>
-                    </li>
-                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
-                      <button
-                        onClick={toggleAddApplicantModal}
-                        className="text-sm flex gap-2 items-center justify-center"
+                    <div className="relative">
+                      <li
+                        className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
+                        onClick={() =>
+                          setViewTemplateAssignOptions(
+                            !viewTemplateAssignOptions
+                          )
+                        }
                       >
-                        Add Applicant
-                      </button>
-                    </li>
+                        <p className="text-sm flex gap-2 items-center justify-center">
+                          Assign Templates and Send Tests
+                        </p>
+                      </li>
+                      {viewTemplateAssignOptions &&
+                        questions &&
+                        questions.length > 0 && (
+                          <motion.div
+                            className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80"
+                            initial={{ opacity: 0, y: -30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            <p>
+                              Choose a template to assign to the selected
+                              candidates.
+                            </p>
+                            <select
+                              id="template"
+                              value={template}
+                              onChange={(e) => setTemplate(e.target.value)}
+                              className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none mt-3"
+                            >
+                              <option value="Choose one">Choose one</option>
+                              {questions.map((question) => (
+                                <option value={question.id} key={question.id}>
+                                  {question.title}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3 w-full"
+                              onClick={assignTemplateSafety}
+                            >
+                              Assign templates and send tests
+                            </button>
+                          </motion.div>
+                        )}
+                      {/* ASSIGN AND SEND TEMPLATES WARNING */}
+                      <AnimatePresence>
+                        {assignTemplatesWarning && (
+                          <motion.div
+                            className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                              duration: 0.5,
+                              ease: "backOut",
+                            }}
+                            exit={{ opacity: 0 }}
+                          >
+                            <motion.div
+                              className="bg-slate-900 p-6 rounded-xl border border-slate-800"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.5,
+                                ease: "backOut",
+                              }}
+                              exit={{ opacity: 0, y: 30 }}
+                            >
+                              <h1>Are you sure?</h1>
+                              <p className="mb-6">
+                                By completing this action, you will assign
+                                templates and send test invitations to{" "}
+                                <b className="font-[h2]">{numSelected}</b>{" "}
+                                selected{" "}
+                                {numSelected == 1 ? "candidate" : "candidates"}.
+                              </p>
+                              <motion.button
+                                className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={handleAssignTemplate}
+                              >
+                                Yes, assign templates and send tests.
+                              </motion.button>
+                              <motion.button
+                                className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={() => setAssignTemplatesWarning(false)}
+                              >
+                                Cancel
+                              </motion.button>
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      {viewTemplateAssignOptions &&
+                        questions &&
+                        questions.length == 0 && (
+                          <div className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80">
+                            <p>You don't have any question templates.</p>
+                            <button
+                              className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                              onClick={() => router.push("/questionWorkshop")}
+                            >
+                              Visit template workshop
+                            </button>
+                          </div>
+                        )}
+                    </div>
+                    <div className="">
+                      <li
+                        className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
+                        onClick={() => setDeleteCandidatesWarning(true)}
+                      >
+                        <p className="text-sm flex gap-2 items-center justify-center">
+                          Delete selected
+                        </p>
+                      </li>
+                      <AnimatePresence>
+                        {deleteCandidatesWarning && (
+                          <motion.div
+                            className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                              duration: 0.5,
+                              ease: "backOut",
+                            }}
+                            exit={{ opacity: 0 }}
+                          >
+                            <motion.div
+                              className="bg-slate-900 p-6 rounded-xl border border-slate-800"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{
+                                duration: 0.5,
+                                ease: "backOut",
+                              }}
+                              exit={{ opacity: 0, y: 30 }}
+                            >
+                              <h1>Are you sure?</h1>
+                              <p className="mb-6">
+                                You are about to delete{" "}
+                                <b className="font-[h2]">{numSelected}</b>{" "}
+                                selected{" "}
+                                {numSelected == 1 ? "candidate" : "candidates"}.
+                                This action cannot be undone.
+                              </p>
+                              <motion.button
+                                className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={handleDeleteSelected}
+                              >
+                                Yes, delete all selected candidates.
+                              </motion.button>
+                              <motion.button
+                                className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                  duration: 0.5,
+                                  ease: "backOut",
+                                }}
+                                onClick={() =>
+                                  setDeleteCandidatesWarning(false)
+                                }
+                              >
+                                Cancel
+                              </motion.button>
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
                     <AnimatePresence>
                       {isAddApplicantModalOpen && (
                         <motion.div
-                          className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+                          className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{
@@ -451,7 +763,7 @@ const Applicants = () => {
                             }}
                             exit={{ opacity: 0, y: 30 }}
                           >
-                            <h1>Enter all required fields</h1>
+                            <h1>Add applicant</h1>
                             <motion.label
                               className="text-white mt-5 mb-2"
                               initial={{ opacity: 0, y: 30 }}
@@ -540,7 +852,7 @@ const Applicants = () => {
                                 ease: "backOut",
                               }}
                             >
-                              Submit{" "}
+                              Submit
                               <div className=" arrow flex items-center justify-center">
                                 <div className="arrowMiddle"></div>
                                 <div>
@@ -560,6 +872,14 @@ const Applicants = () => {
                     </AnimatePresence>
                   </div>
                   <div className="flex gap-3 items-center justify-center">
+                    <li className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative">
+                      <button
+                        onClick={toggleAddApplicantModal}
+                        className="text-sm flex gap-2 items-center justify-center"
+                      >
+                        Add Applicant
+                      </button>
+                    </li>
                     <label
                       htmlFor="fileInput"
                       className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative"
@@ -608,11 +928,11 @@ const Applicants = () => {
                           </li>
                           <li className="flex gap-3 items-center justify-center  w-max">
                             <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                            <p className="text-sm">Failed</p>
+                            <p className="text-sm">Unsent</p>
                           </li>
                           <li className="flex gap-3 items-center justify-center  w-max">
                             <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                            <p className="text-sm">Passed</p>
+                            <p className="text-sm">Completed</p>
                           </li>
                           <li className="flex gap-3 items-center justify-center  w-max">
                             <div className="w-2 h-2 rounded-full bg-gray-500"></div>
@@ -650,8 +970,9 @@ const Applicants = () => {
                                 <input
                                   type="checkbox"
                                   checked={item.selected}
-                                  onClick={(e) => {
+                                  onChange={(e) => {
                                     e.stopPropagation();
+                                    setShowOptionsIndex("");
                                     const updatedData = [...applicantData];
                                     updatedData[index].selected =
                                       !updatedData[index].selected;
@@ -676,20 +997,16 @@ const Applicants = () => {
                                     <p className="text-sm">Sent</p>
                                   </div>
                                 )}
-                                {item.applicant.status == "Failed" && (
+                                {item.applicant.status == "Unsent" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                    <p className="text-sm">
-                                      Failed | {item.applicant.score}
-                                    </p>
+                                    <p className="text-sm">Unsent</p>
                                   </div>
                                 )}
                                 {item.applicant.status == "Passed" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                                    <p className="text-sm">
-                                      Passed | {item.applicant.score}
-                                    </p>
+                                    <p className="text-sm">Completed</p>
                                   </div>
                                 )}
                                 {item.applicant.status == "Expired" && (
@@ -716,7 +1033,7 @@ const Applicants = () => {
                                 className="flex gap-3 border-t w-full pt-3 border-t-slate-800 hover:cursor-auto"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <motion.li
+                                {/* <motion.li
                                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                                   onClick={() => toast.success("Email sent.")}
                                   initial={{ opacity: 0, y: -20 }}
@@ -736,7 +1053,21 @@ const Applicants = () => {
                                       )
                                     }
                                   >
-                                    Send Interview Email
+                                    Send Test
+                                  </button>
+                                </motion.li> */}
+                                <motion.li
+                                  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
+                                  initial={{ opacity: 0, y: -20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.2,
+                                    delay: 0,
+                                    ease: "backOut",
+                                  }}
+                                >
+                                  <button className="text-sm">
+                                    View Submission Details
                                   </button>
                                 </motion.li>
                               </ul>
@@ -744,7 +1075,7 @@ const Applicants = () => {
                           </li>
                         ))}
                     </ul>
-                    <div className="flex justify-center mt-4">
+                    <div className="flex justify-center mt-6 flex-wrap">
                       {Array.from({ length: totalPages }, (_, i) => (
                         <button
                           key={i + 1}
@@ -762,26 +1093,24 @@ const Applicants = () => {
                   </div>
                 )}
                 {applicantData.length == 0 && (
-                  <div className="">
+                  <div className="flex justify-center items-center flex-col mt-20">
                     <p className="text-slate-400">
                       Your company does not have any active test IDs.
                     </p>
-                    <button
-                      className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                      onClick={toggleAddApplicantModal}
-                    >
-                      New applicant
-                      <div className="flex items-center justify-center">
-                        <div>
-                          <Image
-                            src={Plus}
-                            alt=""
-                            width={14}
-                            height={14}
-                          ></Image>
-                        </div>
-                      </div>
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                        onClick={toggleAddApplicantModal}
+                      >
+                        Add applicant
+                      </button>
+                      <label
+                        htmlFor="fileInput"
+                        className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3 cursor-pointer"
+                      >
+                        <p>Import CSV</p>
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>

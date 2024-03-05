@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import {
   addUser,
-  sendMail,
   findUserByEmail,
   userSignIn,
   getApplicants,
@@ -20,6 +19,11 @@ import {
   findQuestions,
   deleteQuestion,
   updateQuestion,
+  addApplicants,
+  updateUser,
+  assignTemplate,
+  deleteApplicants,
+  contactForm,
 } from "./actions";
 import { send } from "process";
 
@@ -43,6 +47,24 @@ export async function POST(req: Request) {
       { message: "Registration successful." },
       { status: 200 }
     );
+  } else if (data.action === "updateUser") {
+    const response = await updateUser(
+      data.oldEmail,
+      data.email,
+      data.password,
+      data.firstName,
+      data.lastName
+    );
+    if (response == "User already exists") {
+      return NextResponse.json(
+        { message: "User already exists!" },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { message: "Update successful." },
+      { status: 200 }
+    );
   } else if (data.action === "addApplicant") {
     const response = await addApplicant(
       data.firstName,
@@ -57,13 +79,23 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "addApplicants") {
+    const response = await addApplicants(data.applicants, data.recruiterEmail);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error adding applicants." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "addQuestion") {
     const response = await addQuestion(
       data.email,
       data.title,
       data.language,
       data.framework,
-      data.type
+      data.type,
+      data.expiration
     );
     if (
       response == "Title already exists. Please choose a unique question title."
@@ -106,15 +138,6 @@ export async function POST(req: Request) {
     if (response == null) {
       return NextResponse.json(
         { message: "Error finding questions." },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json({ message: response }, { status: 200 });
-  } else if (data.action === "sendMail") {
-    const response = await sendMail(data.firstName, data.email);
-    if (response == null) {
-      return NextResponse.json(
-        { message: "Error sending mail." },
         { status: 400 }
       );
     }
@@ -240,6 +263,42 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "getApplicants") {
     const response = await getApplicants(data.company);
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "assignTemplate") {
+    const response = await assignTemplate(
+      data.applicantData,
+      data.template,
+      data.company
+    );
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error assigning templates." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "deleteApplicants") {
+    const response = await deleteApplicants(data.applicantData);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error deleting applicants." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "contactForm") {
+    const response = await contactForm(
+      data.firstName,
+      data.lastName,
+      data.email,
+      data.message
+    );
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error submitting contact form." },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({ message: response }, { status: 200 });
   } else {
     return NextResponse.json(

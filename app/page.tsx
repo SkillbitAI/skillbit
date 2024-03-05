@@ -11,6 +11,7 @@ import About from "@/components/about/about";
 import Button from "@/components/button/button";
 import Mousetrail from "@/components/mousetrail/mousetrail";
 import { motion, useInView } from "framer-motion";
+import Footer from "@/components/footer/footer";
 
 export default function Home() {
   const router = useRouter();
@@ -299,80 +300,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-        <div className="bg-slate-950 text-left" id="footer">
-          <div className="px-6 max-w-7xl m-auto relative z-20 py-20 flex justify-between flex-col lg:flex-row gap-12">
-            <div className="flex flex-col justify-between items-start gap-6 max-w-sm">
-              <div className="flex justify-center items-center gap-2">
-                <Image
-                  src={Logo}
-                  alt=""
-                  width={100}
-                  height={100}
-                  style={{ margin: "-30px" }}
-                ></Image>
-                <h1 className="">Skillbit</h1>
-              </div>
-              <div className="">
-                <p>
-                  © 2023 Skillbit @ University of Florida Research Foundation,
-                  Inc. All Commercial Rights Reserved.
-                </p>
-              </div>
-            </div>
-            <hr className="h-0 w-20 border opacity-10 rounded-full lg:w-0 lg:h-40" />
-            <div className="">
-              <ul className="flex flex-col gap-3">
-                <li>
-                  <h1 className="text-base">Recruiters</h1>
-                </li>
-                <li>
-                  <p>Dashboard</p>
-                </li>
-                <li>
-                  <p>Applicants</p>
-                </li>
-                <li>
-                  <p>Company Profile</p>
-                </li>
-                <li>
-                  <p>Question Workshop</p>
-                </li>
-              </ul>
-            </div>
-            <div className="">
-              <ul className="flex flex-col gap-3">
-                <li>
-                  <h1 className="text-base">About</h1>
-                </li>
-                <li>
-                  <p>Our Story</p>
-                </li>
-                <li>
-                  <p>Our Mission</p>
-                </li>
-                <li>
-                  <p>Meet the Team</p>
-                </li>
-              </ul>
-            </div>
-            <div className="">
-              <ul className="flex flex-col gap-3">
-                <li>
-                  <h1 className="text-base">Contact</h1>
-                </li>
-                <li>
-                  <p>555-555-5555</p>
-                </li>
-                <li>
-                  <p>skillbitcontact@gmail.com</p>
-                </li>
-                <li>
-                  <p>Support Form</p>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+        <Footer background="blue"></Footer>
       </div>
     </>
   );

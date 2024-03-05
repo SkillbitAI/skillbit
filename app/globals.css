@@ -225,3 +225,7 @@ button:hover .arrowMiddle {
     justify-content: center;
   }
 }
+
+.no-resize {
+  resize: none;
+}

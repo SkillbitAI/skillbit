@@ -17,6 +17,7 @@ import TopMenuBar from "@/components/topmenubar/topmenubar";
 import Dots from "../../public/assets/icons/dots.svg";
 import Plus from "../../public/assets/icons/plus.svg";
 import { Toaster, toast } from "react-hot-toast";
+import Dropdown from "../../public/assets/icons/dropdown.svg";
 
 //dashboard icons
 import DashboardIcon from "../../public/assets/icons/dashboard.svg";
@@ -36,6 +37,7 @@ interface Question {
   language: string;
   framework: string;
   type: string;
+  expiration: string;
   companyID: string;
   userId: string;
   id: string;
@@ -55,6 +57,8 @@ const QuestionWorkshop = () => {
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [viewAdditionalSettings, setViewAdditionalSettings] = useState(false);
+  const [expiration, setExpiration] = useState("1 month");
 
   const [deleteQuestionWarning, setDeleteQuestionWarning] = useState(false);
 
@@ -88,7 +92,6 @@ const QuestionWorkshop = () => {
       setQuestions(data.message.reverse());
       setCurrentQuestion(data.message[0]);
       setNewTitle(data.message[0].title);
-      console.log(data);
     } catch (error) {
       console.error("Error finding questions: ", error);
     }
@@ -166,16 +169,19 @@ const QuestionWorkshop = () => {
             language: language,
             framework: framework,
             type: type,
+            expiration: expiration,
           }),
         });
         const data = await response.json();
         if (data.message == "Success") {
           toast.remove();
-          toast.success("Question added.");
+          toast.success("Template added.");
           setTitle("");
           setLanguage("");
           setFramework("");
           setType("");
+          setExpiration("1 month");
+          setViewAdditionalSettings(false);
           setNewQuestionButton(false);
           await findQuestions(userCompanyId || "");
         } else if (
@@ -206,6 +212,7 @@ const QuestionWorkshop = () => {
   useEffect(() => {
     const getData = async () => {
       if (session) {
+        toast.remove();
         toast.loading("Looking for questions...");
         // console.log("Hello world!");
         //other than print hello world, set user data here
@@ -254,7 +261,7 @@ const QuestionWorkshop = () => {
       <div className="max-w-screen text-white flex overflow-x-hidden">
         <Sidebar></Sidebar>
         <div className="bg-slate-950 flex-1">
-          <TopMenuBar></TopMenuBar>
+          {/* <TopMenuBar></TopMenuBar> */}
           {/* Dashboard content */}
           {!companyDataLoaded && (
             <div className="flex justify-center items-center scale-150 mt-6">
@@ -345,7 +352,7 @@ const QuestionWorkshop = () => {
                         <AnimatePresence>
                           {deleteQuestionWarning && (
                             <motion.div
-                              className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+                              className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{
@@ -411,7 +418,8 @@ const QuestionWorkshop = () => {
               <div className="flex-1">
                 <div
                   className="bg-slate-900 rounded-xl border border-slate-800 p-6 min-h-full overflow-hidden flex justify-center items-center flex-col gap-6"
-                  style={{ height: "calc(100vh - 116px)" }}
+                  // style={{ height: "calc(100vh - 116px)" }}
+                  style={{ height: "calc(100vh - 48px)" }}
                 >
                   {currentQuestion && (
                     <div className="w-full h-full flex flex-col justify-between">
@@ -444,6 +452,12 @@ const QuestionWorkshop = () => {
                             <p>{currentQuestion.type}</p>
                           </div>
                         </div>
+                        <div className="mt-3 flex gap-2 items-center">
+                          <h2>Expiration: </h2>
+                          <p className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
+                            {currentQuestion.expiration}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex justify-center items-center flex-col gap-6 text-center">
                         <div className="flex justify-center items-center scale-150 mt-6">
@@ -463,7 +477,7 @@ const QuestionWorkshop = () => {
                             ease: "linear",
                           }}
                         >
-                          Generating question...
+                          Generating questions...
                         </motion.p>
                       </div>
                       <div className="">
@@ -501,15 +515,15 @@ const QuestionWorkshop = () => {
                   )}
                   {!currentQuestion && (
                     <div className="w-full h-full flex justify-center items-center flex-col text-center">
-                      <h1>Welcome to the Question Workshop!</h1>
+                      <h1>Welcome to the Template Workshop!</h1>
                       <p className="text-slate-400">
-                        To get started, generate a new question.
+                        To get started, generate a new template.
                       </p>
                       <button
                         className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
                         onClick={() => setNewQuestionButton(true)}
                       >
-                        New question
+                        New template
                         <div className="flex items-center justify-center">
                           <div>
                             <Image
@@ -528,7 +542,7 @@ const QuestionWorkshop = () => {
               <AnimatePresence>
                 {newQuestionButton && (
                   <motion.div
-                    className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6"
+                    className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{
@@ -539,7 +553,10 @@ const QuestionWorkshop = () => {
                   >
                     <motion.button
                       className="bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center gap-2"
-                      onClick={() => setNewQuestionButton(false)}
+                      onClick={() => {
+                        setNewQuestionButton(false);
+                        setViewAdditionalSettings(false);
+                      }}
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
@@ -571,15 +588,15 @@ const QuestionWorkshop = () => {
                       exit={{ opacity: 0, y: 30 }}
                     >
                       <div className="flex flex-col">
-                        <h1>Question Builder</h1>
+                        <h1>Template Builder</h1>
                         <p className="">
-                          Welcome to the Skillbit question builder.
+                          Welcome to the Skillbit template builder.
                         </p>
                       </div>
                       <div className="flex flex-col">
                         <h2>Title</h2>
                         <p className="text-slate-400">
-                          Name your question. Applicants will not see this.
+                          Name your template. Candidates will not see this.
                         </p>
                         <input
                           type="text"
@@ -591,7 +608,7 @@ const QuestionWorkshop = () => {
                       <div className="flex flex-col">
                         <h2>Programming language and framework</h2>
                         <p className="text-slate-400">
-                          Your question will test candidates using the
+                          Your questions will test candidates using the
                           programming language or framework you choose.
                         </p>
                         <div className="flex gap-3 mt-3 flex-wrap">
@@ -668,7 +685,7 @@ const QuestionWorkshop = () => {
                         <h2>Question type</h2>
                         <p className="text-slate-400">
                           We will customize your candidates' prompts to reflect
-                          this question type.
+                          this template's type.
                         </p>
                         <div className="flex gap-3 mt-3 flex-wrap">
                           <div
@@ -733,6 +750,56 @@ const QuestionWorkshop = () => {
                           </div>
                         </div>
                       </div>
+                      <div className="flex flex-col">
+                        <div
+                          className="flex justify-between items-center"
+                          onClick={() =>
+                            setViewAdditionalSettings(!viewAdditionalSettings)
+                          }
+                        >
+                          <h2>Additional settings</h2>
+                          <Image
+                            src={Dropdown}
+                            alt="Dropdown"
+                            width={15}
+                            height={15}
+                            className={
+                              viewAdditionalSettings
+                                ? "duration-100"
+                                : "-rotate-90 duration-100"
+                            }
+                          ></Image>
+                        </div>
+                        {viewAdditionalSettings && (
+                          <motion.div
+                            className=""
+                            initial={{ opacity: 0, y: -30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                          >
+                            <div className="flex items-center gap-3 mt-3">
+                              <p className="whitespace-nowrap">
+                                Test expires in:
+                              </p>
+                              <select
+                                id="expiration"
+                                value={expiration}
+                                onChange={(e) => setExpiration(e.target.value)}
+                                className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none"
+                              >
+                                <option value="1 day">1 day</option>
+                                <option value="1 week">1 week</option>
+                                <option value="2 weeks">2 weeks</option>
+                                <option value="1 month">1 month</option>
+                                <option value="2 months">2 months</option>
+                              </select>
+                              <p className="text-slate-400 text-sm">
+                                The test will expire {expiration} from the date
+                                it is sent to the candidate.
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </div>
                       <motion.button
                         className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100"
                         initial={{ opacity: 0, y: 30 }}
@@ -766,8 +833,9 @@ const QuestionWorkshop = () => {
             </div>
           )}
           {companyDataLoaded && !userApprovalStatus && (
-            <div className="p-6">
-              <h1>Welcome to the Question Workshop!</h1>
+            <div className="p-6 flex justify-center items-center flex-col w-full text-center">
+              <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
+              <h1>Welcome to the Template Workshop!</h1>
               <p className="text-slate-400">
                 To get started, please join a company in the Company Profile
                 tab.
