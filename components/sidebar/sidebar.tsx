@@ -126,7 +126,6 @@ const Sidebar = () => {
         }),
       });
       const data = await response.json();
-      console.log(data);
       setApplicantData(data.message);
     } catch (error) {
       console.error(error);
@@ -149,7 +148,6 @@ const Sidebar = () => {
       setQuestions(data.message.reverse());
       setCurrentQuestion(data.message[0]);
       setNewTitle(data.message[0].title);
-      console.log(data);
     } catch (error) {
       console.error("Error finding questions: ", error);
     }
@@ -170,13 +168,13 @@ const Sidebar = () => {
     setEmployees(data.message);
   };
 
-  // Debounce function
+  //Debounce function
   const debounce = (func: Function, delay: number) => {
     let timeoutId: NodeJS.Timeout;
     return function (...args: any) {
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        func.apply(this, args);
+        func(...args);
       }, delay);
     };
   };
@@ -231,6 +229,18 @@ const Sidebar = () => {
       setFilteredEmployees([]);
     }
   }, [searchTerm]);
+
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSearchClick(false);
+      }
+    };
+    document.addEventListener("keydown", handleEscapeKey);
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, []);
 
   const { data: session, status } = useSession();
 
@@ -556,11 +566,11 @@ const Sidebar = () => {
             <Image
               src={Logo}
               alt=""
-              width={110}
-              height={110}
+              width={100}
+              height={100}
               style={{ margin: "-30px" }}
             ></Image>
-            <h1 className="text-white text-3xl">Skillbit</h1>
+            <h1 className="text-white">Skillbit</h1>
           </div>
           <div className="flex flex-col justify-between mt-6 gap-2 absolute top-16 bottom-6 left-0 right-0 overflow-y-auto">
             <ul className="list-none text-white flex flex-col gap-6">

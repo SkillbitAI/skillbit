@@ -389,7 +389,12 @@ const Settings = () => {
                 )}
                 {companyDataLoaded && userApprovalStatus && userCompanyId && (
                   <div className="mt-6">
-                    <h2>{userCompanyName}</h2>
+                    <p>
+                      Company Name:{" "}
+                      <span className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
+                        {userCompanyName}
+                      </span>{" "}
+                    </p>
                     <p className="mt-3">
                       Join code:{" "}
                       <span className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
@@ -397,7 +402,7 @@ const Settings = () => {
                       </span>
                     </p>
                     <motion.button
-                      className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100 mt-3"
+                      className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100 mt-6"
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{

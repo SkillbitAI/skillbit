@@ -17,8 +17,6 @@ export async function addApplicant(
   recruiterEmail: string
 ) {
   try {
-    console.log(recruiterEmail);
-
     //WILL NOT BE IMPLEMENTING THIS SINCE THERE CAN BE MULTIPLE TEST IDS TO ONE APPLICANT
 
     // Check if a user with the provided email already exists
@@ -86,8 +84,6 @@ export async function addApplicants(
   recruiterEmail: string
 ) {
   try {
-    console.log(recruiterEmail);
-
     //finding company id from recruiter email
     const company = await prisma.user.findUnique({
       where: {
@@ -404,7 +400,6 @@ export async function findRecruiterRequests(companyId: string) {
 
 export async function approveRecruitrer(email: string, companyId: string) {
   try {
-    console.log(companyId);
     const user = await prisma.user.update({
       where: {
         email: email,
@@ -495,7 +490,6 @@ export async function leaveCompany(email: string, companyId: string) {
         },
       },
     });
-    console.log(user);
     return "Success";
   } catch (error) {
     console.error("Error inserting data:", error);
@@ -510,7 +504,6 @@ export async function leaveAndDeleteCompany(email: string, companyId: string) {
         id: companyId,
       },
     });
-    console.log(user);
     return "Success";
   } catch (error) {
     console.error("Error inserting data:", error);
@@ -555,7 +548,6 @@ export async function addCompany(email: string, companyName: string) {
           },
         },
       });
-      console.log(user);
     }
     return "Success";
   } catch (error) {
@@ -567,7 +559,6 @@ export async function addCompany(email: string, companyName: string) {
 export async function findCompanies() {
   try {
     const company = await prisma.company.findMany();
-    console.log(company);
     return company;
   } catch (error) {
     console.error(error);
@@ -582,7 +573,6 @@ export async function findCompanyById(id: string) {
         id: id,
       },
     });
-    console.log(company);
     return company;
   } catch (error) {
     console.error(error);
@@ -987,8 +977,6 @@ export async function contactForm(
   message: string
 ) {
   try {
-    console.log(firstName, lastName, email, message);
-
     //SENDING EMAIL TO OURSELVES
 
     const transporter = nodemailer.createTransport({

@@ -92,7 +92,6 @@ const QuestionWorkshop = () => {
       setQuestions(data.message.reverse());
       setCurrentQuestion(data.message[0]);
       setNewTitle(data.message[0].title);
-      console.log(data);
     } catch (error) {
       console.error("Error finding questions: ", error);
     }

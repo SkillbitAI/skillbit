@@ -86,7 +86,6 @@ const CompanyProfile = () => {
       toast.error('Please fill in the "Company Name" field.');
       setIsLoading(false);
     } else {
-      console.log(newCompanyName);
       const response = await fetch("/api/database", {
         method: "POST",
         headers: {
@@ -262,9 +261,6 @@ const CompanyProfile = () => {
           }),
         });
         const userData = await userResponse.json();
-
-        console.log(userData);
-
         if (
           userData.message.employee &&
           userData.message.employee.company.name &&

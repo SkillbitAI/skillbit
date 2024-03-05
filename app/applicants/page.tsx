@@ -221,7 +221,6 @@ const Applicants = () => {
       });
 
       const data = await response.json();
-      console.log(data.message);
       await getApplicants(userCompanyId || "");
       toggleAddApplicantModal();
     } catch (error) {
@@ -321,7 +320,6 @@ const Applicants = () => {
       });
       const data = await response.json();
       setQuestions(data.message.reverse());
-      console.log(data);
     } catch (error) {
       console.error("Error finding questions: ", error);
     }
