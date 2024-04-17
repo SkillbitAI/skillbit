@@ -489,7 +489,10 @@ const CompanyProfile = () => {
                         )}
                         {recruiterRequests &&
                           recruiterRequests.map((employee) => (
-                            <div className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center">
+                            <div
+                              className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center"
+                              key={employee.email}
+                            >
                               <div className="">
                                 <p>
                                   {employee.firstName} {employee.lastName}
@@ -543,7 +546,10 @@ const CompanyProfile = () => {
                         <h1>Employees</h1>
                         {employees &&
                           employees.map((employee) => (
-                            <div className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center">
+                            <div
+                              className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center"
+                              key={employee.email}
+                            >
                               <div className="">
                                 <p>
                                   {employee.firstName} {employee.lastName}

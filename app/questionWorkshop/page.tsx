@@ -294,7 +294,7 @@ const QuestionWorkshop = () => {
                 <div className="flex flex-col gap-3">
                   {questions &&
                     questions.map((question) => (
-                      <div className="relative">
+                      <div className="relative" key={question.id}>
                         <div
                           className={
                             currentQuestion?.id == question.id
