@@ -186,7 +186,7 @@ const Applicants = () => {
       toast.error("That is not a valid email.");
     } else {
       // Proceed with form submission logic (e.g., sending data to the database)
-      handleAddApplicant();
+      handleAddApplicant(formData.firstName, formData.lastName, formData.email);
     }
   };
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -197,11 +197,12 @@ const Applicants = () => {
     }));
   };
 
-  const handleAddApplicant = async () => {
+  const handleAddApplicant = async (
+    applicantFirstName: string,
+    applicantLastName: string,
+    applicantEmail: string
+  ) => {
     try {
-      const { status, score, id, ...applicantData } =
-        formData as ApplicantDataInterface;
-
       // Update individual applicant
       // await updateApplicants([applicantData]);
 
@@ -213,9 +214,9 @@ const Applicants = () => {
         },
         body: JSON.stringify({
           action: "addApplicant",
-          firstName: applicantData.firstName,
-          lastName: applicantData.lastName,
-          email: applicantData.email,
+          firstName: applicantFirstName,
+          lastName: applicantLastName,
+          email: applicantEmail,
           recruiterEmail: email,
         }),
       });
