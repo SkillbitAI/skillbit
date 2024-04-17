@@ -199,7 +199,7 @@ const Applicants = () => {
 
   const handleAddApplicant = async () => {
     try {
-      const { status, score, selected, id, ...applicantData } =
+      const { status, score, id, ...applicantData } =
         formData as ApplicantDataInterface;
 
       // Update individual applicant
