@@ -96,8 +96,9 @@ export default function Home() {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.5, ease: "backOut" }}
               >
-                Take your company's technical recruitment to the next level with
-                Skillbit's AI-powered technical interview platform.
+                {
+                  "Take your company's technical recruitment to the next level with Skillbit's AI-powered technical interview platform."
+                }
               </motion.p>
               <motion.div
                 className="flex items-center gap-28 mt-4 adjustFlex"

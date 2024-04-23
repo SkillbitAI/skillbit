@@ -483,8 +483,9 @@ const CompanyProfile = () => {
                         <h1>Recruiter Requests</h1>
                         {recruiterRequests.length == 0 && (
                           <p className="text-slate-400">
-                            Join requests from your company's employees will
-                            appear here. You don't have any recruiter requests.
+                            {
+                              "Join requests from your company's employees will appear here. You don't have any recruiter requests."
+                            }
                           </p>
                         )}
                         {recruiterRequests &&
@@ -574,9 +575,7 @@ const CompanyProfile = () => {
                   <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
                   <h1>Your request is under review.</h1>
                   <p>
-                    Your recruiter request is currently under review by{" "}
-                    {userCompanyName}. Once you are approved, you will have
-                    access to your company's profile.
+                    {`Your recruiter request is currently under review by ${userCompanyName}. Once you are approved, you will have access to your company's profile.`}
                   </p>
                   <button
                     className="bg-slate-900 border border-slate-800 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"

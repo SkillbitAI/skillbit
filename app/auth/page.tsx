@@ -213,8 +213,9 @@ const Auth = () => {
                 transition={{ duration: 0.5, delay: 0.1, ease: "backOut" }}
                 className="text-gray-500 mb-5"
               >
-                Create an account to start reimagining your company's technical
-                interview process.
+                {
+                  "Create an account to start reimagining your company's technical interview process."
+                }
               </motion.p>
               <motion.p
                 initial={{ opacity: 0, y: 30 }}
