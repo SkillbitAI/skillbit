@@ -60,92 +60,93 @@ const xtermOptions = {
 };
 
 export default function CodeEditor() {
-  const [fileName, setFileName] = useState("/project/src/App.js");
-  const terminalRef = useRef(null);
-  const termRef = useRef(null);
-  const fitAddonRef = useRef(null);
-  const [socket, setSocket] = useState(null);
-  const [iframeKey, setIframeKey] = useState(1);
+  // const [fileName, setFileName] = useState("/project/src/App.js");
+  // const terminalRef = useRef(null);
+  // const termRef = useRef(null);
+  // const fitAddonRef = useRef(null);
+  // const [socket, setSocket] = useState(null);
+  // const [iframeKey, setIframeKey] = useState(1);
 
-  const handleEditorChange = (value, event) => {
-    socket.emit("codeChange", { fileName, value });
-  };
+  // const handleEditorChange = (value, event) => {
+  //   socket.emit("codeChange", { fileName, value });
+  // };
 
-  useEffect(async () => {
-    termRef.current = new Terminal();
-    fitAddonRef.current = new FitAddon();
-    termRef.current.loadAddon(fitAddonRef.current);
-    termRef.current.open(terminalRef.current);
-    fitAddonRef.current.fit();
-    termRef.current.focus();
+  // useEffect(async () => {
+  //   termRef.current = new Terminal();
+  //   fitAddonRef.current = new FitAddon();
+  //   termRef.current.loadAddon(fitAddonRef.current);
+  //   termRef.current.open(terminalRef.current);
+  //   fitAddonRef.current.fit();
+  //   termRef.current.focus();
 
-    // await fetch("http://localhost:3000/api/codeEditor/start");
-    // const newSocket = io("http://localhost:9999");
-    setSocket(newSocket);
-    if (socket) {
-      socket.emit("data", "cd project\n");
-      socket.emit("data", "npm run start\n");
-    }
-  }, []);
+  //   // await fetch("http://localhost:3000/api/codeEditor/start");
+  //   // const newSocket = io("http://localhost:9999");
+  //   setSocket(newSocket);
+  //   if (socket) {
+  //     socket.emit("data", "cd project\n");
+  //     socket.emit("data", "npm run start\n");
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    if (socket) {
-      Object.entries(files).forEach(([fileName, file]) => {
-        socket.emit("codeChange", { fileName, value: file.value });
-      });
-      socket.on("data", (data) => {
-        // console.log(data);
-        termRef.current.write(
-          String.fromCharCode.apply(null, new Uint8Array(data))
-        );
-      });
+  // useEffect(() => {
+  //   if (socket) {
+  //     Object.entries(files).forEach(([fileName, file]) => {
+  //       socket.emit("codeChange", { fileName, value: file.value });
+  //     });
+  //     socket.on("data", (data) => {
+  //       // console.log(data);
+  //       termRef.current.write(
+  //         String.fromCharCode.apply(null, new Uint8Array(data))
+  //       );
+  //     });
 
-      termRef.current.onData((data) => {
-        socket.emit("data", data);
-      });
-    }
-  }, [socket]);
+  //     termRef.current.onData((data) => {
+  //       socket.emit("data", data);
+  //     });
+  //   }
+  // }, [socket]);
 
-  const file = files[fileName];
-  return (
-    <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen flex items-center justify-center overflow-x-hidden">
-      <div className="w-3/4">
-        <div className="flex flex-row justify-between">
-          <button
-            disabled={fileName === "/project/src/App.js"}
-            onClick={() => setFileName("/project/src/App.js")}
-          >
-            script.js
-          </button>
-          <button
-            disabled={fileName === "style.css"}
-            onClick={() => setFileName("style.css")}
-          >
-            style.css
-          </button>
-          <button
-            disabled={fileName === "index.html"}
-            onClick={() => setFileName("index.html")}
-          >
-            index.html
-          </button>
-        </div>
-        <Editor
-          height="80vh"
-          theme="vs-dark"
-          path={file.name}
-          defaultLanguage={file.language}
-          defaultValue={file.value}
-          onChange={handleEditorChange}
-        />
-      </div>
-      <div>
-        <div ref={terminalRef} style={{ height: "90%" }}></div>
-        <div className="flex flex-col">
-          <button onClick={() => setIframeKey(iframeKey + 1)}>Reload</button>
-          <iframe key={iframeKey} src="http://localhost:9998"></iframe>
-        </div>
-      </div>
-    </div>
-  );
+  // const file = files[fileName];
+  // return (
+  //   <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen flex items-center justify-center overflow-x-hidden">
+  //     <div className="w-3/4">
+  //       <div className="flex flex-row justify-between">
+  //         <button
+  //           disabled={fileName === "/project/src/App.js"}
+  //           onClick={() => setFileName("/project/src/App.js")}
+  //         >
+  //           script.js
+  //         </button>
+  //         <button
+  //           disabled={fileName === "style.css"}
+  //           onClick={() => setFileName("style.css")}
+  //         >
+  //           style.css
+  //         </button>
+  //         <button
+  //           disabled={fileName === "index.html"}
+  //           onClick={() => setFileName("index.html")}
+  //         >
+  //           index.html
+  //         </button>
+  //       </div>
+  //       <Editor
+  //         height="80vh"
+  //         theme="vs-dark"
+  //         path={file.name}
+  //         defaultLanguage={file.language}
+  //         defaultValue={file.value}
+  //         onChange={handleEditorChange}
+  //       />
+  //     </div>
+  //     <div>
+  //       <div ref={terminalRef} style={{ height: "90%" }}></div>
+  //       <div className="flex flex-col">
+  //         <button onClick={() => setIframeKey(iframeKey + 1)}>Reload</button>
+  //         <iframe key={iframeKey} src="http://localhost:9998"></iframe>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+  return <div className="">hi</div>;
 }

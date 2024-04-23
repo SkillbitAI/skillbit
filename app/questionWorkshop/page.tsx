@@ -294,7 +294,7 @@ const QuestionWorkshop = () => {
                 <div className="flex flex-col gap-3">
                   {questions &&
                     questions.map((question) => (
-                      <div className="relative">
+                      <div className="relative" key={question.id}>
                         <div
                           className={
                             currentQuestion?.id == question.id
@@ -684,8 +684,9 @@ const QuestionWorkshop = () => {
                       <div className="flex flex-col">
                         <h2>Question type</h2>
                         <p className="text-slate-400">
-                          We will customize your candidates' prompts to reflect
-                          this template's type.
+                          {
+                            "We will customize your candidates' prompts to reflect this template's type."
+                          }
                         </p>
                         <div className="flex gap-3 mt-3 flex-wrap">
                           <div
