@@ -54,7 +54,7 @@ export default function Tests({ params }: { params: { id: string } }) {
     socket.emit("codeChange", { fileName, value });
   };
 
-  useEffect(async () => {
+  const handleVerifyId = async () => {
     const validID = await fetch(
       "http://localhost:3000/api/codeEditor/verifyTestID",
       {
@@ -66,17 +66,12 @@ export default function Tests({ params }: { params: { id: string } }) {
 
     const validIDJSON = await validID.json();
 
-    if (!validIDJSON.valid) {
-      window.location.href = "/404";
-    }
+    // if (!validIDJSON.valid) {
+    //   window.location.href = "/404";
+    // }
+  };
 
-    termRef.current = new Terminal(xtermOptions);
-    fitAddonRef.current = new FitAddon();
-    termRef.current.loadAddon(fitAddonRef.current);
-    termRef.current.open(terminalRef.current);
-    fitAddonRef.current.fit();
-    termRef.current.focus();
-
+  const startEditor = async () => {
     const response = await fetch("http://localhost:3000/api/codeEditor/start", {
       method: "POST",
       headers: {
@@ -103,10 +98,24 @@ export default function Tests({ params }: { params: { id: string } }) {
         setIframeKey(iframeKey + 1);
       }, 2000);
     });
+  };
+
+  useEffect(() => {
+    handleVerifyId();
+    if (termRef.current == null) {
+      termRef.current = new Terminal(xtermOptions);
+      fitAddonRef.current = new FitAddon();
+      termRef.current.loadAddon(fitAddonRef.current);
+      termRef.current.open(terminalRef.current);
+      fitAddonRef.current.fit();
+      termRef.current.focus();
+    }
   }, []);
 
   useEffect(() => {
     if (socket) {
+      // termRef.current.offData();
+
       Object.entries(files).forEach(([fileName, file]) => {
         socket.emit("codeChange", { fileName, value: file.value });
       });
@@ -119,6 +128,8 @@ export default function Tests({ params }: { params: { id: string } }) {
       termRef.current.onData((data) => {
         socket.emit("data", data);
       });
+    } else {
+      startEditor();
     }
   }, [socket]);
 
