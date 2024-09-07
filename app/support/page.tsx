@@ -48,6 +48,12 @@ export default function Contact() {
         if (data.message == "Success") {
           toast.remove();
           toast.success("Ticket submitted successfully!");
+
+          //Set form fields to empty after success ticket submission
+          setFirstName("");
+          setLastName("");
+          setEmail("");
+          setMessage("");
         } else {
           toast.remove();
           toast.error("An error occurred while submitting the ticket.");
