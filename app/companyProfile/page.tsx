@@ -300,6 +300,9 @@ const CompanyProfile = () => {
           {/* <TopMenuBar></TopMenuBar> */}
           {/* Dashboard content */}
           <div className="p-6 relative">
+            <div className="flex justify-between items-center pb-6">
+              <h2>Company Profile</h2>
+            </div>
             {!companyDataLoaded && (
               <div className="flex justify-center items-center scale-150">
                 <div className="lds-ring">
@@ -468,15 +471,15 @@ const CompanyProfile = () => {
               userCompanyJoinCode &&
               userCompanyId &&
               userApprovalStatus && (
-                <div className="">
+                <div className="bg-gradient-to-br from-slate-900 to-transparent border border-slate-800 rounded-xl p-6">
                   <h1>{userCompanyName}</h1>
                   <p className="mt-2">
                     Join code:{" "}
-                    <span className="bg-slate-900 border border-slate-800 py-1 px-2 rounded-xl">
+                    <span className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
                       {userCompanyJoinCode}
                     </span>
                   </p>
-                  <div className="mt-6 pt-6 border-t border-slate-900">
+                  <div className="mt-6 pt-6 border-t border-slate-800">
                     <h2>Team Management</h2>
                     <div className="flex gap-6">
                       <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 mt-3 flex-1">
