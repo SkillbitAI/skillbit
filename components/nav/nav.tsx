@@ -4,6 +4,7 @@ import Arrow from "../../public/assets/icons/arrow.svg";
 import { useRouter } from "next/navigation";
 import Button from "@/components/button/button";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 const Nav = () => {
   const router = useRouter();
@@ -17,6 +18,7 @@ const Nav = () => {
   };
 
   const [scrolling, setScrolling] = useState(false);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,12 +51,21 @@ const Nav = () => {
           <h1 className="">Skillbit</h1>
         </div>
         <ul className="list-none hidden md:flex items-center justify-center gap-3">
-          <li
-            className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-            onClick={() => scrolltoHash("top")}
-          >
-            Home
-          </li>
+          {status === "authenticated" ? (
+            <li
+              className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
+              onClick={() => router.push("/dashboard")}
+            >
+              Home
+            </li> 
+            ) : (
+            <li
+              className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
+              onClick={() => scrolltoHash("top")}
+            >
+              Home
+            </li>
+            )}
           <li
             className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
             onClick={() => scrolltoHash("features")}
@@ -75,24 +86,45 @@ const Nav = () => {
           </li>
         </ul>
         <div className="flex justify-end ">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="bg-white bg-opacity-10 px-6 py-3 rounded-lg flex justify-center items-center backdrop-blur-lg"
-          >
-            Sign In
-            <div className=" arrow flex items-center justify-center">
-              <div className="arrowMiddle"></div>
-              <div>
-                <Image
-                  src={Arrow}
-                  alt=""
-                  width={14}
-                  height={14}
-                  className="arrowSide"
-                ></Image>
+          {status === "authenticated" ? (
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="bg-white bg-opacity-10 px-6 py-3 rounded-lg flex justify-center items-center backdrop-blur-lg"
+            >
+              Go to Dashboard
+              <div className=" arrow flex items-center justify-center">
+                <div className="arrowMiddle"></div>
+                <div>
+                  <Image
+                    src={Arrow}
+                    alt=""
+                    width={14}
+                    height={14}
+                    className="arrowSide"
+                  ></Image>
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push("/auth")}
+              className="bg-white bg-opacity-10 px-6 py-3 rounded-lg flex justify-center items-center backdrop-blur-lg"
+            >
+              Sign In
+              <div className=" arrow flex items-center justify-center">
+                <div className="arrowMiddle"></div>
+                <div>
+                  <Image
+                    src={Arrow}
+                    alt=""
+                    width={14}
+                    height={14}
+                    className="arrowSide"
+                  ></Image>
+                </div>
+              </div>
+            </button>
+          )}
         </div>
       </div>
       <div className="filter blur-2xl"></div>

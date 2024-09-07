@@ -49,7 +49,7 @@ export default function Contact() {
           toast.remove();
           toast.success("Ticket submitted successfully!");
 
-          //Set form fields to empty
+          //Set form fields to empty after success ticket submission
           setFirstName("");
           setLastName("");
           setEmail("");

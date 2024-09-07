@@ -54,17 +54,29 @@ const Footer = (props: Props) => {
             <li>
               <h1 className="text-base">Recruiters</h1>
             </li>
-            <li>
+            <li
+              className="hover:cursor-pointer"
+              onClick={() => router.push("/dashboard")}
+            >
               <p>Dashboard</p>
             </li>
-            <li>
+            <li
+              className="hover:cursor-pointer"
+              onClick={() => router.push("/applicants")}
+            >
               <p>Applicants</p>
             </li>
-            <li>
-              <p>Company Profile</p>
-            </li>
-            <li>
+            <li
+              className="hover:cursor-pointer"
+              onClick={() => router.push("/questionWorkshop")}
+            >
               <p>Template Workshop</p>
+            </li>
+            <li
+              className="hover:cursor-pointer"
+              onClick={() => router.push("/companyProfile")}
+            >
+              <p>Company Profile</p>
             </li>
           </ul>
         </div>
@@ -97,7 +109,7 @@ const Footer = (props: Props) => {
             </li>
             <li
               className="hover:cursor-pointer"
-              onClick={() => router.push("/contact")}
+              onClick={() => router.push("/support")}
             >
               <p>Support Form</p>
             </li>
