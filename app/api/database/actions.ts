@@ -876,8 +876,8 @@ export async function assignTemplate(
             port: 465,
             secure: true,
             auth: {
-              user: process.env.CONTACT_EMAIL,
-              pass: process.env.CONTACT_EMAIL_PASSWORD,
+              user: process.env.GMAIL_EMAIL,
+              pass: process.env.GMAIL_PASSWORD,
             },
           });
 
@@ -984,8 +984,8 @@ export async function contactForm(
       port: 465,
       secure: true,
       auth: {
-        user: process.env.CONTACT_EMAIL,
-        pass: process.env.CONTACT_EMAIL_PASSWORD,
+        user: process.env.GMAIL_EMAIL,
+        pass: process.env.GMAIL_PASSWORD,
       },
     });
 
