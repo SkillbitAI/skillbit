@@ -7,10 +7,6 @@ const docker = new Docker();
 export async function POST(req: Request) {
   const body = await req.json();
   const containerName = body.testID;
-  const containers = await docker.listContainers({ all: true });
-  const container = containers.find((container: any) =>
-    container.Names.includes(`/${containerName}`)
-  );
 
   const test = await prisma.testID.findUnique({
     where: {
@@ -19,8 +15,15 @@ export async function POST(req: Request) {
   });
 
   if (!test) {
-    return new Response("invalid");
+    return Response.json({
+      message: "invalid",
+    });
   }
+
+  const containers = await docker.listContainers({ all: true });
+  const container = containers.find((container: any) =>
+    container.Names.includes(`/${containerName}`)
+  );
 
   if (container) {
     console.log(`Container '${containerName}' already exists.`);
@@ -65,11 +68,15 @@ export async function POST(req: Request) {
     (err: any, container: any) => {
       if (err) {
         console.log(err);
-        return new Response("error");
+        return Response.json({
+          message: "error",
+        });
       } else {
         container.start().then(() => {
           console.log(container.id);
-          return new Response("success");
+          return Response.json({
+            message: "success",
+          });
         });
       }
     }

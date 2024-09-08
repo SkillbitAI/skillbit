@@ -47,28 +47,12 @@ export default function Tests({ params }: { params: { id: string } }) {
   const [showTerminal, setShowTerminal] = useState(true);
   const [showBrowser, setShowBrowser] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const path = usePathname();
 
   const handleEditorChange = (value, event) => {
     socket.emit("codeChange", { fileName, value });
-  };
-
-  const handleVerifyId = async () => {
-    const validID = await fetch(
-      "http://localhost:3000/api/codeEditor/verifyTestID",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testID: params.id }),
-      }
-    );
-
-    const validIDJSON = await validID.json();
-
-    // if (!validIDJSON.valid) {
-    //   window.location.href = "/404";
-    // }
   };
 
   const startEditor = async () => {
@@ -81,6 +65,12 @@ export default function Tests({ params }: { params: { id: string } }) {
     });
 
     const ports = await response.json();
+
+    if (ports.message == "invalid") {
+      window.location.href = "/404";
+    } else {
+      setIsLoading(false);
+    }
 
     const newSocket = io(`http://localhost:${ports.socketServer}`);
     setSocket(newSocket);
@@ -101,7 +91,6 @@ export default function Tests({ params }: { params: { id: string } }) {
   };
 
   useEffect(() => {
-    handleVerifyId();
     if (termRef.current == null) {
       termRef.current = new Terminal(xtermOptions);
       fitAddonRef.current = new FitAddon();
@@ -147,9 +136,37 @@ export default function Tests({ params }: { params: { id: string } }) {
       },
     });
   });
-
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
+      {isLoading && (
+        <div className="fixed left-0 right-0 top-0 bottom-0 z-50">
+          <div className="graphPaper bg-slate-900 text-white h-screen w-screen flex items-center justify-center flex-col">
+            {/* LOGO */}
+            <div className="flex">
+              <motion.div
+                className="w-12 h-12 bg-white rounded-xl rotate-45 -mr-1"
+                // initial={{ opacity: 0, y: 200, rotate: 0, scale: 0 }}
+                // animate={{ opacity: 1, y: 0, rotate: 45, scale: 1 }}
+                // transition={{ duration: 1, delay: 0, ease: "backOut" }}
+              ></motion.div>
+              <motion.div
+                className="w-12 h-12 bg-white rounded-xl rotate-45 -ml-1"
+                // initial={{ opacity: 0, y: -200, rotate: 0, scale: 0 }}
+                // animate={{ opacity: 1, y: 0, rotate: 45, scale: 1 }}
+                // transition={{ duration: 1, delay: 0.2, ease: "backOut" }}
+              ></motion.div>
+            </div>
+            <motion.p
+              initial={{ opacity: 1 }}
+              animate={{ opacity: [1, 0.4, 1] }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              className="mt-10"
+            >
+              Loading...
+            </motion.p>
+          </div>
+        </div>
+      )}
       {showSidebar && (
         <motion.div
           initial={{ opacity: 0, x: -100 }}
