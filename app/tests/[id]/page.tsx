@@ -5,7 +5,7 @@
 "use client";
 
 import Editor, { loader } from "@monaco-editor/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import React from "react";
 import { Socket, io } from "socket.io-client";
 import { motion } from "framer-motion";
@@ -48,6 +48,7 @@ export default function Tests({ params }: { params: { id: string } }) {
   const [showBrowser, setShowBrowser] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [generatedFiles, setGeneratedFiles] = useState([]);
 
   const path = usePathname();
 
@@ -55,7 +56,7 @@ export default function Tests({ params }: { params: { id: string } }) {
     socket.emit("codeChange", { fileName, value });
   };
 
-  const startEditor = async () => {
+  const startEditor = useCallback(async () => {
     const response = await fetch("http://localhost:3000/api/codeEditor/start", {
       method: "POST",
       headers: {
@@ -64,31 +65,37 @@ export default function Tests({ params }: { params: { id: string } }) {
       body: JSON.stringify({ testID: params.id }),
     });
 
-    const ports = await response.json();
+    const data = await response.json();
 
-    if (ports.message == "invalid") {
+    if (data.message == "invalid") {
       window.location.href = "/404";
     } else {
       setIsLoading(false);
     }
 
-    const newSocket = io(`http://localhost:${ports.socketServer}`);
+    const newSocket = io(`http://localhost:${data.ports.socketServer}`);
     setSocket(newSocket);
-    setWebServerPort(ports.webServer);
+    setWebServerPort(data.ports.webServer);
+    setGeneratedFiles(data.generatedFiles);
 
     newSocket.on("connect", () => {
       newSocket.emit("data", "\n");
       newSocket.emit("data", "cd project\n");
       newSocket.emit("data", "npm run start\n");
-      for (const [fileName, file] of Object.entries(files)) {
-        newSocket.emit("codeChange", { fileName, value: file.value });
-      }
+
+      // Push generated files to socket
+      data.generatedFiles.forEach((file) => {
+        newSocket.emit("codeChange", {
+          fileName: file.filename,
+          value: file.content,
+        });
+      });
 
       setTimeout(() => {
-        setIframeKey(iframeKey + 1);
+        setIframeKey((prev) => prev + 1);
       }, 2000);
     });
-  };
+  }, [params.id]);
 
   useEffect(() => {
     if (termRef.current == null) {
@@ -103,10 +110,11 @@ export default function Tests({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     if (socket) {
-      // termRef.current.offData();
-
-      Object.entries(files).forEach(([fileName, file]) => {
-        socket.emit("codeChange", { fileName, value: file.value });
+      generatedFiles.forEach((file) => {
+        socket.emit("codeChange", {
+          fileName: file.filename,
+          value: file.content,
+        });
       });
       socket.on("data", (data) => {
         termRef.current.write(
@@ -120,9 +128,9 @@ export default function Tests({ params }: { params: { id: string } }) {
     } else {
       startEditor();
     }
-  }, [socket]);
+  }, [socket, generatedFiles, startEditor]);
 
-  const file = files[fileName];
+  const file = generatedFiles.find((f) => f.filename === fileName);
 
   //1e293b
 
@@ -216,21 +224,20 @@ export default function Tests({ params }: { params: { id: string } }) {
                   <p className="text-base">Project Files</p>
                 </div>
                 <ul>
-                  {Object.keys(files).map((key) => {
-                    const file = files[key];
+                  {generatedFiles.map((file) => {
                     let icon;
-                    if (file.name.endsWith(".js")) {
+                    if (file.filename.endsWith(".js")) {
                       icon = JSIcon;
-                    } else if (file.name.endsWith(".css")) {
+                    } else if (file.filename.endsWith(".css")) {
                       icon = CSSIcon;
                     } // Add additional file type checks as necessary
 
                     return (
                       <li
-                        key={key} // Don't forget to add a unique key for each list item
-                        onClick={() => setFileName(key)}
+                        key={file.filename} // Don't forget to add a unique key for each list item
+                        onClick={() => setFileName(file.filename)}
                         className={
-                          fileName === key
+                          fileName === file.filename
                             ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
                             : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
                         }
@@ -245,7 +252,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                             className="ml-1 rounded-sm"
                           />
                         )}
-                        <p>{file.name}</p>
+                        <p>{file.filename}</p>
                       </li>
                     );
                   })}
@@ -336,9 +343,9 @@ export default function Tests({ params }: { params: { id: string } }) {
           <div className="flex-1 relative">
             <Editor
               theme="myTheme"
-              path={file.name}
-              defaultLanguage={file.language}
-              defaultValue={file.value}
+              path={fileName}
+              defaultLanguage={file?.language || "javascript"} // Use the language provided by AI
+              defaultValue={file?.content || ""}
               onChange={handleEditorChange}
               className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
             />
