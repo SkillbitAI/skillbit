@@ -41,9 +41,9 @@ button {
   font-family: p;
 }
 
-div {
+/* div {
   font-family: p;
-}
+} */
 
 button .arrow {
   transition: 0.2s;
@@ -228,7 +228,7 @@ button:hover .arrowMiddle {
 
 input:-webkit-autofill,
 textarea:-webkit-autofill {
-  background-color: rgba(255, 255, 255, 0.2) !important; 
+  background-color: rgba(255, 255, 255, 0.2) !important;
   -webkit-text-fill-color: white !important;
   border: none !important;
   outline: none !important;

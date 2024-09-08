@@ -1,3 +1,5 @@
+//UNUSED
+
 import prisma from "../../database/prismaConnection";
 import { NextResponse } from "next/server";
 
