@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
   // Generate files using OpenAI
   const completion = await openai.chat.completions.create({
-    model: "gpt-4-0613", // Use an available model
+    model: "gpt-4o-mini", // Use an available model
     messages: [
       {
         role: "system",
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     : [];
 
   // Process the generated files to replace '\n' with actual newlines
-  const processedFiles = generatedFiles.map((file) => ({
+  const processedFiles = generatedFiles.map((file: { content: string }) => ({
     ...file,
     content: file.content.replace(/\\n/g, "\n"),
   }));

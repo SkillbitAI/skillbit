@@ -130,6 +130,26 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   }, [socket, generatedFiles, startEditor]);
 
+  const getLanguageFromFilename = (filename: string) => {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'js':
+      case 'jsx':
+        return 'javascript';
+      case 'ts':
+      case 'tsx':
+        return 'typescript';
+      case 'html':
+        return 'html';
+      case 'css':
+        return 'css';
+      case 'json':
+        return 'json';
+      default:
+        return 'plaintext';
+    }
+  };
+
   const file = generatedFiles.find((f) => f.filename === fileName);
 
   //1e293b
@@ -344,10 +364,17 @@ export default function Tests({ params }: { params: { id: string } }) {
             <Editor
               theme="myTheme"
               path={fileName}
-              defaultLanguage={file?.language || "javascript"} // Use the language provided by AI
-              defaultValue={file?.content || ""}
+              defaultLanguage={getLanguageFromFilename(fileName)}
+              value={file?.content || ''}
               onChange={handleEditorChange}
               className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: 'on',
+                readOnly: false,
+                wordWrap: 'on',
+              }}
             />
           </div>
           {showBrowser && (
