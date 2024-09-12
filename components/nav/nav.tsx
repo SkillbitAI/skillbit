@@ -1,20 +1,51 @@
 import Image from "next/image";
 import Logo from "../../public/assets/branding/logos/logo_mini_transparent_white.png";
 import Arrow from "../../public/assets/icons/arrow.svg";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Button from "@/components/button/button";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 const Nav = () => {
   const router = useRouter();
-  const scrolltoHash = function (element_id: string) {
+  const pathname = usePathname();
+  const scrolltoHash = (element_id: string) =>{
     const element = document.getElementById(element_id);
     element?.scrollIntoView({
       behavior: "smooth",
       block: "end",
       inline: "nearest",
     });
+  };
+
+  const handleLogoClick = () => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+    else if (pathname === "/"){
+      scrolltoHash("top");
+    }
+    else {
+      router.push("/");
+    }
+  };
+
+  const handleFeaturesClick = () => {
+    if (pathname === "/"){
+      scrolltoHash("features");
+    }
+    else {
+      router.push("/");
+    }
+  };
+
+  const handleHowItWorksClick = () => {
+    if (pathname === "/"){
+      scrolltoHash("how it works");
+    }
+    else {
+      router.push("/");
+    }
   };
 
   const [scrolling, setScrolling] = useState(false);
@@ -40,21 +71,22 @@ const Nav = () => {
       className={`fixed top-0 left-0 right-0 backdrop-blur-lg z-50 duration-200 border-b border-white/10 px-6 ${backgroundClass}`}
     >
       <div className="justify-between items-center gap-20 flex flex-row max-w-7xl m-auto">
-        <div className="flex justify-center items-center gap-2">
+        <div className="flex justify-center items-center gap-2 cursor-pointer"
+             onClick={handleLogoClick}>
           <Image
             src={Logo}
             alt=""
             width={100}
             height={100}
-            style={{ margin: "-30px" }}
-          ></Image>
+            style={{ margin: "-30px", cursor: "pointer" }}
+          />
           <h1 className="">Skillbit</h1>
         </div>
         <ul className="list-none hidden md:flex items-center justify-center gap-3">
-          {status === "authenticated" ? (
+          {pathname !== "/" ? (
             <li
               className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push("/")}
             >
               Home
             </li> 
@@ -66,15 +98,15 @@ const Nav = () => {
               Home
             </li>
             )}
+            <li
+              className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
+              onClick={handleFeaturesClick}
+            >
+              Features
+            </li>
           <li
             className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-            onClick={() => scrolltoHash("features")}
-          >
-            Features
-          </li>
-          <li
-            className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-            onClick={() => scrolltoHash("how it works")}
+            onClick={handleHowItWorksClick}
           >
             How It Works
           </li>
