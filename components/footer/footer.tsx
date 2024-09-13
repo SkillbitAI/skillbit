@@ -91,8 +91,11 @@ const Footer = (props: Props) => {
             <li>
               <p>Our Mission</p>
             </li>
-            <li>
-              <p>Meet the Team</p>
+            <li
+              className="hover:cursor-pointer"
+              onClick={() => router.push("/team")}
+            >
+              <p>Our Team</p>
             </li>
           </ul>
         </div>

@@ -182,7 +182,8 @@ const Auth = () => {
       <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen flex items-center justify-center overflow-x-hidden">
         {/* <div className="meshGradient3 -z-10"></div> */}
         <div className="flex-1 p-6">
-          <div className="flex gap-2 items-center justify-center absolute top-6 left-6">
+          <div className="flex gap-2 items-center justify-center absolute top-6 left-6 cursor-pointer"
+               onClick={() => router.push("/")}>
             <Image
               src={Logo}
               alt=""
