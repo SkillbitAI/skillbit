@@ -41,9 +41,9 @@ button {
   font-family: p;
 }
 
-div {
+/* div {
   font-family: p;
-}
+} */
 
 button .arrow {
   transition: 0.2s;
@@ -224,6 +224,24 @@ button:hover .arrowMiddle {
     text-align: center;
     justify-content: center;
   }
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  -webkit-text-fill-color: white !important;
+  border: none !important;
+  outline: none !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input:autofill,
+textarea:autofill {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  -webkit-text-fill-color: white !important;
+  border: none !important;
+  outline: none !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .no-resize {
