@@ -47,9 +47,10 @@ const WaitingRoom = () => {
         <div className="max-w-7xl mx-auto p-40 ">
           <h1 className="text-6xl">Ready to start the test?</h1>
           <p className="mt-4">Click the button below to begin.</p>
-          <button className="bg-white bg-opacity-10 px-6 py-3 rounded-lg mt-12">
+          <br></br>
+          <a href="/codeEditor" className="bg-white bg-opacity-10 px-6 py-3 t-10 rounded-lg mt-20">
             Start Test
-          </button>
+          </a>
         </div>
       </div>
     </div>

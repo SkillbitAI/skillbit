@@ -914,11 +914,13 @@ export async function assignTemplate(
                 <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${applicant.applicant.firstName} !</p>
                 <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have been selected by ${company} to participate in a personalized assessment. Click the link below to access your
                 test dashboard.</p>
+               
+
                 <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation"
                     style="text-align:center">
                     <tbody>
                         <tr>
-                            <td><a href="example.com"
+                            <td><a href="/prescreen"
                                     style="background-color:#008cff;border-radius:7px;color:#fff;font-size:16px;text-decoration:none;text-align:center;display:inline-block;margin:10px 0px 10px 0px;padding:12px 24px 12px 24px;line-height:100%;max-width:100%"
                                     target="_blank"><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span
                                     style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get

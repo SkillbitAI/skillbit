@@ -214,7 +214,7 @@ const Dashboard = () => {
   return (
     <>
       <Toaster position="top-right"></Toaster>
-      <div className="max-w-screen text-white flex overflow-x-hidden">
+      <div className="flex max-w-screen max-h-screen m-auto text-white flex overflow-x-hidden">
         <Sidebar></Sidebar>
         <div className="bg-slate-950 flex-1">
           {/* <TopMenuBar></TopMenuBar> */}
@@ -231,9 +231,9 @@ const Dashboard = () => {
           )}
           {companyDataLoaded && (
             <div className="p-6 gap-6">
-              <div className="flex justify-between items-center pb-6">
+              <div className="z-0 flex justify-between items-center pb-6">
                 <h2>Dashboard</h2>
-                <div className="flex gap-3 items-center justify-center relative z-10">
+                <div className="flex gap-3 items-center justify-center relative ">
                   <p>{date}</p>
                   <button className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100">
                     <Image

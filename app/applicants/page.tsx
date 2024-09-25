@@ -371,6 +371,23 @@ const Applicants = () => {
       setAssignTemplatesWarning(false);
     }
   };
+  const handleSendTest = async (firstName: string, email: string) => {
+    try {
+      // First, find questions based on the company
+    
+      
+      // Then, assign a template (with validation)
+      await assignTemplateSafety();
+  
+      // If everything is valid, send the test
+      await handleAssignTemplate();
+  
+      toast.success("Test sent successfully.");
+    } catch (error) {
+      console.error("Error sending test: ", error);
+      toast.error("An error occurred while sending the test.");
+    }
+  };
 
   const handleDeleteSelected = async () => {
     try {
@@ -520,17 +537,7 @@ const Applicants = () => {
                 <Toaster position="top-right"></Toaster>
                 <ul className="flex gap-6 items-center justify-between">
                   <div className="flex gap-3 items-center justify-center">
-                    <li className="">
-                      <div className="flex gap-2 items-center text-white relative">
-                        <input
-                          type="checkbox"
-                          checked={selectAll}
-                          onChange={handleSelectAll}
-                          className="before:content[''] peer relative h-4 w-4 cursor-pointer appearance-none rounded-md border border-white transition-all before:absolute before:top-2/4 before:left-2/4 before:block before:h-12 before:w-12 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-transparent before:opacity-0 before:transition-opacity checked:border-indigo-600 checked:bg-indigo-600 checked:before:bg-indigo-600 hover:before:opacity-10"
-                        />
-                        <p>Select all</p>
-                      </div>
-                    </li>
+                    
                     <hr className="border-l border-slate-800 h-5" />
                     <div className="relative">
                       <li
@@ -1034,29 +1041,23 @@ const Applicants = () => {
                                 className="flex gap-3 border-t w-full pt-3 border-t-slate-800 hover:cursor-auto"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {/* <motion.li
-                                  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
-                                  onClick={() => toast.success("Email sent.")}
-                                  initial={{ opacity: 0, y: -20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{
-                                    duration: 0.2,
-                                    delay: 0,
-                                    ease: "backOut",
-                                  }}
-                                >
-                                  <button
-                                    className="text-sm"
-                                    onClick={() =>
-                                      handleSendEmail(
-                                        item.applicant.firstName,
-                                        item.applicant.email
-                                      )
-                                    }
-                                  >
-                                    Send Test
-                                  </button>
-                                </motion.li> */}
+                                <motion.li
+  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
+  initial={{ opacity: 0, y: -20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{
+    duration: 0.2,
+    delay: 0,
+    ease: "backOut",
+  }}
+>
+  <button
+    className="text-sm"
+    onClick={() => handleSendTest(item.applicant.firstName, item.applicant.email)}
+  >
+    Send Test
+  </button>
+</motion.li>
                                 <motion.li
                                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                                   initial={{ opacity: 0, y: -20 }}

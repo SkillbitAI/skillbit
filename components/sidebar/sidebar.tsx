@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, useRef, createRef } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-
+import Hamburger from "../../public/assets/icons/ham.svg"
 import Nav from "@/components/nav/nav";
 import Image from "next/image";
 import Arrow from "../../public/assets/icons/arrow.svg";
@@ -69,8 +69,9 @@ const Sidebar = () => {
   const [newQuestionButton, setNewQuestionButton] = useState(false);
   const [card, setCard] = useState(1);
   const [email, setEmail] = useState("");
+  const [isScreenLarge, setIsScreenLarge] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [userCompanyName, setUserCompanyName] = useState(null);
   const [userCompanyId, setUserCompanyId] = useState(null);
   const [userCompanyJoinCode, setUserCompanyJoinCode] = useState(null);
@@ -131,6 +132,17 @@ const Sidebar = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsScreenLarge(window.innerWidth >= 768); // 'md' is 768px in Tailwind
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   const findQuestions = async (company: string) => {
     try {
@@ -560,208 +572,170 @@ const Sidebar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="bg-slate-900 h-screen border-slate-800 border-r w-72">
-        <div className="fixed bg-slate-900 h-screen border-slate-800 border-r w-72">
-          <div className="flex items-center gap-2 m-6">
-            <Image
-              src={Logo}
-              alt=""
-              width={100}
-              height={100}
-              style={{ margin: "-30px" }}
-            ></Image>
-            <h1 className="text-white">Skillbit</h1>
-          </div>
-          <div className="flex flex-col justify-between mt-6 gap-2 absolute top-16 bottom-6 left-0 right-0 overflow-y-auto">
-            <ul className="list-none text-white flex flex-col gap-6">
-              <div
-                className="flex-1 max-w-xl bg-slate-800 p-2 rounded-lg flex justify-between border border-slate-700 mx-6 cursor-pointer"
-                onClick={() => setSearchClick(true)}
-              >
-                <div className="text-white bg-transparent focus:outline-none w-full placeholder:text-white text-ellipsis">
-                  Search...
-                </div>
-                <Image src={SearchIcon} alt="" width={25} height={25}></Image>
-              </div>
-              <hr className="border-t border-slate-800" />
-              <li
-                className={
-                  path == "/dashboard"
-                    ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
-                    : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
-                }
-                onClick={() => router.push("/dashboard")}
-              >
-                <div
-                  className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/dashboard" ? "1" : "0" }}
-                ></div>
-                <div className="flex gap-2">
-                  <Image
-                    src={DashboardIcon}
-                    alt=""
-                    width={25}
-                    height={25}
-                  ></Image>
-                  <p>Dashboard</p>
-                </div>
-              </li>
-              <li
-                className={
-                  path == "/applicants"
-                    ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
-                    : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
-                }
-                onClick={() => router.push("/applicants")}
-              >
-                <div
-                  className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/applicants" ? "1" : "0" }}
-                ></div>
-                <div className="flex gap-2">
-                  <Image
-                    src={ApplicantsIcon}
-                    alt=""
-                    width={25}
-                    height={25}
-                  ></Image>
-                  <p>Candidate Manager</p>
-                </div>
-              </li>
-              <li
-                className={
-                  path == "/questionWorkshop"
-                    ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
-                    : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
-                }
-                onClick={() => router.push("/questionWorkshop")}
-              >
-                <div
-                  className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/questionWorkshop" ? "1" : "0" }}
-                ></div>
-                <div className="flex gap-2">
-                  <Image
-                    src={WorkshopIcon}
-                    alt=""
-                    width={25}
-                    height={25}
-                  ></Image>
-                  <p>Template Workshop</p>
-                </div>
-              </li>
-              <li
-                className={
-                  path == "/companyProfile"
-                    ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
-                    : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
-                }
-                onClick={() => router.push("/companyProfile")}
-              >
-                <div
-                  className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/companyProfile" ? "1" : "0" }}
-                ></div>
-                <div className="flex gap-2">
-                  <Image
-                    src={CompanyIcon}
-                    alt=""
-                    width={25}
-                    height={25}
-                  ></Image>
-                  <p>Company Profile</p>
-                </div>
-              </li>
-            </ul>
-            <ul className="list-none text-white flex flex-col gap-6 mt-4">
-              <li
-                className={
-                  path == "/support"
-                    ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
-                    : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
-                }
-                onClick={() => router.push("/support")}
-              >
-                <div
-                  className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/support" ? "1" : "0" }}
-                ></div>
-                <div className="flex gap-2">
-                  <Image
-                    src={QuestionIcon}
-                    alt=""
-                    width={25}
-                    height={25}
-                  ></Image>
-                  <p>Support</p>
-                </div>
-              </li>
-              <li
-                className={
-                  path == "/settings"
-                    ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
-                    : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
-                }
-                onClick={() => router.push("/settings")}
-              >
-                <div
-                  className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/settings" ? "1" : "0" }}
-                ></div>
-                <div className="flex gap-2">
-                  <Image
-                    src={SettingsIcon}
-                    alt=""
-                    width={25}
-                    height={25}
-                  ></Image>
-                  <p>Settings</p>
-                </div>
-              </li>
-              <li
-                className={
-                  "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
-                }
-                onClick={() => signOut()}
-              >
-                <div
-                  className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: "0" }}
-                ></div>
-                <div className="flex gap-2">
-                  <Image src={LogoutIcon} alt="" width={25} height={25}></Image>
-                  <p>Log Out</p>
-                </div>
-              </li>
-              <hr className="border-t border-slate-800" />
-              <div className="mx-6 flex gap-2 items-center">
-                <div className=" rounded-full p-1">
-                  <Image
-                    src={ProfileIcon}
-                    width={35}
-                    height={35}
-                    alt="Profile"
-                  ></Image>
-                </div>
-                <div className="">
-                  <h2>
-                    {firstName} {lastName}
-                  </h2>
-                  <p className="text-white opacity-50">{email}</p>
-                </div>
-              </div>
-              {/* <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-white hover:bg-opacity-10 duration-100">
-                <Image src={SupportIcon} alt="" width={25} height={25}></Image>
-                <p>Contact Support</p>
-              </li>
-              <li className="p-2 rounded-lg flex items-center gap-2 hover:bg-white hover:bg-opacity-10 duration-100">
-                <Image src={SettingsIcon} alt="" width={25} height={25}></Image>
-                <p>Manage Account</p>
-              </li> */}
-            </ul>
-          </div>
+      {!isScreenLarge && (
+        <div className="bg-slate-950 flex:block z-50 md:hidden p-4 pt-7">
+          <button onClick={() => setSidebarOpen(!isSidebarOpen)}>
+            <Image src={Hamburger} alt="Menu" width={30} height={30} />
+          </button>
         </div>
+      )}
+
+{(isScreenLarge || !isSidebarOpen) && (
+  <div className="bg-slate-900 h-screen z-20 border-slate-800 border-r w-72">
+    <div className="fixed bg-slate-900 h-screen border-slate-800 border-r w-72">
+      <div className="flex items-center gap-2 m-6">
+        <Image
+          src={Logo}
+          alt=""
+          width={100}
+          height={100}
+          style={{ margin: "-30px" }}
+        />
+        <h1 onClick={() => router.push("/")} className="text-white hover:cursor-pointer">Skillbit</h1>
       </div>
+      <div className="flex flex-col justify-between mt-6 gap-2 absolute top-16 bottom-6 left-0 right-0 overflow-y-auto">
+        <ul className="list-none text-white flex flex-col gap-6">
+          <div
+            className="flex-1 max-w-xl bg-slate-800 p-2 rounded-lg flex justify-between border border-slate-700 mx-6 cursor-pointer"
+            onClick={() => setSearchClick(true)}
+          >
+            <div className="text-white bg-transparent focus:outline-none w-full placeholder:text-white text-ellipsis">
+              Search...
+            </div>
+            <Image src={SearchIcon} alt="" width={25} height={25} />
+          </div>
+          <hr className="border-t border-slate-800" />
+          <li
+            className={
+              path == "/dashboard"
+                ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
+                : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
+            }
+            onClick={() => router.push("/dashboard")}
+          >
+            <div
+              className="w-1 h-4 rounded-r-md bg-white"
+              style={{ opacity: path == "/dashboard" ? "1" : "0" }}
+            ></div>
+            <div className="flex gap-2">
+              <Image src={DashboardIcon} alt="Dashboard" width={25} height={25} />
+              <p>Dashboard</p>
+            </div>
+          </li>
+          <li
+            className={
+              path == "/applicants"
+                ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
+                : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
+            }
+            onClick={() => router.push("/applicants")}
+          >
+            <div
+              className="w-1 h-4 rounded-r-md bg-white"
+              style={{ opacity: path == "/applicants" ? "1" : "0" }}
+            ></div>
+            <div className="flex gap-2">
+              <Image src={ApplicantsIcon} alt="Applicants" width={25} height={25} />
+              <p>Candidate Manager</p>
+            </div>
+          </li>
+          <li
+            className={
+              path == "/questionWorkshop"
+                ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
+                : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
+            }
+            onClick={() => router.push("/questionWorkshop")}
+          >
+            <div
+              className="w-1 h-4 rounded-r-md bg-white"
+              style={{ opacity: path == "/questionWorkshop" ? "1" : "0" }}
+            ></div>
+            <div className="flex gap-2">
+              <Image src={WorkshopIcon} alt="Workshop" width={25} height={25} />
+              <p>Template Workshop</p>
+            </div>
+          </li>
+          <li
+            className={
+              path == "/companyProfile"
+                ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
+                : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
+            }
+            onClick={() => router.push("/companyProfile")}
+          >
+            <div
+              className="w-1 h-4 rounded-r-md bg-white"
+              style={{ opacity: path == "/companyProfile" ? "1" : "0" }}
+            ></div>
+            <div className="flex gap-2">
+              <Image src={CompanyIcon} alt="Company" width={25} height={25} />
+              <p>Company Profile</p>
+            </div>
+          </li>
+        </ul>
+        <ul className="list-none text-white flex flex-col gap-6 mt-4">
+          <li
+            className={
+              path == "/support"
+                ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
+                : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
+            }
+            onClick={() => router.push("/support")}
+          >
+            <div
+              className="w-1 h-4 rounded-r-md bg-white"
+              style={{ opacity: path == "/support" ? "1" : "0" }}
+            ></div>
+            <div className="flex gap-2">
+              <Image src={QuestionIcon} alt="Support" width={25} height={25} />
+              <p>Support</p>
+            </div>
+          </li>
+          <li
+            className={
+              path == "/settings"
+                ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
+                : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
+            }
+            onClick={() => router.push("/settings")}
+          >
+            <div
+              className="w-1 h-4 rounded-r-md bg-white"
+              style={{ opacity: path == "/settings" ? "1" : "0" }}
+            ></div>
+            <div className="flex gap-2">
+              <Image src={SettingsIcon} alt="Settings" width={25} height={25} />
+              <p>Settings</p>
+            </div>
+          </li>
+          <li
+            className="rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
+            onClick={() => signOut()}
+          >
+            <div className="w-1 h-4 rounded-r-md bg-white" style={{ opacity: "0" }}></div>
+            <div className="flex gap-2">
+              <Image src={LogoutIcon} alt="Logout" width={25} height={25} />
+              <p>Log Out</p>
+            </div>
+          </li>
+          <hr className="border-t border-slate-800" />
+          <div className="mx-6 flex gap-2 items-center">
+            <div className=" rounded-full p-1">
+              <Image src={ProfileIcon} width={35} height={35} alt="Profile" />
+            </div>
+            <div className="">
+              <h2>
+                {firstName} {lastName}
+              </h2>
+              <p className="text-white opacity-50">{email}</p>
+            </div>
+          </div>
+        </ul>
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 };
