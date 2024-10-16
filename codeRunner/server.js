@@ -36,10 +36,10 @@ io.on("connection", (s) => {
 
   socket.on("codeChange", (data) => {
     const filePath = path.join("/home/", data.fileName);
-    console.log(filePath);
+    console.log("filePath:", filePath);
     fs.writeFile(filePath, data.value, (err) => {
       if (err) {
-        console.log(err);
+        console.log("err:", err);
       }
     });
   });

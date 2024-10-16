@@ -34,7 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "build/types/**/*.ts"
-  ],
+, "app/api/createContainer/createContainer.js"  ],
   "exclude": [
     "node_modules"
   ]
