@@ -48,6 +48,7 @@ export default function Guides() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
                 className="bg-slate-800 p-6 rounded-lg items-center flex flex-col justify-center w-full hover:cursor-pointer transition hover:bg-indigo-600"
+                onClick={() => router.push("/recruiterGuide")}
               >
                 <Image src={Recruiter} alt="Applicant Guide" width={100} height={100}></Image>
                 <h2 className="mt-6 text-lg font-semibold">Recruiters</h2>

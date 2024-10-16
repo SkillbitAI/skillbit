@@ -18,9 +18,9 @@ import AssessmentSubmission from "../../public/assets/images/assessmentSubmissio
 export default function ApplicantGuide() {
   return (
     <>
-      <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen flex items-center flex-col justify-center overflow-x-hidden">
+      <div className="max-w-screen text-white bg-slate-900 graphPaper min-h-screen flex items-center flex-col justify-center">
         <Nav></Nav>
-        <div className="w-full max-w-6xl mx-auto py-40 px-6 flex gap-x-10">
+        <div className="w-full max-w-6xl mx-auto py-20 px-6 flex gap-x-10">
           <div className="w-1/4 hidden md:block">
             <ul className="w-60 shrink-0 sticky top-8 flex flex-col text-sm gap-y-2">
               <li>
@@ -39,7 +39,7 @@ export default function ApplicantGuide() {
             <h1 id="introduction" className="text-4xl font-bold">Introduction</h1>
             <p className="mt-8">
               Welcome to the Skillbit Applicant Guide! This guide will help you navigate the Skillbit platform and make the most of your experience.
-              The process is simple, you don't need to create an account to use our platform. Just follow the steps below and you'll be on your way to an easy interview process.
+              The process is simple, just follow the steps below and you'll be on your way to an easy interview process.
             </p>
             <h1 id="accessing-skillbit" className="text-4xl font-bold mt-10">Accessing Skillbit</h1>
             <p className="mt-8">
