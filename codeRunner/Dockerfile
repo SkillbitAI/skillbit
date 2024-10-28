@@ -21,5 +21,6 @@ RUN npx create-react-app project
 WORKDIR /home/project
 COPY codeRunner.env .env
 WORKDIR /server
-RUN npm install -g pm2
-CMD pm2 start server.js && cd /home/project && npm start && pm2 logs
+CMD ["node", "server.js"]
+# RUN npm install -g pm2
+# CMD pm2 start server.js && cd /home/project && npm start && pm2 logs

@@ -39,12 +39,12 @@
 //       console.log(`Container '${containerName}' already exists.`);
 //       const containerInfo = await docker.getContainer(container.Id).inspect();
 //       const portBindings = containerInfo.HostConfig.PortBindings;
-  
+
 //       const ports = {
 //         webServer: portBindings["3000/tcp"][0].HostPort,
 //         socketServer: portBindings["9999/tcp"][0].HostPort,
 //       };
-  
+
 //       return JSON.stringify(ports);
 //     }
 
@@ -90,9 +90,8 @@
 //       webServer: randomPort2,
 //       socketServer: randomPort,
 //     };
-  
-//     return JSON.stringify(ports);
 
+//     return JSON.stringify(ports);
 
 // } catch(error){
 //   console.error("hello")
@@ -105,11 +104,11 @@
 
 const Docker = require("dockerode");
 
-async function createContainer(backendKey, containerName){
-    let docker;
+async function createContainer(backendKey, containerName) {
+  let docker;
   try {
     docker = new Docker({
-      host: "http://18.234.137.192",
+      host: "http://3.85.32.221",
       port: 2375,
     });
   } catch (err) {
@@ -119,9 +118,7 @@ async function createContainer(backendKey, containerName){
     };
   }
 
-  if (
-    backendKey !== process.env.BACKEND_KEY
-  ) {
+  if (backendKey !== process.env.BACKEND_KEY) {
     return {
       error: "Unauthorized",
     };
@@ -198,8 +195,6 @@ async function createContainer(backendKey, containerName){
       err,
     };
   }
-
-
 }
 
-export default createContainer
+export default createContainer;
