@@ -66,13 +66,15 @@ export default function Tests({ params }: { params: { id: string } }) {
 
     const ports = await response.json();
 
+    console.log(ports)
+
     if (ports.message == "invalid") {
       window.location.href = "/404";
     } else {
       setIsLoading(false);
     }
 
-    const newSocket = io(`http://localhost:${ports.socketServer}`);
+    const newSocket = io(`http://18.234.137.192:${ports.socketServer}`);
     setSocket(newSocket);
     setWebServerPort(ports.webServer);
 
@@ -358,7 +360,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               <iframe
                 className="w-full h-full"
                 key={iframeKey}
-                src={`http://localhost:${webServerPort}`}
+                src={`http://18.234.137.192:${webServerPort}`}
               ></iframe>
             </motion.div>
           )}
