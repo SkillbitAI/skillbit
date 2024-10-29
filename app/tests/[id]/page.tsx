@@ -58,7 +58,7 @@ export default function Tests({ params }: { params: { id: string } }) {
   };
 
   const startEditor = async () => {
-    const response = await fetch("http://localhost:3000/api/codeEditor/start", {
+    const response = await fetch("/api/codeEditor/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -139,27 +139,6 @@ export default function Tests({ params }: { params: { id: string } }) {
       startEditor();
     }
   }, [socket]);
-
-  // useEffect(() => {
-  //   if (socket) {
-  //     // termRef.current.offData();
-
-  //     Object.entries(files).forEach(([fileName, file]) => {
-  //       socket.emit("codeChange", { fileName, value: file.value });
-  //     });
-  //     socket.on("data", (data) => {
-  //       termRef.current.write(
-  //         String.fromCharCode.apply(null, new Uint8Array(data))
-  //       );
-  //     });
-
-  //     termRef.current.onData((data) => {
-  //       socket.emit("data", data);
-  //     });
-  //   } else {
-  //     startEditor();
-  //   }
-  // }, [socket]);
 
   const file = files[fileName];
 

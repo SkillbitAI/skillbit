@@ -130,11 +130,11 @@ async function createContainer(backendKey, containerName) {
       container.Names.includes(`/${containerName}`)
     );
 
-    // if (container != undefined) {
-    //     console.log(`Container '${containerName}' already exists. Removing...`);
-    //     const existingContainer = docker.getContainer(container.Id);
-    //     await existingContainer.remove({ force: true });
-    //     console.log(`Container '${containerName}' removed.`);
+    // if (container) {
+    //   console.log(`Container '${containerName}' already exists. Removing...`);
+    //   const existingContainer = docker.getContainer(container.Id);
+    //   await existingContainer.remove({ force: true });
+    //   console.log(`Container '${containerName}' removed.`);
     // }
 
     if (container) {
