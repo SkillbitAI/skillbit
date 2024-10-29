@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Logo from "../../public/assets/branding/logos/logo_mini_transparent_white.png";
 import Arrow from "../../public/assets/icons/arrow.svg";
-import { useRouter } from "next/navigation";
-import Button from "@/components/button/button";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 const Nav = () => {
   const router = useRouter();
+  const pathname = usePathname(); 
   const scrolltoHash = function (element_id: string) {
     const element = document.getElementById(element_id);
     element?.scrollIntoView({
@@ -20,24 +20,31 @@ const Nav = () => {
   const [scrolling, setScrolling] = useState(false);
   const { data: session, status } = useSession();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 500;
-      setScrolling(isScrolled);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
-  const backgroundClass = scrolling
+  useEffect(() => {
+    if (pathname !== "/applicantGuide" && pathname !== "/recruiterGuide") {
+      const handleScroll = () => {
+        const isScrolled = window.scrollY > 500;
+        setScrolling(isScrolled);
+      };
+      window.addEventListener("scroll", handleScroll);
+      return () => {
+        window.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, [pathname]);
+
+
+  const isApplicantGuidePage = pathname === "/applicantGuide";
+  const isRecruiterGuidePage = pathname === "/recruiterGuide";
+  const navbarPosition = isApplicantGuidePage || isRecruiterGuidePage ? "static" : "fixed";
+  const backgroundClass = scrolling && !isApplicantGuidePage && !isRecruiterGuidePage
     ? "bg-slate-900 bg-opacity-50 py-3"
     : "py-6";
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 backdrop-blur-lg z-50 duration-200 border-b border-white/10 px-6 ${backgroundClass}`}
+      className={`${navbarPosition} w-full top-0 left-0 right-0 backdrop-blur-lg z-50 duration-200 border-b border-white/10 px-6 ${backgroundClass}`}
     >
       <div className="justify-between items-center gap-20 flex flex-row max-w-7xl m-auto">
         <div className="flex justify-center items-center gap-2">
@@ -57,15 +64,15 @@ const Nav = () => {
               onClick={() => router.push("/dashboard")}
             >
               Home
-            </li> 
-            ) : (
+            </li>
+          ) : (
             <li
               className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
               onClick={() => scrolltoHash("top")}
             >
               Home
             </li>
-            )}
+          )}
           <li
             className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
             onClick={() => scrolltoHash("features")}
