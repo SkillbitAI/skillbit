@@ -16,6 +16,7 @@ import Image from "next/image";
 import Logo from "../../../public/assets/branding/logos/logo_mini_transparent_white.png";
 import TerminalIcon from "../../../public/assets/icons/terminal.svg";
 import WindowIcon from "../../../public/assets/icons/window.svg";
+import RefreshIcon from "../../../public/assets/icons/refresh.svg"; // <-- Import Refresh Icon
 import HTMLIcon from "../../../public/assets/icons/html.svg";
 import CSSIcon from "../../../public/assets/icons/css.svg";
 import JSIcon from "../../../public/assets/icons/javascript.svg";
@@ -154,6 +155,13 @@ export default function Tests({ params }: { params: { id: string } }) {
       },
     });
   });
+
+  // <-- Add the refresh handler function
+  const handleRefreshClick = () => {
+    // Placeholder function: currently does nothing
+    console.log("Refresh icon clicked");
+  };
+
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
       {isLoading && (
@@ -313,7 +321,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               <Image src={SidebarIcon} alt="" width={20} height={20}></Image>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <Image
               src={Logo}
               alt=""
@@ -323,9 +331,10 @@ export default function Tests({ params }: { params: { id: string } }) {
             ></Image>
             <h1 className="text-white text-2xl">Skillbit</h1>
           </div>
-          <div className="flex-1 flex justify-end">
+          <div className="flex-1 flex justify-end items-center gap-2"> {/* Added gap-2 for spacing */}
+            {/* Existing Terminal Icon */}
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700"
+              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
               onClick={() => {
                 if (showTerminal) {
                   setShowTerminal(false);
@@ -334,10 +343,11 @@ export default function Tests({ params }: { params: { id: string } }) {
                 }
               }}
             >
-              <Image src={TerminalIcon} alt="" width={20} height={20}></Image>
+              <Image src={TerminalIcon} alt="Terminal" width={20} height={20}></Image>
             </div>
+            {/* Existing Window Icon */}
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700"
+              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
               onClick={() => {
                 if (showBrowser) {
                   setShowBrowser(false);
@@ -346,7 +356,14 @@ export default function Tests({ params }: { params: { id: string } }) {
                 }
               }}
             >
-              <Image src={WindowIcon} alt="" width={20} height={20}></Image>
+              <Image src={WindowIcon} alt="Window" width={20} height={20}></Image>
+            </div>
+            {/* New Refresh Icon */}
+            <div
+              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              onClick={handleRefreshClick} // Attach the click handler
+            >
+              <Image src={RefreshIcon} alt="Refresh" width={20} height={20}></Image>
             </div>
           </div>
         </div>
@@ -390,7 +407,7 @@ export default function Tests({ params }: { params: { id: string } }) {
           >
             <div ref={terminalRef} className="overflow-hidden"></div>
             <div
-              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700"
+              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700 cursor-pointer"
               onClick={() => {
                 if (showTerminal) {
                   setShowTerminal(false);
@@ -399,7 +416,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                 }
               }}
             >
-              <Image src={ExitIcon} alt="" width={10} height={10}></Image>
+              <Image src={ExitIcon} alt="Close Terminal" width={10} height={10}></Image>
             </div>
           </div>
         </div>
