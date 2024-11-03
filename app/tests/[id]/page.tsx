@@ -29,6 +29,8 @@ import Link from "next/link";
 import { files } from "./files";
 import { verifyTestId } from "./verifyTestId";
 
+const DOCKER_EC2_TOGGLE = true;
+
 const xtermOptions = {
   useStyle: true,
   screenKeys: true,
@@ -56,7 +58,7 @@ export default function Tests({ params }: { params: { id: string } }) {
   };
 
   const startEditor = async () => {
-    const response = await fetch("http://localhost:3000/api/codeEditor/start", {
+    const response = await fetch("/api/codeEditor/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,19 +68,26 @@ export default function Tests({ params }: { params: { id: string } }) {
 
     const ports = await response.json();
 
+    console.log(ports);
+
     if (ports.message == "invalid") {
       window.location.href = "/404";
     } else {
       setIsLoading(false);
     }
 
-    const newSocket = io(`http://localhost:${ports.socketServer}`);
+    const newSocket = io(
+      DOCKER_EC2_TOGGLE
+        ? `http://3.85.32.221:${ports.socketServer}`
+        : `http://localhost:${ports.socketServer}`
+    );
     setSocket(newSocket);
     setWebServerPort(ports.webServer);
 
     newSocket.on("connect", () => {
       newSocket.emit("data", "\n");
       newSocket.emit("data", "cd project\n");
+      newSocket.emit("data", "npm install ajv@^6.12.6 ajv-keywords@^3.5.2\n");
       newSocket.emit("data", "npm run start\n");
       for (const [fileName, file] of Object.entries(files)) {
         newSocket.emit("codeChange", { fileName, value: file.value });
@@ -102,21 +111,30 @@ export default function Tests({ params }: { params: { id: string } }) {
   }, []);
 
   useEffect(() => {
+    if (termRef.current == null) {
+      termRef.current = new Terminal(xtermOptions);
+      fitAddonRef.current = new FitAddon();
+      termRef.current.loadAddon(fitAddonRef.current);
+      termRef.current.open(terminalRef.current);
+      fitAddonRef.current.fit();
+      termRef.current.focus();
+    }
+
     if (socket) {
-      // termRef.current.offData();
+      // Prevent multiple listeners from being attached
+      if (!termRef.current._onDataAttached) {
+        socket.on("data", (data) => {
+          termRef.current.write(
+            String.fromCharCode.apply(null, new Uint8Array(data))
+          );
+        });
 
-      Object.entries(files).forEach(([fileName, file]) => {
-        socket.emit("codeChange", { fileName, value: file.value });
-      });
-      socket.on("data", (data) => {
-        termRef.current.write(
-          String.fromCharCode.apply(null, new Uint8Array(data))
-        );
-      });
+        termRef.current.onData((data) => {
+          socket.emit("data", data);
+        });
 
-      termRef.current.onData((data) => {
-        socket.emit("data", data);
-      });
+        termRef.current._onDataAttached = true; // Flag to ensure listener is only added once
+      }
     } else {
       startEditor();
     }
@@ -358,7 +376,11 @@ export default function Tests({ params }: { params: { id: string } }) {
               <iframe
                 className="w-full h-full"
                 key={iframeKey}
-                src={`http://localhost:${webServerPort}`}
+                src={
+                  DOCKER_EC2_TOGGLE
+                    ? `http://3.85.32.221:${webServerPort}`
+                    : `http://localhost:${webServerPort}`
+                }
               ></iframe>
             </motion.div>
           )}
