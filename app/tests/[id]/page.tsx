@@ -79,7 +79,7 @@ export default function Tests({ params }: { params: { id: string } }) {
 
     const newSocket = io(
       DOCKER_EC2_TOGGLE
-        ? `http://3.85.32.221:${ports.socketServer}`
+        ? `http://3.94.57.49:${ports.socketServer}`
         : `http://localhost:${ports.socketServer}`
     );
     setSocket(newSocket);
@@ -395,7 +395,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                 key={iframeKey}
                 src={
                   DOCKER_EC2_TOGGLE
-                    ? `http://3.85.32.221:${webServerPort}`
+                    ? `http://3.94.57.49:${webServerPort}`
                     : `http://localhost:${webServerPort}`
                 }
               ></iframe>
