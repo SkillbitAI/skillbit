@@ -171,6 +171,22 @@ export default function Tests({ params }: { params: { id: string } }) {
     console.log("Refresh icon clicked");
   };
 
+  const deleteContainer = async () => {
+    const response = await fetch("/api/codeEditor/end", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ testID: params.id }),
+    });
+
+    const ports = await response.json();
+
+    console.log(ports);
+
+    window.location.href = "/404";
+  };
+
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
       {isLoading && (
@@ -284,6 +300,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
+                onClick={deleteContainer}
               >
                 Submit{" "}
                 <div className="arrow flex items-center justify-center">
