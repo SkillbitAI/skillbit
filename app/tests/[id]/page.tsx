@@ -64,25 +64,25 @@ export default function Tests({ params }: { params: { id: string } }) {
       },
       body: JSON.stringify({ testID: params.id }),
     });
-  
+
     const ports = await response.json();
-  
+
     console.log(ports);
-  
+
     if (ports.message == "invalid") {
       window.location.href = "/404";
     } else {
       setIsLoading(false);
     }
-  
+
     const newSocket = io(
       DOCKER_EC2_TOGGLE
-        ? `http://3.94.57.49:${ports.socketServer}`
+        ? `http://54.225.167.48:${ports.socketServer}`
         : `http://localhost:${ports.socketServer}`
     );
     setSocket(newSocket);
     setWebServerPort(ports.webServer);
-  
+
     newSocket.on("connect", () => {
       newSocket.emit("data", "\n");
       newSocket.emit("data", "cd project\n");
@@ -91,33 +91,29 @@ export default function Tests({ params }: { params: { id: string } }) {
       for (const [fileName, file] of Object.entries(files)) {
         newSocket.emit("codeChange", { fileName, value: file.value });
       }
-    
+
       setTimeout(() => {
         setIframeKey(iframeKey + 1);
       }, 2000);
     });
   };
-  
 
   // Initialize the terminal
   useEffect(() => {
-   
-        if (termRef.current == null) {
-          termRef.current = new Terminal(xtermOptions);
-          fitAddonRef.current = new FitAddon();
-          termRef.current.loadAddon(fitAddonRef.current);
-          termRef.current.open(terminalRef.current);
-          fitAddonRef.current.fit();
-          termRef.current.focus();
+    if (termRef.current == null) {
+      termRef.current = new Terminal(xtermOptions);
+      fitAddonRef.current = new FitAddon();
+      termRef.current.loadAddon(fitAddonRef.current);
+      termRef.current.open(terminalRef.current);
+      fitAddonRef.current.fit();
+      termRef.current.focus();
 
-          // Start the editor if not already started
-          if (!socket) {
-            startEditor();
-          }
-        }
-     
-   
-  });
+      // Start the editor if not already started
+      if (!socket) {
+        startEditor();
+      }
+    }
+  }, []);
 
   // Set up socket event listeners after both terminal and socket are ready
   useEffect(() => {
@@ -142,7 +138,7 @@ export default function Tests({ params }: { params: { id: string } }) {
         try {
           const response = await fetch(
             DOCKER_EC2_TOGGLE
-              ? `http://3.94.57.49:${webServerPort}`
+              ? `http://54.225.167.48:${webServerPort}`
               : `http://localhost:${webServerPort}`
           );
           if (response.ok) {
@@ -182,12 +178,8 @@ export default function Tests({ params }: { params: { id: string } }) {
           <div className="graphPaper bg-slate-900 text-white h-screen w-screen flex items-center justify-center flex-col">
             {/* LOGO */}
             <div className="flex">
-              <motion.div
-                className="w-12 h-12 bg-white rounded-xl rotate-45 -mr-1"
-              ></motion.div>
-              <motion.div
-                className="w-12 h-12 bg-white rounded-xl rotate-45 -ml-1"
-              ></motion.div>
+              <motion.div className="w-12 h-12 bg-white rounded-xl rotate-45 -mr-1"></motion.div>
+              <motion.div className="w-12 h-12 bg-white rounded-xl rotate-45 -ml-1"></motion.div>
             </div>
             <motion.p
               initial={{ opacity: 1 }}
@@ -235,9 +227,9 @@ export default function Tests({ params }: { params: { id: string } }) {
                 <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
                 <h1 className="text-sm">Prompt:</h1>
                 <p className="text-sm">
-                  You are tasked with building a simple To-Do list application in
-                  React. The application should allow users to add and remove tasks
-                  from their to-do list...
+                  You are tasked with building a simple To-Do list application
+                  in React. The application should allow users to add and remove
+                  tasks from their to-do list...
                 </p>
                 <Link href="" className="text-sm">
                   See more
@@ -347,7 +339,12 @@ export default function Tests({ params }: { params: { id: string } }) {
               className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
               onClick={() => setShowBrowser(!showBrowser)}
             >
-              <Image src={WindowIcon} alt="Window" width={20} height={20}></Image>
+              <Image
+                src={WindowIcon}
+                alt="Window"
+                width={20}
+                height={20}
+              ></Image>
             </div>
             <div
               className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
@@ -390,30 +387,30 @@ export default function Tests({ params }: { params: { id: string } }) {
                 key={iframeKey}
                 src={
                   DOCKER_EC2_TOGGLE
-                    ? `http://3.94.57.49:${webServerPort}`
+                    ? `http://54.225.167.48:${webServerPort}`
                     : `http://localhost:${webServerPort}`
                 }
               ></iframe>
             </motion.div>
           )}
-          {showTerminal && (
+          <div
+            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
+            style={{ display: showTerminal ? "block" : "none" }}
+          >
+            <div ref={terminalRef} className="overflow-hidden"></div>
             <div
-              className="block left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
+              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700"
+              onClick={() => {
+                if (showTerminal) {
+                  setShowTerminal(false);
+                } else {
+                  setShowTerminal(true);
+                }
+              }}
             >
-              <div ref={terminalRef} className="overflow-hidden"></div>
-              <div
-                className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700 cursor-pointer"
-                onClick={() => setShowTerminal(!showTerminal)}
-              >
-                <Image
-                  src={ExitIcon}
-                  alt="Close Terminal"
-                  width={10}
-                  height={10}
-                ></Image>
-              </div>
+              <Image src={ExitIcon} alt="" width={10} height={10}></Image>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

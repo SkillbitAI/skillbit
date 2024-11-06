@@ -108,7 +108,7 @@ async function createContainer(backendKey, containerName) {
   let docker;
   try {
     docker = new Docker({
-      host: "http://3.94.57.49",
+      host: "http://54.225.167.48",
       port: 2375,
     });
   } catch (err) {
