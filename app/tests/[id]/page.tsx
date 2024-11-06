@@ -7,7 +7,7 @@
 import Editor, { loader } from "@monaco-editor/react";
 import { useState, useEffect, useRef } from "react";
 import React from "react";
-import { Socket, io } from "socket.io-client";
+import { io } from "socket.io-client";
 import { motion } from "framer-motion";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
@@ -16,19 +16,16 @@ import Image from "next/image";
 import Logo from "../../../public/assets/branding/logos/logo_mini_transparent_white.png";
 import TerminalIcon from "../../../public/assets/icons/terminal.svg";
 import WindowIcon from "../../../public/assets/icons/window.svg";
-import RefreshIcon from "../../../public/assets/icons/refresh.svg"; // <-- Import Refresh Icon
-import HTMLIcon from "../../../public/assets/icons/html.svg";
+import RefreshIcon from "../../../public/assets/icons/refresh.svg";
 import CSSIcon from "../../../public/assets/icons/css.svg";
 import JSIcon from "../../../public/assets/icons/javascript.svg";
 import SidebarIcon from "../../../public/assets/icons/sidebar.svg";
 import DropdownIcon from "../../../public/assets/icons/dropdown.svg";
 import SearchIcon from "../../../public/assets/icons/search.svg";
 import ExitIcon from "../../../public/assets/icons/exit.svg";
-import { usePathname } from "next/navigation";
 import Arrow from "../../../public/assets/icons/arrow.svg";
 import Link from "next/link";
 import { files } from "./files";
-import { verifyTestId } from "./verifyTestId";
 
 const DOCKER_EC2_TOGGLE = true;
 
@@ -51,11 +48,12 @@ export default function Tests({ params }: { params: { id: string } }) {
   const [showBrowser, setShowBrowser] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-
-  const path = usePathname();
+  const [isAppReady, setIsAppReady] = useState(false);
 
   const handleEditorChange = (value, event) => {
-    socket.emit("codeChange", { fileName, value });
+    if (socket) {
+      socket.emit("codeChange", { fileName, value });
+    }
   };
 
   const startEditor = async () => {
@@ -66,17 +64,17 @@ export default function Tests({ params }: { params: { id: string } }) {
       },
       body: JSON.stringify({ testID: params.id }),
     });
-
+  
     const ports = await response.json();
-
+  
     console.log(ports);
-
+  
     if (ports.message == "invalid") {
       window.location.href = "/404";
     } else {
       setIsLoading(false);
     }
-
+  
     const newSocket = io(
       DOCKER_EC2_TOGGLE
         ? `http://3.94.57.49:${ports.socketServer}`
@@ -84,7 +82,7 @@ export default function Tests({ params }: { params: { id: string } }) {
     );
     setSocket(newSocket);
     setWebServerPort(ports.webServer);
-
+  
     newSocket.on("connect", () => {
       newSocket.emit("data", "\n");
       newSocket.emit("data", "cd project\n");
@@ -93,57 +91,74 @@ export default function Tests({ params }: { params: { id: string } }) {
       for (const [fileName, file] of Object.entries(files)) {
         newSocket.emit("codeChange", { fileName, value: file.value });
       }
-
+    
       setTimeout(() => {
         setIframeKey(iframeKey + 1);
       }, 2000);
     });
   };
+  
+
+  // Initialize the terminal
+  useEffect(() => {
+   
+        if (termRef.current == null) {
+          termRef.current = new Terminal(xtermOptions);
+          fitAddonRef.current = new FitAddon();
+          termRef.current.loadAddon(fitAddonRef.current);
+          termRef.current.open(terminalRef.current);
+          fitAddonRef.current.fit();
+          termRef.current.focus();
+
+          // Start the editor if not already started
+          if (!socket) {
+            startEditor();
+          }
+        }
+     
+   
+  });
+
+  // Set up socket event listeners after both terminal and socket are ready
+  useEffect(() => {
+    if (socket && termRef.current && !termRef.current._onDataAttached) {
+      socket.on("data", (data) => {
+        termRef.current.write(
+          String.fromCharCode.apply(null, new Uint8Array(data))
+        );
+      });
+
+      termRef.current.onData((data) => {
+        socket.emit("data", data);
+      });
+
+      termRef.current._onDataAttached = true; // Flag to prevent multiple listeners
+    }
+  }, [socket, termRef.current]);
 
   useEffect(() => {
-    if (termRef.current == null) {
-      termRef.current = new Terminal(xtermOptions);
-      fitAddonRef.current = new FitAddon();
-      termRef.current.loadAddon(fitAddonRef.current);
-      termRef.current.open(terminalRef.current);
-      fitAddonRef.current.fit();
-      termRef.current.focus();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (termRef.current == null) {
-      termRef.current = new Terminal(xtermOptions);
-      fitAddonRef.current = new FitAddon();
-      termRef.current.loadAddon(fitAddonRef.current);
-      termRef.current.open(terminalRef.current);
-      fitAddonRef.current.fit();
-      termRef.current.focus();
-    }
-
-    if (socket) {
-      // Prevent multiple listeners from being attached
-      if (!termRef.current._onDataAttached) {
-        socket.on("data", (data) => {
-          termRef.current.write(
-            String.fromCharCode.apply(null, new Uint8Array(data))
+    if (webServerPort) {
+      const checkAppReady = async () => {
+        try {
+          const response = await fetch(
+            DOCKER_EC2_TOGGLE
+              ? `http://3.94.57.49:${webServerPort}`
+              : `http://localhost:${webServerPort}`
           );
-        });
-
-        termRef.current.onData((data) => {
-          socket.emit("data", data);
-        });
-
-        termRef.current._onDataAttached = true; // Flag to ensure listener is only added once
-      }
-    } else {
-      startEditor();
+          if (response.ok) {
+            setIsAppReady(true);
+          } else {
+            setTimeout(checkAppReady, 1000);
+          }
+        } catch (error) {
+          setTimeout(checkAppReady, 1000);
+        }
+      };
+      checkAppReady();
     }
-  }, [socket]);
+  }, [webServerPort]);
 
   const file = files[fileName];
-
-  //1e293b
 
   loader.init().then((monaco) => {
     monaco.editor.defineTheme("myTheme", {
@@ -156,9 +171,7 @@ export default function Tests({ params }: { params: { id: string } }) {
     });
   });
 
-  // <-- Add the refresh handler function
   const handleRefreshClick = () => {
-    // Placeholder function: currently does nothing
     console.log("Refresh icon clicked");
   };
 
@@ -171,15 +184,9 @@ export default function Tests({ params }: { params: { id: string } }) {
             <div className="flex">
               <motion.div
                 className="w-12 h-12 bg-white rounded-xl rotate-45 -mr-1"
-                // initial={{ opacity: 0, y: 200, rotate: 0, scale: 0 }}
-                // animate={{ opacity: 1, y: 0, rotate: 45, scale: 1 }}
-                // transition={{ duration: 1, delay: 0, ease: "backOut" }}
               ></motion.div>
               <motion.div
                 className="w-12 h-12 bg-white rounded-xl rotate-45 -ml-1"
-                // initial={{ opacity: 0, y: -200, rotate: 0, scale: 0 }}
-                // animate={{ opacity: 1, y: 0, rotate: 45, scale: 1 }}
-                // transition={{ duration: 1, delay: 0.2, ease: "backOut" }}
               ></motion.div>
             </div>
             <motion.p
@@ -228,9 +235,9 @@ export default function Tests({ params }: { params: { id: string } }) {
                 <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
                 <h1 className="text-sm">Prompt:</h1>
                 <p className="text-sm">
-                  You are tasked with building a simple To-Do list application
-                  in React. The application should allow users to add and remove
-                  tasks from their to-do list...
+                  You are tasked with building a simple To-Do list application in
+                  React. The application should allow users to add and remove tasks
+                  from their to-do list...
                 </p>
                 <Link href="" className="text-sm">
                   See more
@@ -249,18 +256,17 @@ export default function Tests({ params }: { params: { id: string } }) {
                       icon = JSIcon;
                     } else if (file.name.endsWith(".css")) {
                       icon = CSSIcon;
-                    } // Add additional file type checks as necessary
+                    }
 
                     return (
                       <li
-                        key={key} // Don't forget to add a unique key for each list item
+                        key={key}
                         onClick={() => setFileName(key)}
                         className={
                           fileName === key
                             ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
                             : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
                         }
-                        // 'disabled' attribute is not valid on 'li' element. You may need to handle it differently
                       >
                         {icon && (
                           <Image
@@ -288,7 +294,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                 transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
               >
                 Submit{" "}
-                <div className=" arrow flex items-center justify-center">
+                <div className="arrow flex items-center justify-center">
                   <div className="arrowMiddle"></div>
                   <div>
                     <Image
@@ -309,14 +315,8 @@ export default function Tests({ params }: { params: { id: string } }) {
         <div className="bg-slate-900 border-b border-slate-700 flex justify-between p-3">
           <div className="flex-1 flex gap-2">
             <div
-              className="flex justify-start p-2 rounded-md hover:bg-slate-700"
-              onClick={() => {
-                if (showSidebar) {
-                  setShowSidebar(false);
-                } else {
-                  setShowSidebar(true);
-                }
-              }}
+              className="flex justify-start p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              onClick={() => setShowSidebar(!showSidebar)}
             >
               <Image src={SidebarIcon} alt="" width={20} height={20}></Image>
             </div>
@@ -331,39 +331,34 @@ export default function Tests({ params }: { params: { id: string } }) {
             ></Image>
             <h1 className="text-white text-2xl">Skillbit</h1>
           </div>
-          <div className="flex-1 flex justify-end items-center gap-2"> {/* Added gap-2 for spacing */}
-            {/* Existing Terminal Icon */}
+          <div className="flex-1 flex justify-end items-center gap-2">
             <div
               className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
-              onClick={() => {
-                if (showTerminal) {
-                  setShowTerminal(false);
-                } else {
-                  setShowTerminal(true);
-                }
-              }}
+              onClick={() => setShowTerminal(!showTerminal)}
             >
-              <Image src={TerminalIcon} alt="Terminal" width={20} height={20}></Image>
+              <Image
+                src={TerminalIcon}
+                alt="Terminal"
+                width={20}
+                height={20}
+              ></Image>
             </div>
-            {/* Existing Window Icon */}
             <div
               className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
-              onClick={() => {
-                if (showBrowser) {
-                  setShowBrowser(false);
-                } else {
-                  setShowBrowser(true);
-                }
-              }}
+              onClick={() => setShowBrowser(!showBrowser)}
             >
               <Image src={WindowIcon} alt="Window" width={20} height={20}></Image>
             </div>
-            {/* New Refresh Icon */}
             <div
               className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
-              onClick={handleRefreshClick} // Attach the click handler
+              onClick={handleRefreshClick}
             >
-              <Image src={RefreshIcon} alt="Refresh" width={20} height={20}></Image>
+              <Image
+                src={RefreshIcon}
+                alt="Refresh"
+                width={20}
+                height={20}
+              ></Image>
             </div>
           </div>
         </div>
@@ -378,7 +373,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
             />
           </div>
-          {showBrowser && (
+          {isAppReady && showBrowser && (
             <motion.div
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
@@ -401,24 +396,24 @@ export default function Tests({ params }: { params: { id: string } }) {
               ></iframe>
             </motion.div>
           )}
-          <div
-            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
-            style={{ display: showTerminal ? "block" : "none" }}
-          >
-            <div ref={terminalRef} className="overflow-hidden"></div>
+          {showTerminal && (
             <div
-              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700 cursor-pointer"
-              onClick={() => {
-                if (showTerminal) {
-                  setShowTerminal(false);
-                } else {
-                  setShowTerminal(true);
-                }
-              }}
+              className="block left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
             >
-              <Image src={ExitIcon} alt="Close Terminal" width={10} height={10}></Image>
+              <div ref={terminalRef} className="overflow-hidden"></div>
+              <div
+                className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+                onClick={() => setShowTerminal(!showTerminal)}
+              >
+                <Image
+                  src={ExitIcon}
+                  alt="Close Terminal"
+                  width={10}
+                  height={10}
+                ></Image>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
