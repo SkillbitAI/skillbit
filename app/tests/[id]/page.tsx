@@ -398,7 +398,7 @@ export default function Tests({ params }: { params: { id: string } }) {
           )}
           {showTerminal && (
             <div
-              className="block left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
+              className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
             >
               <div ref={terminalRef} className="overflow-hidden"></div>
               <div
