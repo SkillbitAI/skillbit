@@ -25,7 +25,7 @@ import SearchIcon from "../../../public/assets/icons/search.svg";
 import ExitIcon from "../../../public/assets/icons/exit.svg";
 import Arrow from "../../../public/assets/icons/arrow.svg";
 import Link from "next/link";
-import { files } from "./files";
+import { files as initialFiles } from "./files";
 
 const DOCKER_EC2_TOGGLE = true;
 
@@ -38,6 +38,7 @@ const xtermOptions = {
 
 export default function Tests({ params }: { params: { id: string } }) {
   const [fileName, setFileName] = useState("/project/src/App.js");
+  const [filesState, setFilesState] = useState(initialFiles);
   const terminalRef = useRef(null);
   const termRef = useRef(null);
   const fitAddonRef = useRef(null);
@@ -54,6 +55,10 @@ export default function Tests({ params }: { params: { id: string } }) {
     if (socket) {
       socket.emit("codeChange", { fileName, value });
     }
+    setFilesState((prevFiles) => ({
+      ...prevFiles,
+      [fileName]: { ...prevFiles[fileName], value },
+    }));
   };
 
   const startEditor = async () => {
@@ -64,60 +69,56 @@ export default function Tests({ params }: { params: { id: string } }) {
       },
       body: JSON.stringify({ testID: params.id }),
     });
-  
+
     const ports = await response.json();
-  
+
     console.log(ports);
-  
+
     if (ports.message == "invalid") {
       window.location.href = "/404";
     } else {
       setIsLoading(false);
     }
-  
+
     const newSocket = io(
       DOCKER_EC2_TOGGLE
-        ? `http://3.94.57.49:${ports.socketServer}`
+        ? `http://54.225.167.48:${ports.socketServer}`
         : `http://localhost:${ports.socketServer}`
     );
     setSocket(newSocket);
     setWebServerPort(ports.webServer);
-  
+
     newSocket.on("connect", () => {
       newSocket.emit("data", "\n");
       newSocket.emit("data", "cd project\n");
       newSocket.emit("data", "npm install ajv@^6.12.6 ajv-keywords@^3.5.2\n");
       newSocket.emit("data", "npm run start\n");
-      for (const [fileName, file] of Object.entries(files)) {
+      for (const [fileName, file] of Object.entries(filesState)) {
         newSocket.emit("codeChange", { fileName, value: file.value });
       }
-    
+
       setTimeout(() => {
         setIframeKey(iframeKey + 1);
       }, 2000);
     });
   };
-  
 
   // Initialize the terminal
   useEffect(() => {
-   
-        if (termRef.current == null) {
-          termRef.current = new Terminal(xtermOptions);
-          fitAddonRef.current = new FitAddon();
-          termRef.current.loadAddon(fitAddonRef.current);
-          termRef.current.open(terminalRef.current);
-          fitAddonRef.current.fit();
-          termRef.current.focus();
+    if (termRef.current == null) {
+      termRef.current = new Terminal(xtermOptions);
+      fitAddonRef.current = new FitAddon();
+      termRef.current.loadAddon(fitAddonRef.current);
+      termRef.current.open(terminalRef.current);
+      fitAddonRef.current.fit();
+      termRef.current.focus();
 
-          // Start the editor if not already started
-          if (!socket) {
-            startEditor();
-          }
-        }
-     
-   
-  });
+      // Start the editor if not already started
+      if (!socket) {
+        startEditor();
+      }
+    }
+  }, []);
 
   // Set up socket event listeners after both terminal and socket are ready
   useEffect(() => {
@@ -142,7 +143,7 @@ export default function Tests({ params }: { params: { id: string } }) {
         try {
           const response = await fetch(
             DOCKER_EC2_TOGGLE
-              ? `http://3.94.57.49:${webServerPort}`
+              ? `http://54.225.167.48:${webServerPort}`
               : `http://localhost:${webServerPort}`
           );
           if (response.ok) {
@@ -158,7 +159,7 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   }, [webServerPort]);
 
-  const file = files[fileName];
+  const file = filesState[fileName];
 
   loader.init().then((monaco) => {
     monaco.editor.defineTheme("myTheme", {
@@ -173,6 +174,61 @@ export default function Tests({ params }: { params: { id: string } }) {
 
   const handleRefreshClick = () => {
     console.log("Refresh icon clicked");
+    // Optionally, you can implement a refresh logic here
+    // For example, reload the iframe or reinitialize the editor
+    setIframeKey(iframeKey + 1);
+  };
+
+  const deleteContainer = async () => {
+    const response = await fetch("/api/codeEditor/end", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ testID: params.id }),
+    });
+
+    const ports = await response.json();
+
+    console.log(ports);
+
+   
+  };
+
+  const uploadToS3 = async () => {
+    const filesArray = Object.keys(filesState).map((key) => ({
+      filename: filesState[key].name,
+      content: filesState[key].value,
+    }));
+
+    try {
+      const response = await fetch("/api/uploadS3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testId: params.id, files: filesArray }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log(data.message);
+        // Optionally, show a success message to the user
+      } else {
+        console.error(data.error);
+        // Optionally, show an error message to the user
+      }
+    } catch (error) {
+      console.error("Error uploading to S3:", error);
+      // Optionally, show an error message to the user
+    }
+  };
+
+  const handleSubmit = async () => {
+    await uploadToS3();
+    await deleteContainer();
+    window.location.href = "/submission_screen";
   };
 
   return (
@@ -182,12 +238,8 @@ export default function Tests({ params }: { params: { id: string } }) {
           <div className="graphPaper bg-slate-900 text-white h-screen w-screen flex items-center justify-center flex-col">
             {/* LOGO */}
             <div className="flex">
-              <motion.div
-                className="w-12 h-12 bg-white rounded-xl rotate-45 -mr-1"
-              ></motion.div>
-              <motion.div
-                className="w-12 h-12 bg-white rounded-xl rotate-45 -ml-1"
-              ></motion.div>
+              <motion.div className="w-12 h-12 bg-white rounded-xl rotate-45 -mr-1"></motion.div>
+              <motion.div className="w-12 h-12 bg-white rounded-xl rotate-45 -ml-1"></motion.div>
             </div>
             <motion.p
               initial={{ opacity: 1 }}
@@ -235,9 +287,9 @@ export default function Tests({ params }: { params: { id: string } }) {
                 <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
                 <h1 className="text-sm">Prompt:</h1>
                 <p className="text-sm">
-                  You are tasked with building a simple To-Do list application in
-                  React. The application should allow users to add and remove tasks
-                  from their to-do list...
+                  You are tasked with building a simple To-Do list application
+                  in React. The application should allow users to add and remove
+                  tasks from their to-do list...
                 </p>
                 <Link href="" className="text-sm">
                   See more
@@ -249,8 +301,8 @@ export default function Tests({ params }: { params: { id: string } }) {
                   <p className="text-base">Project Files</p>
                 </div>
                 <ul>
-                  {Object.keys(files).map((key) => {
-                    const file = files[key];
+                  {Object.keys(filesState).map((key) => {
+                    const file = filesState[key];
                     let icon;
                     if (file.name.endsWith(".js")) {
                       icon = JSIcon;
@@ -292,6 +344,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
+                onClick={handleSubmit}
               >
                 Submit{" "}
                 <div className="arrow flex items-center justify-center">
@@ -347,7 +400,12 @@ export default function Tests({ params }: { params: { id: string } }) {
               className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
               onClick={() => setShowBrowser(!showBrowser)}
             >
-              <Image src={WindowIcon} alt="Window" width={20} height={20}></Image>
+              <Image
+                src={WindowIcon}
+                alt="Window"
+                width={20}
+                height={20}
+              ></Image>
             </div>
             <div
               className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
@@ -390,32 +448,29 @@ export default function Tests({ params }: { params: { id: string } }) {
                 key={iframeKey}
                 src={
                   DOCKER_EC2_TOGGLE
-                    ? `http://3.94.57.49:${webServerPort}`
+                    ? `http://54.225.167.48:${webServerPort}`
                     : `http://localhost:${webServerPort}`
                 }
               ></iframe>
             </motion.div>
           )}
-          {showTerminal && (
+          <div
+            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
+            style={{ display: showTerminal ? "block" : "none" }}
+          >
+            <div ref={terminalRef} className="overflow-hidden"></div>
             <div
-              className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
+              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              onClick={() => {
+                setShowTerminal(!showTerminal);
+              }}
             >
-              <div ref={terminalRef} className="overflow-hidden"></div>
-              <div
-                className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700 cursor-pointer"
-                onClick={() => setShowTerminal(!showTerminal)}
-              >
-                <Image
-                  src={ExitIcon}
-                  alt="Close Terminal"
-                  width={10}
-                  height={10}
-                ></Image>
-              </div>
+              <Image src={ExitIcon} alt="" width={10} height={10}></Image>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const WaitingRoom = () => {
   return (
-    <div className="text-white bg-slate-900 text-center flex flex-col justify-center h-screen">
+    <div className="text-white graphPaper bg-slate-900 text-center flex flex-col justify-center h-screen">
       <div className="px-6 pt-24 max-w-7xl mx-auto items-center">
         <div className="flex justify-center">
           {" "}
