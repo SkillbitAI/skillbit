@@ -6,7 +6,6 @@
 
 import Editor, { loader } from "@monaco-editor/react";
 import { useState, useEffect, useRef } from "react";
-import React from "react";
 import { io } from "socket.io-client";
 import { motion } from "framer-motion";
 import { Terminal } from "xterm";
@@ -25,7 +24,11 @@ import SearchIcon from "../../../public/assets/icons/search.svg";
 import ExitIcon from "../../../public/assets/icons/exit.svg";
 import Arrow from "../../../public/assets/icons/arrow.svg";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { files as initialFiles } from "./files";
+
+// Import react-hot-toast components
+import { toast, Toaster } from "react-hot-toast";
 
 const DOCKER_EC2_TOGGLE = true;
 
@@ -39,6 +42,7 @@ const xtermOptions = {
 export default function Tests({ params }: { params: { id: string } }) {
   const [fileName, setFileName] = useState("/project/src/App.js");
   const [filesState, setFilesState] = useState(initialFiles);
+  const [modifiedFiles, setModifiedFiles] = useState(new Set());
   const terminalRef = useRef(null);
   const termRef = useRef(null);
   const fitAddonRef = useRef(null);
@@ -50,7 +54,17 @@ export default function Tests({ params }: { params: { id: string } }) {
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isAppReady, setIsAppReady] = useState(false);
+  const router = useRouter();
+  const file = filesState[fileName];
 
+  // useRef to keep track of modifiedFiles
+  const modifiedFilesRef = useRef(modifiedFiles);
+
+  useEffect(() => {
+    modifiedFilesRef.current = modifiedFiles;
+  }, [modifiedFiles]);
+
+  // Handle editor changes
   const handleEditorChange = (value, event) => {
     if (socket) {
       socket.emit("codeChange", { fileName, value });
@@ -59,48 +73,109 @@ export default function Tests({ params }: { params: { id: string } }) {
       ...prevFiles,
       [fileName]: { ...prevFiles[fileName], value },
     }));
+    setModifiedFiles((prevSet) => new Set(prevSet).add(fileName));
   };
 
-  const startEditor = async () => {
-    const response = await fetch("/api/codeEditor/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ testID: params.id }),
-    });
+  // Upload modified files to S3
+  const uploadToS3 = async () => {
+    const filesToUpload = Array.from(modifiedFilesRef.current).map((key) => ({
+      filename: filesState[key].name,
+      content: filesState[key].value,
+    }));
 
-    const ports = await response.json();
+    if (filesToUpload.length === 0) return;
 
-    console.log(ports);
+    console.log("Auto-save triggered.");
 
-    if (ports.message == "invalid") {
-      window.location.href = "/404";
-    } else {
-      setIsLoading(false);
+    try {
+      const response = await fetch("/api/uploadS3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testId: params.id, files: filesToUpload }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Auto-save successful:", data.message);
+        setModifiedFiles(new Set()); // Clear modified files after successful upload
+        toast.success("Auto-saved successfully!");
+      } else {
+        console.error("Auto-save failed:", data.error);
+        toast.error("Auto-save failed!");
+      }
+    } catch (error) {
+      console.error("Error uploading to S3:", error);
+      toast.error("Auto-save encountered an error!");
     }
+  };
 
-    const newSocket = io(
-      DOCKER_EC2_TOGGLE
-        ? `http://54.225.167.48:${ports.socketServer}`
-        : `http://localhost:${ports.socketServer}`
-    );
-    setSocket(newSocket);
-    setWebServerPort(ports.webServer);
+  // Auto-save every 30 seconds if there are modified files
+  const autoSave = () => {
+    const intervalId = setInterval(() => {
+      if (modifiedFilesRef.current.size > 0) {
+        uploadToS3();
+      }
+    }, 30000); // 30 seconds
 
-    newSocket.on("connect", () => {
-      newSocket.emit("data", "\n");
-      newSocket.emit("data", "cd project\n");
-      newSocket.emit("data", "npm install ajv@^6.12.6 ajv-keywords@^3.5.2\n");
-      newSocket.emit("data", "npm run start\n");
-      for (const [fileName, file] of Object.entries(filesState)) {
-        newSocket.emit("codeChange", { fileName, value: file.value });
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  };
+
+  // Start the editor and initialize socket connection
+  const startEditor = async () => {
+    try {
+      const response = await fetch("/api/codeEditor/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testID: params.id }),
+      });
+
+      const ports = await response.json();
+
+      console.log("Editor start response:", ports);
+
+      if (ports.message === "invalid") {
+        router.push("/404");
+        return;
+      } else {
+        setIsLoading(false);
       }
 
-      setTimeout(() => {
-        setIframeKey(iframeKey + 1);
-      }, 2000);
-    });
+      const newSocket = io(
+        DOCKER_EC2_TOGGLE
+          ? `http://54.225.167.48:${ports.socketServer}`
+          : `http://localhost:${ports.socketServer}`
+      );
+      setSocket(newSocket);
+      setWebServerPort(ports.webServer);
+
+      newSocket.on("connect", () => {
+        newSocket.emit("data", "\n");
+        newSocket.emit("data", "cd project\n");
+        newSocket.emit(
+          "data",
+          "npm install ajv@^6.12.6 ajv-keywords@^3.5.2\n"
+        );
+        newSocket.emit("data", "npm run start\n");
+        for (const [fileKey, file] of Object.entries(filesState)) {
+          newSocket.emit("codeChange", { fileName: fileKey, value: file.value });
+        }
+
+        setTimeout(() => {
+          setIframeKey((prevKey) => prevKey + 1);
+        }, 2000);
+      });
+
+      // Initial save to S3 after starting editor
+      await uploadToS3();
+    } catch (error) {
+      console.error("Error starting editor:", error);
+      router.push("/404");
+    }
   };
 
   // Initialize the terminal
@@ -118,7 +193,7 @@ export default function Tests({ params }: { params: { id: string } }) {
         startEditor();
       }
     }
-  }, []);
+  }, [socket]); // Added socket as dependency to ensure startEditor is called when socket is set
 
   // Set up socket event listeners after both terminal and socket are ready
   useEffect(() => {
@@ -135,8 +210,9 @@ export default function Tests({ params }: { params: { id: string } }) {
 
       termRef.current._onDataAttached = true; // Flag to prevent multiple listeners
     }
-  }, [socket, termRef.current]);
+  }, [socket]);
 
+  // Check if the web server is ready
   useEffect(() => {
     if (webServerPort) {
       const checkAppReady = async () => {
@@ -159,80 +235,75 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   }, [webServerPort]);
 
-  const file = filesState[fileName];
-
-  loader.init().then((monaco) => {
-    monaco.editor.defineTheme("myTheme", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [],
-      colors: {
-        "editor.background": "#1e293b00",
-      },
+  // Initialize Monaco Editor theme
+  useEffect(() => {
+    loader.init().then((monaco) => {
+      monaco.editor.defineTheme("myTheme", {
+        base: "vs-dark",
+        inherit: true,
+        rules: [],
+        colors: {
+          "editor.background": "#1e293b00",
+        },
+      });
     });
-  });
+  }, []);
 
+  // Set up auto-save interval
+  useEffect(() => {
+    const saveInterval = autoSave();
+    return () => saveInterval(); // Cleanup on component unmount
+  }, []); // Empty dependency array to set up once
+
+  // Handle refresh button click
   const handleRefreshClick = () => {
     console.log("Refresh icon clicked");
-    // Optionally, you can implement a refresh logic here
-    // For example, reload the iframe or reinitialize the editor
-    setIframeKey(iframeKey + 1);
+    setIframeKey((prevKey) => prevKey + 1);
   };
 
+  // Delete container (additional functionality if needed)
   const deleteContainer = async () => {
-    const response = await fetch("/api/codeEditor/end", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ testID: params.id }),
-    });
-
-    const ports = await response.json();
-
-    console.log(ports);
-
-   
-  };
-
-  const uploadToS3 = async () => {
-    const filesArray = Object.keys(filesState).map((key) => ({
-      filename: filesState[key].name,
-      content: filesState[key].value,
-    }));
-
     try {
-      const response = await fetch("/api/uploadS3", {
+      const response = await fetch("/api/codeEditor/end", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ testId: params.id, files: filesArray }),
+        body: JSON.stringify({ testID: params.id }),
       });
 
-      const data = await response.json();
+      const ports = await response.json();
 
-      if (response.ok) {
-        console.log(data.message);
-        // Optionally, show a success message to the user
-      } else {
-        console.error(data.error);
-        // Optionally, show an error message to the user
-      }
+      console.log("Delete container response:", ports);
+
+      // Optionally, you can add additional logic here
     } catch (error) {
-      console.error("Error uploading to S3:", error);
-      // Optionally, show an error message to the user
+      console.error("Error deleting container:", error);
     }
   };
 
+  // Handle submit button click
   const handleSubmit = async () => {
     await uploadToS3();
     await deleteContainer();
-    window.location.href = "/submission_screen";
+    router.push("/submission_screen");
   };
 
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
+      {/* Toast Container for notifications */}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            background: "#333",
+            color: "#fff",
+            zIndex: 9999
+          },
+        }}
+      />
+
       {isLoading && (
         <div className="fixed left-0 right-0 top-0 bottom-0 z-50">
           <div className="graphPaper bg-slate-900 text-white h-screen w-screen flex items-center justify-center flex-col">
@@ -454,9 +525,13 @@ export default function Tests({ params }: { params: { id: string } }) {
               ></iframe>
             </motion.div>
           )}
-          <div
-            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
-            style={{ display: showTerminal ? "block" : "none" }}
+          
+        </div>
+        <div
+            className="relative left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
+            style={{ display: showTerminal ? "block" : "none",
+              height: "250px"
+             }}
           >
             <div ref={terminalRef} className="overflow-hidden"></div>
             <div
@@ -468,9 +543,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               <Image src={ExitIcon} alt="" width={10} height={10}></Image>
             </div>
           </div>
-        </div>
       </div>
     </div>
   );
 }
-
