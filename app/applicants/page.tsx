@@ -37,18 +37,12 @@ import ProfileIcon from "../../public/assets/icons/profile.svg";
 import QuestionIcon from "../../public/assets/icons/question.svg";
 import SearchIcon from "../../public/assets/icons/search.svg";
 import App from "next/app";
-import { Applicant } from "@prisma/client";
 
 interface TestIDInterface {
-  applicant: ApplicantDataInterface;
-  applicantID: string;
   companyID: string;
-  uid: string;
+  id: string;
   selected: boolean;
   created: Date;
-}
-interface ApplicantDataInterface {
-  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -134,10 +128,7 @@ const Applicants = () => {
       complete: async (results) => {
         const rows = results.data;
         const combinedData = rows.map((row) => ({
-          ...(row as Omit<
-            ApplicantDataInterface,
-            "status" | "score" | "selected"
-          >),
+          ...(row as Omit<TestIDInterface, "status" | "score" | "selected">),
           status: "Expired",
           score: "90%",
           selected: false,
@@ -233,9 +224,7 @@ const Applicants = () => {
   };
 
   //function for uploading from the CSV
-  const updateApplicants = async (
-    applicants: Array<ApplicantDataInterface>
-  ) => {
+  const updateApplicants = async (applicants: Array<TestIDInterface>) => {
     try {
       toast.loading("Importing applicant(s)...");
       // Send data to the server
@@ -983,34 +972,33 @@ const Applicants = () => {
                                 />
                                 <div className="">
                                   <h1 className="text-base">
-                                    {item.applicant.firstName}{" "}
-                                    {item.applicant.lastName}
+                                    {item.firstName} {item.lastName}
                                   </h1>
                                   <p className="text-gray-500 text-sm">
-                                    {item.applicant.email}
+                                    {item.email}
                                   </p>
                                 </div>
                               </div>
                               <div className="flex gap-3 items-center justify-center">
-                                {item.applicant.status == "Sent" && (
+                                {item.status == "Sent" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-blue-600"></div>
                                     <p className="text-sm">Sent</p>
                                   </div>
                                 )}
-                                {item.applicant.status == "Unsent" && (
+                                {item.status == "Unsent" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                                     <p className="text-sm">Unsent</p>
                                   </div>
                                 )}
-                                {item.applicant.status == "Passed" && (
+                                {item.status == "Passed" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-green-600"></div>
                                     <p className="text-sm">Completed</p>
                                   </div>
                                 )}
-                                {item.applicant.status == "Expired" && (
+                                {item.status == "Expired" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-gray-500"></div>
                                     <p className="text-sm">Expired</p>
