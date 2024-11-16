@@ -49,6 +49,7 @@ model User {
   sessions      Session[]
   employee Employee?
   questions Question[]
+  created DateTime @default(now())
 }
 
 //Pivot table to connect user and company
@@ -68,28 +69,19 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-//date and time created & completed
-//score should be an attribute of a test id
 model testID {
-  uid String @id @default(cuid()) @unique
-  applicant Applicant?
-  companyID String
-  company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
-  templateID String?
-  template Question? @relation(fields: [templateID], references: [id], onDelete: Cascade)
-  expirationDate DateTime?
-  created DateTime @default(now())
-}
-
-model Applicant {
   id String @id @default(cuid()) @unique
   firstName     String
   lastName      String
   email         String
-  testID String @unique
-  test           testID    @relation(fields: [testID], references: [uid], onDelete: Cascade)
+  companyID String
+  company         Company     @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  templateID String?
+  template Question? @relation(fields: [templateID], references: [id], onDelete: Cascade)
   status        String @default("Unsent")
   score         String?
+  expirationDate DateTime?
+  created DateTime @default(now())
 }
 
 //THIS IS THE TEMPLATE FOR THE QUESTION

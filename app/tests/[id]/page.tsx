@@ -8,7 +8,7 @@ import Editor, { loader } from "@monaco-editor/react";
 import { useState, useEffect, useRef } from "react";
 import React from "react";
 import { io } from "socket.io-client";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
@@ -208,123 +208,126 @@ export default function Tests({ params }: { params: { id: string } }) {
           </div>
         </div>
       )}
-      {showSidebar && (
-        <motion.div
-          initial={{ opacity: 0, x: -100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -100 }}
-          transition={{
-            duration: 0.2,
-            delay: 0,
-            ease: "backOut",
-          }}
-          className="bg-slate-900 h-screen border-slate-700 border-r w-72 z-20 relative"
-        >
-          <div className="fixed bg-slate-900 border-slate-700 border-r w-72 p-3 flex flex-col justify-between h-screen">
-            <div className="flex flex-col justify-between">
-              <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-700 mb-3">
+      <AnimatePresence>
+        {showSidebar && (
+          <motion.div
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: "18rem" }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{
+              duration: 0.2,
+              delay: 0,
+              ease: "backOut",
+            }}
+            className="bg-slate-900 h-screen border-slate-700 border-r w-72 z-20 relative"
+          >
+            <div className="fixed bg-slate-900 border-slate-700 border-r w-72 p-3 flex flex-col justify-between h-screen">
+              <div className="flex flex-col justify-between">
+                {/* <div className="flex-1 max-w-xl bg-white bg-opacity-5 p-2 rounded-lg flex justify-between border border-slate-700 mb-3">
                 <input
                   className="text-white bg-transparent focus:outline-none w-full placeholder:text-white"
                   placeholder="Search..."
                 ></input>
                 <Image src={SearchIcon} alt="" width={25} height={25}></Image>
-              </div>
-              <ul className="list-none text-white flex flex-col gap-1">
-                <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
-                <div className="flex justify-between items-center">
-                  <p className="text-base">Project Information</p>
-                  <Image
+              </div> */}
+                <ul className="list-none text-white flex flex-col gap-1 bg-slate-800 border-slate-700 border p-3 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <p className="text-base">Project Information</p>
+                    {/* <Image
                     src={DropdownIcon}
                     alt=""
                     width={14}
                     height={14}
-                  ></Image>
-                </div>
-                <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
-                <h1 className="text-sm">Prompt:</h1>
-                <p className="text-sm">
-                  You are tasked with building a simple To-Do list application
-                  in React. The application should allow users to add and remove
-                  tasks from their to-do list...
-                </p>
-                <Link href="" className="text-sm">
-                  See more
-                </Link>
-              </ul>
-              <ul className="list-none text-white flex flex-col gap-1 mt-8">
-                <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
-                <div className="flex justify-between items-center">
-                  <p className="text-base">Project Files</p>
-                </div>
-                <ul>
-                  {Object.keys(files).map((key) => {
-                    const file = files[key];
-                    let icon;
-                    if (file.name.endsWith(".js")) {
-                      icon = JSIcon;
-                    } else if (file.name.endsWith(".css")) {
-                      icon = CSSIcon;
-                    }
-
-                    return (
-                      <li
-                        key={key}
-                        onClick={() => setFileName(key)}
-                        className={
-                          fileName === key
-                            ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
-                            : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
-                        }
-                      >
-                        {icon && (
-                          <Image
-                            src={icon}
-                            alt=""
-                            width={15}
-                            height={15}
-                            className="ml-1 rounded-sm"
-                          />
-                        )}
-                        <p>{file.name}</p>
-                      </li>
-                    );
-                  })}
-                </ul>
-
-                <hr className="border-t-0 border-b border-b-slate-700 mt-1 mb-1" />
-              </ul>
-            </div>
-            <div className="flex flex-col justify-between">
-              <motion.button
-                className="w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
-                onClick={deleteContainer}
-              >
-                Submit{" "}
-                <div className="arrow flex items-center justify-center">
-                  <div className="arrowMiddle"></div>
-                  <div>
-                    <Image
-                      src={Arrow}
-                      alt=""
-                      width={14}
-                      height={14}
-                      className="arrowSide"
-                    ></Image>
+                  ></Image> */}
                   </div>
-                </div>
-              </motion.button>
+                  <hr className="border-t-0 border-b border-b-slate-700 mb-1" />
+                  <h1 className="text-sm">Prompt:</h1>
+                  <p className="text-sm">
+                    You are tasked with building a simple To-Do list application
+                    in React. The application should allow users to add and
+                    remove tasks from their to-do list...
+                  </p>
+                  <Link href="" className="text-sm">
+                    See more
+                  </Link>
+                </ul>
+                <ul className="list-none text-white flex flex-col gap-1 bg-slate-800 border-slate-700 border p-3 rounded-lg mt-3">
+                  <div className="flex justify-between items-center">
+                    <p className="text-base">Project Files</p>
+                  </div>
+                  <hr className="border-t-0 border-b border-b-slate-700 mb-1" />
+                  <ul className="flex flex-col gap-1">
+                    {Object.keys(files).map((key) => {
+                      const file = files[key];
+                      let icon;
+                      if (file.name.endsWith(".js")) {
+                        icon = JSIcon;
+                      } else if (file.name.endsWith(".css")) {
+                        icon = CSSIcon;
+                      }
+
+                      return (
+                        <li
+                          key={key}
+                          onClick={() => setFileName(key)}
+                          className={
+                            fileName === key
+                              ? "p-1 rounded-lg flex items-center gap-2 bg-indigo-600 duration-100"
+                              : "p-1 rounded-lg flex items-center gap-2 hover:bg-slate-700 duration-100"
+                          }
+                        >
+                          {icon && (
+                            <Image
+                              src={icon}
+                              alt=""
+                              width={15}
+                              height={15}
+                              className="ml-1 rounded-sm"
+                            />
+                          )}
+                          <p>{file.name}</p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </ul>
+              </div>
+              <div className="flex flex-col justify-between">
+                <motion.button
+                  className="w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
+                  onClick={deleteContainer}
+                >
+                  Submit{" "}
+                  <div className="arrow flex items-center justify-center">
+                    <div className="arrowMiddle"></div>
+                    <div>
+                      <Image
+                        src={Arrow}
+                        alt=""
+                        width={14}
+                        height={14}
+                        className="arrowSide"
+                      ></Image>
+                    </div>
+                  </div>
+                </motion.button>
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="flex-1 flex flex-col h-screen">
         <div className="bg-slate-900 border-b border-slate-700 flex justify-between p-3">
           <div className="flex-1 flex gap-2">
             <div
-              className="flex justify-start p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
+              style={{
+                backgroundColor: showSidebar ? "#1e293b" : "",
+                border: showSidebar ? "1px solid #334155" : "",
+              }}
               onClick={() => setShowSidebar(!showSidebar)}
             >
               <Image src={SidebarIcon} alt="" width={20} height={20}></Image>
@@ -342,7 +345,11 @@ export default function Tests({ params }: { params: { id: string } }) {
           </div>
           <div className="flex-1 flex justify-end items-center gap-2">
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
+              style={{
+                backgroundColor: showTerminal ? "#1e293b" : "",
+                border: showTerminal ? "1px solid #334155" : "",
+              }}
               onClick={() => setShowTerminal(!showTerminal)}
             >
               <Image
@@ -353,7 +360,11 @@ export default function Tests({ params }: { params: { id: string } }) {
               ></Image>
             </div>
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
+              style={{
+                backgroundColor: showBrowser ? "#1e293b" : "",
+                border: showBrowser ? "1px solid #334155" : "",
+              }}
               onClick={() => setShowBrowser(!showBrowser)}
             >
               <Image
@@ -364,7 +375,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               ></Image>
             </div>
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               onClick={handleRefreshClick}
             >
               <Image
@@ -387,36 +398,38 @@ export default function Tests({ params }: { params: { id: string } }) {
               className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
             />
           </div>
-          {isAppReady && showBrowser && (
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 100 }}
-              transition={{
-                duration: 0.2,
-                delay: 0,
-                ease: "backOut",
-              }}
-              className="flex-1 relative bg-slate-950"
-            >
-              <iframe
-                className="w-full h-full"
-                key={iframeKey}
-                src={
-                  DOCKER_EC2_TOGGLE
-                    ? `http://54.225.167.48:${webServerPort}`
-                    : `http://localhost:${webServerPort}`
-                }
-              ></iframe>
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {isAppReady && showBrowser && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: "auto" }}
+                exit={{ width: 0 }}
+                transition={{
+                  duration: 0.2,
+                  delay: 0,
+                  ease: "backOut",
+                }}
+                className="flex-1 relative bg-slate-950"
+              >
+                <iframe
+                  className="w-full h-full"
+                  key={iframeKey}
+                  src={
+                    DOCKER_EC2_TOGGLE
+                      ? `http://54.225.167.48:${webServerPort}`
+                      : `http://localhost:${webServerPort}`
+                  }
+                ></iframe>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <div
             className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
             style={{ display: showTerminal ? "block" : "none" }}
           >
             <div ref={terminalRef} className="overflow-hidden"></div>
             <div
-              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700"
+              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               onClick={() => {
                 if (showTerminal) {
                   setShowTerminal(false);

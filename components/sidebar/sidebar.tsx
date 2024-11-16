@@ -46,14 +46,9 @@ interface Employee {
 }
 
 interface TestIDInterface {
-  applicant: ApplicantDataInterface;
-  applicantID: string;
   companyID: string;
-  uid: string;
-  selected: boolean;
-}
-interface ApplicantDataInterface {
   id: string;
+  selected: boolean;
   firstName: string;
   lastName: string;
   email: string;
@@ -184,14 +179,10 @@ const Sidebar = () => {
     // Filter applicants
     const filteredApplicants = applicantData.filter(
       (applicant) =>
-        applicant.applicant.firstName
-          .toLowerCase()
-          .includes(term.toLowerCase()) ||
-        applicant.applicant.lastName
-          .toLowerCase()
-          .includes(term.toLowerCase()) ||
-        applicant.uid.toLowerCase().includes(term.toLowerCase()) ||
-        applicant.applicant.email.toLowerCase().includes(term.toLowerCase())
+        applicant.firstName.toLowerCase().includes(term.toLowerCase()) ||
+        applicant.lastName.toLowerCase().includes(term.toLowerCase()) ||
+        applicant.id.toLowerCase().includes(term.toLowerCase()) ||
+        applicant.email.toLowerCase().includes(term.toLowerCase())
     );
 
     // Filter questions
@@ -425,18 +416,17 @@ const Sidebar = () => {
                             <div className="flex justify-between items-center duration-100 p-3">
                               <div className="flex flex-col gap-1 ">
                                 <h2>
-                                  {applicant.applicant.firstName}{" "}
-                                  {applicant.applicant.lastName}
+                                  {applicant.firstName} {applicant.lastName}
                                 </h2>
                                 <div className="flex gap-1 flex-col mt-3">
                                   <p className="text-slate-400">
                                     Test ID:{" "}
                                     <span className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
-                                      {applicant.uid}
+                                      {applicant.id}
                                     </span>
                                   </p>
                                   <p className="text-slate-400">
-                                    {applicant.applicant.email}
+                                    {applicant.email}
                                   </p>
                                 </div>
                               </div>
