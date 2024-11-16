@@ -1059,6 +1059,27 @@ const Applicants = () => {
                                     View Submission Details
                                   </button>
                                 </motion.li>
+                                <motion.li
+                                  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
+                                  initial={{ opacity: 0, y: -20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.2,
+                                    delay: 0,
+                                    ease: "backOut",
+                                  }}
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(item.id);
+                                    toast.remove();
+                                    toast.success(
+                                      "Test ID copied to clipboard!"
+                                    );
+                                  }}
+                                >
+                                  <button className="text-sm">
+                                    Copy Test ID
+                                  </button>
+                                </motion.li>
                               </ul>
                             )}
                           </li>

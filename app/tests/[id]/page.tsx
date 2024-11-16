@@ -323,9 +323,10 @@ export default function Tests({ params }: { params: { id: string } }) {
         <div className="bg-slate-900 border-b border-slate-700 flex justify-between p-3">
           <div className="flex-1 flex gap-2">
             <div
-              className="flex justify-start p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               style={{
-                backgroundColor: showSidebar ? "#334155" : "",
+                backgroundColor: showSidebar ? "#1e293b" : "",
+                border: showSidebar ? "1px solid #334155" : "",
               }}
               onClick={() => setShowSidebar(!showSidebar)}
             >
@@ -344,9 +345,10 @@ export default function Tests({ params }: { params: { id: string } }) {
           </div>
           <div className="flex-1 flex justify-end items-center gap-2">
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               style={{
-                backgroundColor: showTerminal ? "#334155" : "",
+                backgroundColor: showTerminal ? "#1e293b" : "",
+                border: showTerminal ? "1px solid #334155" : "",
               }}
               onClick={() => setShowTerminal(!showTerminal)}
             >
@@ -358,9 +360,10 @@ export default function Tests({ params }: { params: { id: string } }) {
               ></Image>
             </div>
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               style={{
-                backgroundColor: showBrowser ? "#334155" : "",
+                backgroundColor: showBrowser ? "#1e293b" : "",
+                border: showBrowser ? "1px solid #334155" : "",
               }}
               onClick={() => setShowBrowser(!showBrowser)}
             >
@@ -372,7 +375,7 @@ export default function Tests({ params }: { params: { id: string } }) {
               ></Image>
             </div>
             <div
-              className="flex p-2 rounded-md hover:bg-slate-700 cursor-pointer"
+              className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               onClick={handleRefreshClick}
             >
               <Image
@@ -426,7 +429,7 @@ export default function Tests({ params }: { params: { id: string } }) {
           >
             <div ref={terminalRef} className="overflow-hidden"></div>
             <div
-              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700"
+              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               onClick={() => {
                 if (showTerminal) {
                   setShowTerminal(false);
