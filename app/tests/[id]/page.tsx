@@ -305,22 +305,6 @@ export default function Tests({ params }: { params: { id: string } }) {
     window.location.href = "/404";
   };
 
-  const deleteContainer = async () => {
-    const response = await fetch("/api/codeEditor/end", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ testID: params.id }),
-    });
-
-    const ports = await response.json();
-
-    console.log(ports);
-
-    window.location.href = "/404";
-  };
-
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
       {/* Toast Container for notifications */}
