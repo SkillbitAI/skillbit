@@ -117,43 +117,43 @@ export default function Tests({ params }: { params: { id: string } }) {
     }));
   };
 
+  const uploadToS3 = async () => {
+    console.log(filesState);
+    const filesToUpload = Object.keys(filesState).map((key) => ({
+      filename: filesState[key].name,
+      content: filesState[key].value,
+    }));
+
+    if (filesToUpload.length === 0) return;
+
+    console.log("Auto-save triggered.");
+
+    try {
+      const response = await fetch("/api/uploadS3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testId: params.id, files: filesToUpload }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Auto-save successful:", data.message);
+        toast.success("Auto-saved successfully!");
+      } else {
+        console.error("Auto-save failed:", data.error);
+        toast.error("Auto-save failed!");
+      }
+    } catch (error) {
+      console.error("Error uploading to S3:", error);
+      toast.error("Auto-save encountered an error!");
+    }
+  };
+
   useDebouncedEffect(
     () => {
-      const uploadToS3 = async () => {
-        console.log(filesState);
-        const filesToUpload = Object.keys(filesState).map((key) => ({
-          filename: filesState[key].name,
-          content: filesState[key].value,
-        }));
-
-        if (filesToUpload.length === 0) return;
-
-        console.log("Auto-save triggered.");
-
-        try {
-          const response = await fetch("/api/uploadS3", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ testId: params.id, files: filesToUpload }),
-          });
-
-          const data = await response.json();
-
-          if (response.ok) {
-            console.log("Auto-save successful:", data.message);
-            toast.success("Auto-saved successfully!");
-          } else {
-            console.error("Auto-save failed:", data.error);
-            toast.error("Auto-save failed!");
-          }
-        } catch (error) {
-          console.error("Error uploading to S3:", error);
-          toast.error("Auto-save encountered an error!");
-        }
-      };
-
       uploadToS3();
     },
     [filesState],
@@ -319,12 +319,11 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   };
 
-  // // Handle submit button click
-  // const handleSubmit = async () => {
-  //   await uploadToS3();
-  //   await deleteContainer();
-  //   router.push("/submission_screen");
-  // };
+  // Handle submit button click
+  const handleSubmit = async () => {
+    await deleteContainer();
+    router.push("/submission_screen");
+  };
 
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
