@@ -39,10 +39,24 @@ const xtermOptions = {
   theme: { background: "#0f172a00" },
 };
 
+function useDebouncedEffect(callback, dependencies, delay) {
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      callback();
+    }, delay);
+
+    return () => clearTimeout(timeoutRef.current);
+  }, [...dependencies, delay]);
+}
+
 export default function Tests({ params }: { params: { id: string } }) {
   const [fileName, setFileName] = useState("/project/src/App.js");
-  const [filesState, setFilesState] = useState(initialFiles);
-  const [modifiedFiles, setModifiedFiles] = useState(new Set());
+  // const [filesState, setFilesState] = useState(initialFiles);
   const terminalRef = useRef(null);
   const termRef = useRef(null);
   const fitAddonRef = useRef(null);
@@ -55,14 +69,42 @@ export default function Tests({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAppReady, setIsAppReady] = useState(false);
   const router = useRouter();
+  const [filesState, setFilesState] = useState({});
+  // const [file, setFile] = useState("");
   const file = filesState[fileName];
 
-  // useRef to keep track of modifiedFiles
-  const modifiedFilesRef = useRef(modifiedFiles);
+  const fetchFilesFromS3 = async () => {
+    try {
+      const response = await fetch("/api/getFilesFromS3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testId: params.id }),
+      });
 
-  useEffect(() => {
-    modifiedFilesRef.current = modifiedFiles;
-  }, [modifiedFiles]);
+      if (!response.ok) {
+        throw new Error("Failed to fetch files from S3");
+      }
+
+      const data = await response.json();
+      const files = data.files;
+
+      // Assuming the response is an object where keys are file paths and values are file data
+      const formattedFiles = {};
+      for (const file of files) {
+        const name = file.fileName.split("/").pop();
+        formattedFiles[`/project/src/${name}`] = {
+          name: name,
+          value: file.content,
+        };
+      }
+      setFilesState(formattedFiles);
+    } catch (error) {
+      console.error("Error fetching files from S3:", error);
+      toast.error("Failed to load files from S3!");
+    }
+  };
 
   // Handle editor changes
   const handleEditorChange = (value, event) => {
@@ -73,55 +115,50 @@ export default function Tests({ params }: { params: { id: string } }) {
       ...prevFiles,
       [fileName]: { ...prevFiles[fileName], value },
     }));
-    setModifiedFiles((prevSet) => new Set(prevSet).add(fileName));
   };
 
-  // Upload modified files to S3
-  const uploadToS3 = async () => {
-    const filesToUpload = Array.from(modifiedFilesRef.current).map((key) => ({
-      filename: filesState[key].name,
-      content: filesState[key].value,
-    }));
+  // useDebouncedEffect(
+  //   () => {
+  //     const uploadToS3 = async () => {
+  //       console.log(filesState);
+  //       const filesToUpload = Object.keys(filesState).map((key) => ({
+  //         filename: filesState[key].name,
+  //         content: filesState[key].value,
+  //       }));
 
-    if (filesToUpload.length === 0) return;
+  //       if (filesToUpload.length === 0) return;
 
-    console.log("Auto-save triggered.");
+  //       console.log("Auto-save triggered.");
 
-    try {
-      const response = await fetch("/api/uploadS3", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ testId: params.id, files: filesToUpload }),
-      });
+  //       try {
+  //         const response = await fetch("/api/uploadS3", {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify({ testId: params.id, files: filesToUpload }),
+  //         });
 
-      const data = await response.json();
+  //         const data = await response.json();
 
-      if (response.ok) {
-        console.log("Auto-save successful:", data.message);
-        setModifiedFiles(new Set()); // Clear modified files after successful upload
-        toast.success("Auto-saved successfully!");
-      } else {
-        console.error("Auto-save failed:", data.error);
-        toast.error("Auto-save failed!");
-      }
-    } catch (error) {
-      console.error("Error uploading to S3:", error);
-      toast.error("Auto-save encountered an error!");
-    }
-  };
+  //         if (response.ok) {
+  //           console.log("Auto-save successful:", data.message);
+  //           toast.success("Auto-saved successfully!");
+  //         } else {
+  //           console.error("Auto-save failed:", data.error);
+  //           toast.error("Auto-save failed!");
+  //         }
+  //       } catch (error) {
+  //         console.error("Error uploading to S3:", error);
+  //         toast.error("Auto-save encountered an error!");
+  //       }
+  //     };
 
-  // Auto-save every 30 seconds if there are modified files
-  const autoSave = () => {
-    const intervalId = setInterval(() => {
-      if (modifiedFilesRef.current.size > 0) {
-        uploadToS3();
-      }
-    }, 5000); // 30 seconds
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  };
+  //     uploadToS3();
+  //   },
+  //   [filesState],
+  //   3000
+  // ); // Debounce saveToS3 function with 3-second delay
 
   // Start the editor and initialize socket connection
   const startEditor = async () => {
@@ -169,14 +206,23 @@ export default function Tests({ params }: { params: { id: string } }) {
           setIframeKey((prevKey) => prevKey + 1);
         }, 2000);
       });
-
-      // Initial save to S3 after starting editor
-      await uploadToS3();
     } catch (error) {
       console.error("Error starting editor:", error);
       router.push("/404");
     }
   };
+
+  useEffect(() => {
+    const initializeEditor = async () => {
+      if (Object.keys(filesState).length > 0) {
+        if (!socket) {
+          startEditor();
+        }
+      }
+    };
+    // fetchFilesFromS3();
+    initializeEditor();
+  }, [filesState]); // Wait for filesState to be populated
 
   // Initialize the terminal
   useEffect(() => {
@@ -188,10 +234,7 @@ export default function Tests({ params }: { params: { id: string } }) {
       fitAddonRef.current.fit();
       termRef.current.focus();
 
-      // Start the editor if not already started
-      if (!socket) {
-        startEditor();
-      }
+      fetchFilesFromS3();
     }
   }, [socket]); // Added socket as dependency to ensure startEditor is called when socket is set
 
@@ -249,12 +292,6 @@ export default function Tests({ params }: { params: { id: string } }) {
     });
   }, []);
 
-  // Set up auto-save interval
-  useEffect(() => {
-    const saveInterval = autoSave();
-    return () => saveInterval(); // Cleanup on component unmount
-  }, []); // Empty dependency array to set up once
-
   // Handle refresh button click
   const handleRefreshClick = () => {
     console.log("Refresh icon clicked");
@@ -282,27 +319,11 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   };
 
-  // Handle submit button click
-  const handleSubmit = async () => {
-    await uploadToS3();
-    await deleteContainer();
-    router.push("/submission_screen");
-  };
-
-  // const deleteContainer = async () => {
-  //   const response = await fetch("/api/codeEditor/end", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({ testID: params.id }),
-  //   });
-
-  //   const ports = await response.json();
-
-  //   console.log(ports);
-
-  //   window.location.href = "/404";
+  // // Handle submit button click
+  // const handleSubmit = async () => {
+  //   await uploadToS3();
+  //   await deleteContainer();
+  //   router.push("/submission_screen");
   // };
 
   return (
@@ -520,14 +541,16 @@ export default function Tests({ params }: { params: { id: string } }) {
         </div>
         <div className="h-full flex relative">
           <div className="flex-1 relative">
-            <Editor
-              theme="myTheme"
-              path={file.name}
-              defaultLanguage={file.language}
-              defaultValue={file.value}
-              onChange={handleEditorChange}
-              className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
-            />
+            {file && (
+              <Editor
+                theme="myTheme"
+                path={file.name}
+                defaultLanguage={file.language}
+                defaultValue={file.value}
+                onChange={handleEditorChange}
+                className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
+              />
+            )}
           </div>
           {isAppReady && showBrowser && (
             <motion.div
