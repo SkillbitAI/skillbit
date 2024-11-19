@@ -22,6 +22,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import TopMenuBar from "@/components/topmenubar/topmenubar";
 import Dropdown from "../../public/assets/icons/dropdown.svg";
+import Copy from "../../public/assets/icons/copy.svg";
 import { Toaster, toast } from "react-hot-toast";
 import FilterIcon from "../../public/assets/icons/filter.svg";
 
@@ -54,7 +55,9 @@ interface Question {
   title: string;
   language: string;
   framework: string;
+  prompt: string;
   type: string;
+  expiration: string;
   companyID: string;
   userId: string;
   id: string;
@@ -73,6 +76,7 @@ const Applicants = () => {
   const [assignTemplatesWarning, setAssignTemplatesWarning] = useState(false);
   const [deleteCandidatesWarning, setDeleteCandidatesWarning] = useState(false);
   const [numSelected, setNumSelected] = useState(0);
+  const [showCandidateDetails, setshowCandidateDetails] = useState(false);
 
   const getApplicants = async (companyId: string) => {
     //getting applicants from the database
@@ -520,197 +524,209 @@ const Applicants = () => {
                         <p>Select all</p>
                       </div>
                     </li>
-                    <hr className="border-l border-slate-800 h-5" />
-                    <div className="relative">
-                      <li
-                        className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
-                        onClick={() =>
-                          setViewTemplateAssignOptions(
-                            !viewTemplateAssignOptions
-                          )
-                        }
-                      >
-                        <p className="text-sm flex gap-2 items-center justify-center">
-                          Assign Templates and Send Tests
-                        </p>
-                      </li>
-                      {viewTemplateAssignOptions &&
-                        questions &&
-                        questions.length > 0 && (
-                          <motion.div
-                            className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80"
-                            initial={{ opacity: 0, y: -30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                          >
-                            <p>
-                              Choose a template to assign to the selected
-                              candidates.
-                            </p>
-                            <select
-                              id="template"
-                              value={template}
-                              onChange={(e) => setTemplate(e.target.value)}
-                              className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none mt-3"
-                            >
-                              <option value="Choose one">Choose one</option>
-                              {questions.map((question) => (
-                                <option value={question.id} key={question.id}>
-                                  {question.title}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3 w-full"
-                              onClick={assignTemplateSafety}
-                            >
-                              Assign templates and send tests
-                            </button>
-                          </motion.div>
-                        )}
-                      {/* ASSIGN AND SEND TEMPLATES WARNING */}
-                      <AnimatePresence>
-                        {assignTemplatesWarning && (
-                          <motion.div
-                            className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{
-                              duration: 0.5,
-                              ease: "backOut",
-                            }}
-                            exit={{ opacity: 0 }}
-                          >
+                    {numSelected > 0 && (
+                      <hr className="border-l border-slate-800 h-5" />
+                    )}
+                    {numSelected > 0 && (
+                      <div className="relative">
+                        <li
+                          className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
+                          onClick={() =>
+                            setViewTemplateAssignOptions(
+                              !viewTemplateAssignOptions
+                            )
+                          }
+                        >
+                          <p className="text-sm flex gap-2 items-center justify-center">
+                            Assign Templates and Send Tests
+                          </p>
+                        </li>
+                        {viewTemplateAssignOptions &&
+                          questions &&
+                          questions.length > 0 && (
                             <motion.div
-                              className="bg-slate-900 p-6 rounded-xl border border-slate-800"
-                              initial={{ opacity: 0, y: 30 }}
+                              className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80"
+                              initial={{ opacity: 0, y: -30 }}
                               animate={{ opacity: 1, y: 0 }}
+                            >
+                              <p>
+                                Choose a template to assign to the selected
+                                candidates.
+                              </p>
+                              <select
+                                id="template"
+                                value={template}
+                                onChange={(e) => setTemplate(e.target.value)}
+                                className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none mt-3"
+                              >
+                                <option value="Choose one">Choose one</option>
+                                {questions.map((question) => (
+                                  <option value={question.id} key={question.id}>
+                                    {question.title}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3 w-full"
+                                onClick={assignTemplateSafety}
+                              >
+                                Assign templates and send tests
+                              </button>
+                            </motion.div>
+                          )}
+                        {/* ASSIGN AND SEND TEMPLATES WARNING */}
+                        <AnimatePresence>
+                          {assignTemplatesWarning && (
+                            <motion.div
+                              className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
                               transition={{
                                 duration: 0.5,
                                 ease: "backOut",
                               }}
-                              exit={{ opacity: 0, y: 30 }}
+                              exit={{ opacity: 0 }}
                             >
-                              <h1>Are you sure?</h1>
-                              <p className="mb-6">
-                                By completing this action, you will assign
-                                templates and send test invitations to{" "}
-                                <b className="font-[h2]">{numSelected}</b>{" "}
-                                selected{" "}
-                                {numSelected == 1 ? "candidate" : "candidates"}.
-                              </p>
-                              <motion.button
-                                className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                              <motion.div
+                                className="bg-slate-900 p-6 rounded-xl border border-slate-800"
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{
                                   duration: 0.5,
                                   ease: "backOut",
                                 }}
-                                onClick={handleAssignTemplate}
+                                exit={{ opacity: 0, y: 30 }}
                               >
-                                Yes, assign templates and send tests.
-                              </motion.button>
-                              <motion.button
-                                className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                  duration: 0.5,
-                                  ease: "backOut",
-                                }}
-                                onClick={() => setAssignTemplatesWarning(false)}
-                              >
-                                Cancel
-                              </motion.button>
+                                <h1>Are you sure?</h1>
+                                <p className="mb-6">
+                                  By completing this action, you will assign
+                                  templates and send test invitations to{" "}
+                                  <b className="font-[h2]">{numSelected}</b>{" "}
+                                  selected{" "}
+                                  {numSelected == 1
+                                    ? "candidate"
+                                    : "candidates"}
+                                  .
+                                </p>
+                                <motion.button
+                                  className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: "backOut",
+                                  }}
+                                  onClick={handleAssignTemplate}
+                                >
+                                  Yes, assign templates and send tests.
+                                </motion.button>
+                                <motion.button
+                                  className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: "backOut",
+                                  }}
+                                  onClick={() =>
+                                    setAssignTemplatesWarning(false)
+                                  }
+                                >
+                                  Cancel
+                                </motion.button>
+                              </motion.div>
                             </motion.div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                      {viewTemplateAssignOptions &&
-                        questions &&
-                        questions.length == 0 && (
-                          <div className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80">
-                            <p>{"You don't have any question templates."}</p>
-                            <button
-                              className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                              onClick={() => router.push("/questionWorkshop")}
-                            >
-                              Visit template workshop
-                            </button>
-                          </div>
-                        )}
-                    </div>
-                    <div className="">
-                      <li
-                        className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
-                        onClick={() => setDeleteCandidatesWarning(true)}
-                      >
-                        <p className="text-sm flex gap-2 items-center justify-center">
-                          Delete selected
-                        </p>
-                      </li>
-                      <AnimatePresence>
-                        {deleteCandidatesWarning && (
-                          <motion.div
-                            className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{
-                              duration: 0.5,
-                              ease: "backOut",
-                            }}
-                            exit={{ opacity: 0 }}
-                          >
+                          )}
+                        </AnimatePresence>
+                        {viewTemplateAssignOptions &&
+                          questions &&
+                          questions.length == 0 && (
+                            <div className="absolute left-0 top-10 border border-slate-800 bg-slate-900 rounded-lg p-3 w-80">
+                              <p>{"You don't have any question templates."}</p>
+                              <button
+                                className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
+                                onClick={() => router.push("/questionWorkshop")}
+                              >
+                                Visit template workshop
+                              </button>
+                            </div>
+                          )}
+                      </div>
+                    )}
+                    {numSelected > 0 && (
+                      <div className="">
+                        <li
+                          className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-900 rounded-lg border border-slate-800 hover:bg-slate-800 shadow-lg cursor-pointer duration-100 relative relative"
+                          onClick={() => setDeleteCandidatesWarning(true)}
+                        >
+                          <p className="text-sm flex gap-2 items-center justify-center">
+                            Delete selected
+                          </p>
+                        </li>
+                        <AnimatePresence>
+                          {deleteCandidatesWarning && (
                             <motion.div
-                              className="bg-slate-900 p-6 rounded-xl border border-slate-800"
-                              initial={{ opacity: 0, y: 30 }}
-                              animate={{ opacity: 1, y: 0 }}
+                              className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
                               transition={{
                                 duration: 0.5,
                                 ease: "backOut",
                               }}
-                              exit={{ opacity: 0, y: 30 }}
+                              exit={{ opacity: 0 }}
                             >
-                              <h1>Are you sure?</h1>
-                              <p className="mb-6">
-                                You are about to delete{" "}
-                                <b className="font-[h2]">{numSelected}</b>{" "}
-                                selected{" "}
-                                {numSelected == 1 ? "candidate" : "candidates"}.
-                                This action cannot be undone.
-                              </p>
-                              <motion.button
-                                className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                              <motion.div
+                                className="bg-slate-900 p-6 rounded-xl border border-slate-800"
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{
                                   duration: 0.5,
                                   ease: "backOut",
                                 }}
-                                onClick={handleDeleteSelected}
+                                exit={{ opacity: 0, y: 30 }}
                               >
-                                Yes, delete all selected candidates.
-                              </motion.button>
-                              <motion.button
-                                className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                  duration: 0.5,
-                                  ease: "backOut",
-                                }}
-                                onClick={() =>
-                                  setDeleteCandidatesWarning(false)
-                                }
-                              >
-                                Cancel
-                              </motion.button>
+                                <h1>Are you sure?</h1>
+                                <p className="mb-6">
+                                  You are about to delete{" "}
+                                  <b className="font-[h2]">{numSelected}</b>{" "}
+                                  selected{" "}
+                                  {numSelected == 1
+                                    ? "candidate"
+                                    : "candidates"}
+                                  . This action cannot be undone.
+                                </p>
+                                <motion.button
+                                  className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: "backOut",
+                                  }}
+                                  onClick={handleDeleteSelected}
+                                >
+                                  Yes, delete all selected candidates.
+                                </motion.button>
+                                <motion.button
+                                  className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
+                                  initial={{ opacity: 0, y: 30 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{
+                                    duration: 0.5,
+                                    ease: "backOut",
+                                  }}
+                                  onClick={() =>
+                                    setDeleteCandidatesWarning(false)
+                                  }
+                                >
+                                  Cancel
+                                </motion.button>
+                              </motion.div>
                             </motion.div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
                     <AnimatePresence>
                       {isAddApplicantModalOpen && (
                         <motion.div
@@ -753,7 +769,7 @@ const Applicants = () => {
                             }}
                             exit={{ opacity: 0, y: 30 }}
                           >
-                            <h1>Add applicant</h1>
+                            <h1>Add candidate</h1>
                             <motion.label
                               className="text-white mt-5 mb-2"
                               initial={{ opacity: 0, y: 30 }}
@@ -867,7 +883,7 @@ const Applicants = () => {
                         onClick={toggleAddApplicantModal}
                         className="text-sm flex gap-2 items-center justify-center"
                       >
-                        Add Applicant
+                        Add Candidate
                       </button>
                     </li>
                     <label
@@ -951,7 +967,10 @@ const Applicants = () => {
                             }
                             onClick={
                               showOptionsIndex == index.toString()
-                                ? () => setShowOptionsIndex("")
+                                ? () => {
+                                    setShowOptionsIndex("");
+                                    setshowCandidateDetails(false);
+                                  }
                                 : () => setShowOptionsIndex(index.toString())
                             }
                           >
@@ -1018,15 +1037,19 @@ const Applicants = () => {
                               </div>
                             </div>
                             {showOptionsIndex == index.toString() && (
-                              <ul
+                              <motion.ul
                                 className="flex gap-3 border-t w-full pt-3 border-t-slate-800 hover:cursor-auto"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {/* <motion.li
-                                  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
-                                  onClick={() => toast.success("Email sent.")}
+                                <motion.li
+                                  className={
+                                    showCandidateDetails
+                                      ? "flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 shadow-lg cursor-pointer duration-100 relative"
+                                      : "flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100 relative"
+                                  }
                                   initial={{ opacity: 0, y: -20 }}
                                   animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
                                   transition={{
                                     duration: 0.2,
                                     delay: 0,
@@ -1034,35 +1057,80 @@ const Applicants = () => {
                                   }}
                                 >
                                   <button
-                                    className="text-sm"
+                                    className="text-sm flex justify-between items-center gap-2"
                                     onClick={() =>
-                                      handleSendEmail(
-                                        item.applicant.firstName,
-                                        item.applicant.email
+                                      setshowCandidateDetails(
+                                        !showCandidateDetails
                                       )
                                     }
                                   >
-                                    Send Test
+                                    <>Candidate Details</>
+                                    <Image
+                                      src={Dropdown}
+                                      alt="Dropdown menu arrow"
+                                      width={15}
+                                      height={15}
+                                      className={
+                                        showOptionsIndex == index.toString() &&
+                                        showCandidateDetails
+                                          ? "rotate-0 opacity-25 duration-100"
+                                          : "-rotate-90 opacity-25 duration-100"
+                                      }
+                                    ></Image>
                                   </button>
-                                </motion.li> */}
-                                <motion.li
-                                  className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
-                                  initial={{ opacity: 0, y: -20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{
-                                    duration: 0.2,
-                                    delay: 0,
-                                    ease: "backOut",
-                                  }}
-                                >
-                                  <button className="text-sm">
-                                    View Submission Details
-                                  </button>
+                                  <AnimatePresence>
+                                    {showCandidateDetails && (
+                                      <motion.div
+                                        className="absolute left-0 top-10 border border-slate-700 bg-slate-800 rounded-lg p-3 w-max flex flex-col gap-2"
+                                        initial={{ opacity: 0, y: -20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{
+                                          duration: 0.2,
+                                          delay: 0,
+                                          ease: "backOut",
+                                        }}
+                                      >
+                                        <p className="text-sm flex gap-2 items-center">
+                                          <div className="">Test ID:</div>
+                                          <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
+                                            {item.id}
+                                          </div>
+                                          <div
+                                            className=""
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(
+                                                item.id
+                                              );
+                                              toast.remove();
+                                              toast.success(
+                                                "Test ID copied to clipboard!"
+                                              );
+                                            }}
+                                          >
+                                            <Image
+                                              src={Copy}
+                                              alt="Copy Test ID"
+                                              width={15}
+                                              height={15}
+                                            ></Image>
+                                          </div>
+                                        </p>
+                                        <p className="text-sm flex gap-2 items-center">
+                                          <div className="">Created:</div>
+                                          <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
+                                            {item.created.toString()}
+                                          </div>
+                                        </p>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
                                 </motion.li>
-                                <motion.li
+                                {/* <motion.li
                                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                                   initial={{ opacity: 0, y: -20 }}
                                   animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
                                   transition={{
                                     duration: 0.2,
                                     delay: 0,
@@ -1079,8 +1147,8 @@ const Applicants = () => {
                                   <button className="text-sm">
                                     Copy Test ID
                                   </button>
-                                </motion.li>
-                              </ul>
+                                </motion.li> */}
+                              </motion.ul>
                             )}
                           </li>
                         ))}
@@ -1112,7 +1180,7 @@ const Applicants = () => {
                         className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
                         onClick={toggleAddApplicantModal}
                       >
-                        Add applicant
+                        Add candidate
                       </button>
                       <label
                         htmlFor="fileInput"

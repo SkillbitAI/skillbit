@@ -36,6 +36,7 @@ interface Question {
   title: string;
   language: string;
   framework: string;
+  prompt: string;
   type: string;
   expiration: string;
   companyID: string;
@@ -69,6 +70,8 @@ const QuestionWorkshop = () => {
   const [newTitle, setNewTitle] = useState("");
   const [language, setLanguage] = useState("");
   const [framework, setFramework] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [newPrompt, setNewPrompt] = useState("");
   const [type, setType] = useState("");
   const [showQuestionOptions, setShowQuestionOptions] = useState("");
 
@@ -92,6 +95,7 @@ const QuestionWorkshop = () => {
       setQuestions(data.message.reverse());
       setCurrentQuestion(data.message[0]);
       setNewTitle(data.message[0].title);
+      setNewPrompt(data.message[0].prompt);
     } catch (error) {
       console.error("Error finding questions: ", error);
     }
@@ -123,10 +127,14 @@ const QuestionWorkshop = () => {
 
   const updateQuestion = async (id: string) => {
     setIsSaving(true);
-    if (questions.find((question) => question.title == newTitle)) {
+    if (
+      currentQuestion &&
+      questions.find((question) => question.title == newTitle) &&
+      newTitle != currentQuestion.title
+    ) {
       toast.remove();
       toast.error(
-        "Title already exists. Please choose a unique question title."
+        "Title already exists. Please choose a unique template title."
       );
     } else if (newTitle == "") {
       toast.remove();
@@ -142,6 +150,7 @@ const QuestionWorkshop = () => {
             action: "updateQuestion",
             id: id,
             title: newTitle,
+            prompt: newPrompt,
           }),
         });
         await findQuestions(userCompanyId || "");
@@ -168,6 +177,7 @@ const QuestionWorkshop = () => {
             title: title,
             language: language,
             framework: framework,
+            prompt: prompt,
             type: type,
             expiration: expiration,
           }),
@@ -179,6 +189,7 @@ const QuestionWorkshop = () => {
           setTitle("");
           setLanguage("");
           setFramework("");
+          setPrompt("");
           setType("");
           setExpiration("1 month");
           setViewAdditionalSettings(false);
@@ -186,7 +197,7 @@ const QuestionWorkshop = () => {
           await findQuestions(userCompanyId || "");
         } else if (
           data.message ==
-          "Title already exists. Please choose a unique question title."
+          "Title already exists. Please choose a unique template title."
         ) {
           toast.remove();
           toast.error(data.message);
@@ -285,6 +296,7 @@ const QuestionWorkshop = () => {
                       setTitle("");
                       setLanguage("");
                       setFramework("");
+                      setPrompt("");
                       setType("");
                     }}
                   >
@@ -304,6 +316,7 @@ const QuestionWorkshop = () => {
                           onClick={() => {
                             setCurrentQuestion(question);
                             setNewTitle(question.title);
+                            setNewPrompt(question.prompt);
                           }}
                           key={question.id}
                         >
@@ -452,6 +465,20 @@ const QuestionWorkshop = () => {
                             <p>{currentQuestion.type}</p>
                           </div>
                         </div>
+                        <div className="flex flex-col mt-3">
+                          <h2>Template Prompt</h2>
+                          <p className="text-slate-400">
+                            {
+                              "This open-ended prompt is being used to help generate your templates. Candidates will not see this."
+                            }
+                          </p>
+                          <textarea
+                            placeholder="Generate a todo list application with 5 errors..."
+                            className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
+                            onChange={(e) => setNewPrompt(e.target.value)}
+                            value={newPrompt}
+                          />
+                        </div>
                         <div className="mt-3 flex gap-2 items-center">
                           <h2>Expiration: </h2>
                           <p className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
@@ -459,7 +486,7 @@ const QuestionWorkshop = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex justify-center items-center flex-col gap-6 text-center">
+                      {/* <div className="flex justify-center items-center flex-col gap-6 text-center">
                         <div className="flex justify-center items-center scale-150 mt-6">
                           <div className="lds-ring">
                             <div></div>
@@ -479,10 +506,11 @@ const QuestionWorkshop = () => {
                         >
                           Generating questions...
                         </motion.p>
-                      </div>
+                      </div> */}
                       <div className="">
                         <AnimatePresence>
-                          {currentQuestion.title != newTitle && (
+                          {(currentQuestion.title != newTitle ||
+                            currentQuestion.prompt != newPrompt) && (
                             <motion.button
                               className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
                               initial={{ opacity: 0, y: 30 }}
@@ -600,8 +628,8 @@ const QuestionWorkshop = () => {
                         </p>
                         <input
                           type="text"
-                          placeholder="Question title"
-                          className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none w-full mt-3"
+                          placeholder="Template title"
+                          className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 border border-slate-700"
                           onChange={(e) => setTitle(e.target.value)}
                         />
                       </div>
@@ -685,7 +713,7 @@ const QuestionWorkshop = () => {
                         <h2>Question type</h2>
                         <p className="text-slate-400">
                           {
-                            "We will customize your candidates' prompts to reflect this template's type."
+                            "We will use this to help generate your template and give candidates an idea of what to expect."
                           }
                         </p>
                         <div className="flex gap-3 mt-3 flex-wrap">
@@ -750,6 +778,19 @@ const QuestionWorkshop = () => {
                             Real-world problem
                           </div>
                         </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <h2>Template Prompt</h2>
+                        <p className="text-slate-400">
+                          {
+                            "We will use this open-ended prompt to help generate your template. Candidates will not see this."
+                          }
+                        </p>
+                        <textarea
+                          placeholder="Generate a todo list application with 5 errors..."
+                          className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
+                          onChange={(e) => setPrompt(e.target.value)}
+                        />
                       </div>
                       <div className="flex flex-col">
                         <div
