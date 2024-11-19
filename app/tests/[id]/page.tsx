@@ -305,6 +305,22 @@ export default function Tests({ params }: { params: { id: string } }) {
     window.location.href = "/404";
   };
 
+  const deleteContainer = async () => {
+    const response = await fetch("/api/codeEditor/end", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ testID: params.id }),
+    });
+
+    const ports = await response.json();
+
+    console.log(ports);
+
+    window.location.href = "/404";
+  };
+
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
       {/* Toast Container for notifications */}
@@ -569,20 +585,6 @@ export default function Tests({ params }: { params: { id: string } }) {
             >
               <Image src={ExitIcon} alt="" width={10} height={10}></Image>
             </div>
-          </div>
-        </div>
-        <div
-          className="relative left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
-          style={{ display: showTerminal ? "block" : "none", height: "250px" }}
-        >
-          <div ref={terminalRef} className="overflow-hidden"></div>
-          <div
-            className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-700 cursor-pointer"
-            onClick={() => {
-              setShowTerminal(!showTerminal);
-            }}
-          >
-            <Image src={ExitIcon} alt="" width={10} height={10}></Image>
           </div>
         </div>
       </div>
