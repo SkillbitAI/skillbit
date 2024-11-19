@@ -55,7 +55,9 @@ interface Question {
   title: string;
   language: string;
   framework: string;
+  prompt: string;
   type: string;
+  expiration: string;
   companyID: string;
   userId: string;
   id: string;

@@ -203,7 +203,11 @@ export async function findQuestions(companyId: string) {
   }
 }
 
-export async function updateQuestion(id: string, title: string) {
+export async function updateQuestion(
+  id: string,
+  title: string,
+  prompt: string
+) {
   try {
     const questions = await prisma.question.update({
       where: {
@@ -211,6 +215,7 @@ export async function updateQuestion(id: string, title: string) {
       },
       data: {
         title: title,
+        prompt: prompt,
       },
     });
     return "Success";
@@ -266,6 +271,7 @@ export async function addQuestion(
   title: string,
   language: string,
   framework: string,
+  prompt: string,
   type: string,
   expiration: string
 ) {
@@ -312,6 +318,7 @@ export async function addQuestion(
                 title: title,
                 language: language,
                 framework: framework,
+                prompt: prompt,
                 type: type,
                 expiration: expiration,
               },

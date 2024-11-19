@@ -92,6 +92,7 @@ model Question {
   title String
   language String
   framework String?
+  prompt String @default("")
   expiration String @default("1 month")
   type String
   userId String
