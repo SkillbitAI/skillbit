@@ -80,7 +80,7 @@ export default function Submissions({ params }: { params: { id: string } }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ testId: params.id }),
+        body: JSON.stringify({ testId: params.id, recruiter: true }),
       });
 
       if (!response.ok) {

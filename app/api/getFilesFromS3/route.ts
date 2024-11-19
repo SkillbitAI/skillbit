@@ -24,7 +24,7 @@ const s3Client = new S3Client({
 export async function POST(req) {
   try {
     // Parse request body
-    const { testId } = await req.json();
+    const { testId, recruiter } = await req.json();
 
     if (!testId) {
       return NextResponse.json(
@@ -42,29 +42,35 @@ export async function POST(req) {
     const listCommand = new ListObjectsV2Command(listParams);
     const listResponse = await s3Client.send(listCommand);
 
-    if (!listResponse.Contents || listResponse.Contents.length === 0) {
-      return NextResponse.json({ message: "No files found in the folder." });
+    if (
+      !recruiter &&
+      (!listResponse.Contents || listResponse.Contents.length === 0)
+    ) {
+      const file = {
+        filename: "generated-files.js",
+        content: "This would be when we load in the generated files to S3",
+      };
+
+      if (!file.filename || !file.content) {
+        throw new Error("Each file must have a 'filename' and 'content'.");
+      }
+
+      const params = {
+        Bucket: "skillbit-inprogress",
+        Key: `${testId}/${file.filename}`, // Save under the folder with the testId
+        Body: file.content,
+        ContentType: "text/plain", // Adjust content type based on your file type
+      };
+
+      await s3Client.send(new PutObjectCommand(params));
     }
 
-    // // Option 1: Generate presigned URLs for all files
-    // const filesWithUrls = await Promise.all(
-    //   listResponse.Contents.map(async (file) => {
-    //     const getCommand = new GetObjectCommand({
-    //       Bucket: "skillbit-inprogress",
-    //       Key: file.Key,
-    //     });
-
-    //     const url = await getSignedUrl(s3Client, getCommand, {
-    //       expiresIn: 3600, // URL valid for 1 hour
-    //     });
-
-    //     return { fileName: file.Key, url };
-    //   })
-    // );
-
-    // return NextResponse.json({ files: filesWithUrls });
-
-    // Option 2: Fetch and return file contents (if needed)
+    if (
+      recruiter &&
+      (!listResponse.Contents || listResponse.Contents.length === 0)
+    ) {
+      return NextResponse.json({ message: "No files found in the folder." });
+    }
 
     const filesWithContent = await Promise.all(
       listResponse.Contents.map(async (file) => {
