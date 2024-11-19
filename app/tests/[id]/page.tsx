@@ -118,7 +118,7 @@ export default function Tests({ params }: { params: { id: string } }) {
       if (modifiedFilesRef.current.size > 0) {
         uploadToS3();
       }
-    }, 30000); // 30 seconds
+    }, 5000); // 30 seconds
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   };
@@ -289,21 +289,21 @@ export default function Tests({ params }: { params: { id: string } }) {
     router.push("/submission_screen");
   };
 
-  const deleteContainer = async () => {
-    const response = await fetch("/api/codeEditor/end", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ testID: params.id }),
-    });
+  // const deleteContainer = async () => {
+  //   const response = await fetch("/api/codeEditor/end", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ testID: params.id }),
+  //   });
 
-    const ports = await response.json();
+  //   const ports = await response.json();
 
-    console.log(ports);
+  //   console.log(ports);
 
-    window.location.href = "/404";
-  };
+  //   window.location.href = "/404";
+  // };
 
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
@@ -388,8 +388,8 @@ export default function Tests({ params }: { params: { id: string } }) {
                   </div>
                   <hr className="border-t-0 border-b border-b-slate-700 mb-1" />
                   <ul className="flex flex-col gap-1">
-                    {Object.keys(files).map((key) => {
-                      const file = files[key];
+                    {Object.keys(filesState).map((key) => {
+                      const file = filesState[key];
                       let icon;
                       if (file.name.endsWith(".js")) {
                         icon = JSIcon;
