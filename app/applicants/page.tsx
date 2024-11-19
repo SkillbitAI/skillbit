@@ -1126,6 +1126,60 @@ const Applicants = () => {
                                     )}
                                   </AnimatePresence>
                                 </motion.li>
+
+                                <motion.li
+                                  initial={{ opacity: 0, y: -20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
+                                  transition={{
+                                    duration: 0.2,
+                                    delay: 0,
+                                    ease: "backOut",
+                                  }}
+                                  className="duration-100"
+                                >
+                                  <motion.button
+                                    className="flex justify-center items-center p-1 px-3 bg-indigo-600 rounded-full shadow-lg cursor-pointer duration-100 text-sm"
+                                    onClick={() =>
+                                      window.open(
+                                        `/submissions/${item.id}`,
+                                        "_blank",
+                                        "width=1500,height=800,scrollbars=no,resizable=no"
+                                      )
+                                    }
+                                  >
+                                    <>
+                                      View Submission
+                                      <div className=" arrow flex items-center justify-center">
+                                        <div className="arrowMiddle"></div>
+                                        <div>
+                                          <Image
+                                            src={Arrow}
+                                            alt=""
+                                            width={14}
+                                            height={14}
+                                            className="arrowSide"
+                                          ></Image>
+                                        </div>
+                                      </div>
+                                    </>
+                                  </motion.button>
+                                </motion.li>
+                                {/* <motion.li
+                                  className="flex gap-3 items-center justify-center p-1 px-3 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-lg cursor-pointer duration-100"
+                                  initial={{ opacity: 0, y: -20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
+                                  transition={{
+                                    duration: 0.2,
+                                    delay: 0,
+                                    ease: "backOut",
+                                  }}
+                                >
+                                  <button className="text-sm">
+                                    View Submission
+                                  </button>
+                                </motion.li> */}
                                 {/* <motion.li
                                   className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100"
                                   initial={{ opacity: 0, y: -20 }}
