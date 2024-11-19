@@ -117,48 +117,48 @@ export default function Tests({ params }: { params: { id: string } }) {
     }));
   };
 
-  // useDebouncedEffect(
-  //   () => {
-  //     const uploadToS3 = async () => {
-  //       console.log(filesState);
-  //       const filesToUpload = Object.keys(filesState).map((key) => ({
-  //         filename: filesState[key].name,
-  //         content: filesState[key].value,
-  //       }));
+  useDebouncedEffect(
+    () => {
+      const uploadToS3 = async () => {
+        console.log(filesState);
+        const filesToUpload = Object.keys(filesState).map((key) => ({
+          filename: filesState[key].name,
+          content: filesState[key].value,
+        }));
 
-  //       if (filesToUpload.length === 0) return;
+        if (filesToUpload.length === 0) return;
 
-  //       console.log("Auto-save triggered.");
+        console.log("Auto-save triggered.");
 
-  //       try {
-  //         const response = await fetch("/api/uploadS3", {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //           },
-  //           body: JSON.stringify({ testId: params.id, files: filesToUpload }),
-  //         });
+        try {
+          const response = await fetch("/api/uploadS3", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ testId: params.id, files: filesToUpload }),
+          });
 
-  //         const data = await response.json();
+          const data = await response.json();
 
-  //         if (response.ok) {
-  //           console.log("Auto-save successful:", data.message);
-  //           toast.success("Auto-saved successfully!");
-  //         } else {
-  //           console.error("Auto-save failed:", data.error);
-  //           toast.error("Auto-save failed!");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error uploading to S3:", error);
-  //         toast.error("Auto-save encountered an error!");
-  //       }
-  //     };
+          if (response.ok) {
+            console.log("Auto-save successful:", data.message);
+            toast.success("Auto-saved successfully!");
+          } else {
+            console.error("Auto-save failed:", data.error);
+            toast.error("Auto-save failed!");
+          }
+        } catch (error) {
+          console.error("Error uploading to S3:", error);
+          toast.error("Auto-save encountered an error!");
+        }
+      };
 
-  //     uploadToS3();
-  //   },
-  //   [filesState],
-  //   3000
-  // ); // Debounce saveToS3 function with 3-second delay
+      uploadToS3();
+    },
+    [filesState],
+    3000
+  ); // Debounce saveToS3 function with 3-second delay
 
   // Start the editor and initialize socket connection
   const startEditor = async () => {
