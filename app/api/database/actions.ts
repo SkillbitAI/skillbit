@@ -17,19 +17,6 @@ export async function addApplicant(
   recruiterEmail: string
 ) {
   try {
-    //WILL NOT BE IMPLEMENTING THIS SINCE THERE CAN BE MULTIPLE TEST IDS TO ONE APPLICANT
-
-    // Check if a user with the provided email already exists
-    // const existingUser = await prisma.applicant.findUnique({
-    //   where: {
-    //     email: email,
-    //   },
-    // });
-
-    // if (existingUser) {
-    //   return "Applicant already exists";
-    // }
-
     //finding company id from recruiter email
     const company = await prisma.user.findUnique({
       where: {
@@ -49,13 +36,9 @@ export async function addApplicant(
       // Create a new test id record (INSTEAD OF APPLICANT)
       const newApplicant = await prisma.testID.create({
         data: {
-          applicant: {
-            create: {
-              email: email,
-              firstName: firstName,
-              lastName: lastName,
-            },
-          },
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
           company: {
             connect: {
               id: companyId,
@@ -104,13 +87,9 @@ export async function addApplicants(
       applicants.map(async (applicant) => {
         const newApplicant = await prisma.testID.create({
           data: {
-            applicant: {
-              create: {
-                email: applicant.email,
-                firstName: applicant.firstName,
-                lastName: applicant.lastName,
-              },
-            },
+            email: applicant.email,
+            firstName: applicant.firstName,
+            lastName: applicant.lastName,
             company: {
               connect: {
                 id: companyId,
@@ -224,7 +203,11 @@ export async function findQuestions(companyId: string) {
   }
 }
 
-export async function updateQuestion(id: string, title: string) {
+export async function updateQuestion(
+  id: string,
+  title: string,
+  prompt: string
+) {
   try {
     const questions = await prisma.question.update({
       where: {
@@ -232,6 +215,7 @@ export async function updateQuestion(id: string, title: string) {
       },
       data: {
         title: title,
+        prompt: prompt,
       },
     });
     return "Success";
@@ -263,7 +247,7 @@ export async function deleteApplicants(applicantData: Array<TestIDInterface>) {
         count++;
         const applicants = await prisma.testID.delete({
           where: {
-            uid: applicant.uid,
+            id: applicant.id,
           },
         });
       }
@@ -287,6 +271,7 @@ export async function addQuestion(
   title: string,
   language: string,
   framework: string,
+  prompt: string,
   type: string,
   expiration: string
 ) {
@@ -333,6 +318,7 @@ export async function addQuestion(
                 title: title,
                 language: language,
                 framework: framework,
+                prompt: prompt,
                 type: type,
                 expiration: expiration,
               },
@@ -642,9 +628,6 @@ export async function getApplicants(company: string) {
           id: company,
         },
       },
-      include: {
-        applicant: true,
-      },
     });
     return applicants;
   } catch (error) {
@@ -654,170 +637,15 @@ export async function getApplicants(company: string) {
 }
 
 interface TestIDInterface {
-  applicant: ApplicantDataInterface;
-  applicantID: string;
   companyID: string;
-  uid: string;
-  selected: boolean;
-}
-
-interface ApplicantDataInterface {
   id: string;
+  selected: boolean;
   firstName: string;
   lastName: string;
   email: string;
   status: string;
   score: string;
 }
-
-// export async function assignTemplate(
-//   applicantData: Array<TestIDInterface>,
-//   templateID: string,
-//   company: string
-// ) {
-//   try {
-//     const template = await prisma.question.findUnique({
-//       where: {
-//         id: templateID,
-//       },
-//     });
-
-//     const expiration = new Date();
-
-//     switch (template?.expiration) {
-//       case "1 day":
-//         expiration.setDate(expiration.getDate() + 1);
-//         break;
-//       case "1 week":
-//         expiration.setDate(expiration.getDate() + 7);
-//         break;
-//       case "2 weeks":
-//         expiration.setDate(expiration.getDate() + 14);
-//         break;
-//       case "1 month":
-//         expiration.setMonth(expiration.getMonth() + 1);
-//         break;
-//       case "2 months":
-//         expiration.setMonth(expiration.getMonth() + 2);
-//         break;
-//       default:
-//         return null;
-//     }
-
-//     let count = 0;
-//     applicantData.map(async (applicant) => {
-//       if (applicant.selected) {
-//         count++;
-//         await prisma.testID.update({
-//           where: {
-//             uid: applicant.uid,
-//           },
-//           data: {
-//             template: {
-//               connect: {
-//                 id: templateID,
-//               },
-//             },
-//             expirationDate: expiration,
-//           },
-//         });
-//         try {
-//           const transporter = nodemailer.createTransport({
-//             host: "smtp.gmail.com",
-//             port: 465,
-//             secure: true,
-//             auth: {
-//               user: process.env.GMAIL_USERNAME,
-//               pass: process.env.GMAIL_PASSWORD,
-//             },
-//           });
-
-//           const mailOptions = {
-//             from: "Skillbit <skillbitassessment@gmail.com>",
-//             to: applicant.applicant.email,
-//             subject: "Skillbit Assessment",
-//             attachments: [
-//               {
-//                 filename: "logo_full_transparent_blue.png",
-//                 path: "./public/assets/branding/logos/logo_full_transparent_blue.png",
-//                 cid: "logo1",
-//               },
-//             ],
-//             html: `
-//             <head>
-//             <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-//             <!-- Include any necessary styles or head elements here -->
-//             <style>
-//                 body {
-//                     text-align: center;
-//                     background-color: #ffffff;
-//                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-//                 }
-//                 .content {
-//                     max-width: 600px;
-//                     margin: 0 auto;
-//                 }
-//             </style>
-//         </head>
-//         <body>
-//             <div class="content" style="margin: 12px auto; font-family: sans-serif;">
-//             <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
-//                 <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${applicant.applicant.firstName} !</p>
-//                 <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have been selected by ${company} to participate in a personalized assessment. Click the link below to access your
-//                 test dashboard.</p>
-//                 <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation"
-//                     style="text-align:center">
-//                     <tbody>
-//                         <tr>
-//                             <td><a href="example.com"
-//                                     style="background-color:#008cff;border-radius:7px;color:#fff;font-size:16px;text-decoration:none;text-align:center;display:inline-block;margin:10px 0px 10px 0px;padding:12px 24px 12px 24px;line-height:100%;max-width:100%"
-//                                     target="_blank"><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span
-//                                     style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get
-//                                     started</span><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%" hidden>&nbsp;</i><![endif]--></span></a>
-//                             </td>
-//                         </tr>
-//                     </tbody>
-//                 </table>
-//                 <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Best, The Skillbit Team</p>
-//                 <hr style="width:100%;border:none;border-top:1px solid #eaeaea;border-color:#cccccc;margin:20px 0" />
-//                 <p style="font-size: 12px; line-height: 24px; margin: 16px 0; color: #8898aa">University of Florida</p>
-//             </div>
-//         </body>
-//         </html>
-//             `,
-//           };
-//           const info = await transporter.sendMail(mailOptions);
-//           console.log("Email Sent:", info.response);
-//           transporter.close();
-
-//           await prisma.testID.update({
-//             where: {
-//               uid: applicant.uid,
-//             },
-//             data: {
-//               applicant: {
-//                 update: {
-//                   status: "Sent",
-//                 },
-//               },
-//             },
-//           });
-//         } catch (error) {
-//           console.error("Error sending test:", error);
-//           return null;
-//         }
-//       }
-//     });
-//     if (count == 0) {
-//       return "No candidates selected.";
-//     } else {
-//       return "Success";
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return null;
-//   }
-// }
 
 export async function assignTemplate(
   applicantData: Array<TestIDInterface>,
@@ -859,7 +687,7 @@ export async function assignTemplate(
         count++;
         await prisma.testID.update({
           where: {
-            uid: applicant.uid,
+            id: applicant.id,
           },
           data: {
             template: {
@@ -883,7 +711,7 @@ export async function assignTemplate(
 
           const mailOptions = {
             from: "Skillbit <skillbitassessment@gmail.com>",
-            to: applicant.applicant.email,
+            to: applicant.email,
             subject: "Skillbit Assessment",
             attachments: [
               {
@@ -911,7 +739,7 @@ export async function assignTemplate(
         <body>
             <div class="content" style="margin: 12px auto; font-family: sans-serif;">
             <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
-                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${applicant.applicant.firstName} !</p>
+                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${applicant.firstName} !</p>
                 <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have been selected by ${company} to participate in a personalized assessment. Click the link below to access your
                 test dashboard.</p>
                 <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation"
@@ -941,14 +769,10 @@ export async function assignTemplate(
 
           await prisma.testID.update({
             where: {
-              uid: applicant.uid,
+              id: applicant.id,
             },
             data: {
-              applicant: {
-                update: {
-                  status: "Sent",
-                },
-              },
+              status: "Sent",
             },
           });
         } catch (error) {

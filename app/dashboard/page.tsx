@@ -37,7 +37,9 @@ interface Question {
   title: string;
   language: string;
   framework: string;
+  prompt: string;
   type: string;
+  expiration: string;
   companyID: string;
   userId: string;
   id: string;
@@ -50,14 +52,9 @@ interface Employee {
 }
 
 interface TestIDInterface {
-  applicant: ApplicantDataInterface;
-  applicantID: string;
   companyID: string;
   uid: string;
   selected: boolean;
-}
-interface ApplicantDataInterface {
-  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -131,13 +128,13 @@ const Dashboard = () => {
       let expiredApplicants = 0;
 
       data.message.forEach((applicant: TestIDInterface) => {
-        if (applicant.applicant.status == "Sent") {
+        if (applicant.status == "Sent") {
           sentApplicants++;
-        } else if (applicant.applicant.status == "Unsent") {
+        } else if (applicant.status == "Unsent") {
           unsentApplicants++;
-        } else if (applicant.applicant.status == "Completed") {
+        } else if (applicant.status == "Completed") {
           completedApplicants++;
-        } else if (applicant.applicant.status == "Expired") {
+        } else if (applicant.status == "Expired") {
           expiredApplicants++;
         }
       });

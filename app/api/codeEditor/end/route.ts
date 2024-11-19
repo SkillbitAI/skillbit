@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   const test = await prisma.testID.findUnique({
     where: {
-      uid: containerName,
+      id: containerName,
     },
   });
 
