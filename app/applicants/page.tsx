@@ -49,6 +49,7 @@ interface TestIDInterface {
   email: string;
   status: string;
   score: string;
+  submitted: boolean;
 }
 
 interface Question {
@@ -1011,10 +1012,10 @@ const Applicants = () => {
                                     <p className="text-sm">Unsent</p>
                                   </div>
                                 )}
-                                {item.status == "Passed" && (
+                                {item.status == "Submitted" && (
                                   <div className="flex gap-3 items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
                                     <div className="w-2 h-2 rounded-full bg-green-600"></div>
-                                    <p className="text-sm">Completed</p>
+                                    <p className="text-sm">Submitted</p>
                                   </div>
                                 )}
                                 {item.status == "Expired" && (
@@ -1081,7 +1082,7 @@ const Applicants = () => {
                                   <AnimatePresence>
                                     {showCandidateDetails && (
                                       <motion.div
-                                        className="absolute left-0 top-10 border border-slate-700 bg-slate-800 rounded-lg p-3 w-max flex flex-col gap-2"
+                                        className="absolute left-0 top-10 border border-slate-700 bg-slate-800 rounded-lg p-3 w-max flex flex-col gap-2 z-40"
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
@@ -1126,45 +1127,46 @@ const Applicants = () => {
                                     )}
                                   </AnimatePresence>
                                 </motion.li>
-
-                                <motion.li
-                                  initial={{ opacity: 0, y: -20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -20 }}
-                                  transition={{
-                                    duration: 0.2,
-                                    delay: 0,
-                                    ease: "backOut",
-                                  }}
-                                  className="duration-100"
-                                >
-                                  <motion.button
-                                    className="flex justify-center items-center p-1 px-3 bg-indigo-600 rounded-full shadow-lg cursor-pointer duration-100 text-sm"
-                                    onClick={() =>
-                                      window.open(
-                                        `/submissions/${item.id}`,
-                                        "_blank",
-                                        "width=1500,height=800,scrollbars=no,resizable=no"
-                                      )
-                                    }
+                                {item.status == "Submitted" && (
+                                  <motion.li
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{
+                                      duration: 0.2,
+                                      delay: 0,
+                                      ease: "backOut",
+                                    }}
+                                    className="duration-100"
                                   >
-                                    <>
-                                      View Submission
-                                      <div className=" arrow flex items-center justify-center">
-                                        <div className="arrowMiddle"></div>
-                                        <div>
-                                          <Image
-                                            src={Arrow}
-                                            alt=""
-                                            width={14}
-                                            height={14}
-                                            className="arrowSide"
-                                          ></Image>
+                                    <motion.button
+                                      className="flex justify-center items-center p-1 px-3 bg-indigo-600 rounded-full shadow-lg cursor-pointer duration-100 text-sm"
+                                      onClick={() =>
+                                        window.open(
+                                          `/submissions/${item.id}`,
+                                          "_blank",
+                                          "width=1500,height=800,scrollbars=no,resizable=no"
+                                        )
+                                      }
+                                    >
+                                      <>
+                                        View Submission
+                                        <div className=" arrow flex items-center justify-center">
+                                          <div className="arrowMiddle"></div>
+                                          <div>
+                                            <Image
+                                              src={Arrow}
+                                              alt=""
+                                              width={14}
+                                              height={14}
+                                              className="arrowSide"
+                                            ></Image>
+                                          </div>
                                         </div>
-                                      </div>
-                                    </>
-                                  </motion.button>
-                                </motion.li>
+                                      </>
+                                    </motion.button>
+                                  </motion.li>
+                                )}
                                 {/* <motion.li
                                   className="flex gap-3 items-center justify-center p-1 px-3 bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-lg cursor-pointer duration-100"
                                   initial={{ opacity: 0, y: -20 }}

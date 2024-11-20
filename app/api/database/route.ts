@@ -24,6 +24,8 @@ import {
   assignTemplate,
   deleteApplicants,
   contactForm,
+  markSubmitted,
+  getIsSubmitted,
 } from "./actions";
 import { send } from "process";
 
@@ -230,6 +232,16 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "markSubmitted") {
+    console.log(data.id);
+    const response = await markSubmitted(data.id);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error marking testID as submitted." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "findCompanyById") {
     const response = await findCompanyById(data.id);
     if (response == null) {
@@ -264,6 +276,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "getApplicants") {
     const response = await getApplicants(data.company);
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "getIsSubmitted") {
+    const response = await getIsSubmitted(data.id);
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "assignTemplate") {
     const response = await assignTemplate(

@@ -6,7 +6,6 @@
 
 import Editor, { loader } from "@monaco-editor/react";
 import { useState, useEffect, useRef } from "react";
-import React from "react";
 import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal } from "xterm";
@@ -25,7 +24,11 @@ import SearchIcon from "../../../public/assets/icons/search.svg";
 import ExitIcon from "../../../public/assets/icons/exit.svg";
 import Arrow from "../../../public/assets/icons/arrow.svg";
 import Link from "next/link";
-import { files } from "./files";
+import { useRouter } from "next/navigation";
+import { files as initialFiles } from "./files";
+
+// Import react-hot-toast components
+import { toast, Toaster } from "react-hot-toast";
 
 const DOCKER_EC2_TOGGLE = true;
 
@@ -36,8 +39,24 @@ const xtermOptions = {
   theme: { background: "#0f172a00" },
 };
 
+function useDebouncedEffect(callback, dependencies, delay) {
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      callback();
+    }, delay);
+
+    return () => clearTimeout(timeoutRef.current);
+  }, [...dependencies, delay]);
+}
+
 export default function Tests({ params }: { params: { id: string } }) {
-  const [fileName, setFileName] = useState("/project/src/App.js");
+  const [fileName, setFileName] = useState("");
+  // const [filesState, setFilesState] = useState(initialFiles);
   const terminalRef = useRef(null);
   const termRef = useRef(null);
   const fitAddonRef = useRef(null);
@@ -49,54 +68,196 @@ export default function Tests({ params }: { params: { id: string } }) {
   const [showSidebar, setShowSidebar] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isAppReady, setIsAppReady] = useState(false);
+  const router = useRouter();
+  const [filesState, setFilesState] = useState({});
+  // const [file, setFile] = useState("");
+  const file = filesState[fileName];
 
+  const fetchFilesFromS3 = async () => {
+    try {
+      const response = await fetch("/api/getFilesFromS3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testId: params.id, recruiter: false }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch files from S3");
+      }
+
+      const data = await response.json();
+      const files = data.files;
+
+      // Assuming the response is an object where keys are file paths and values are file data
+      const formattedFiles = {};
+      let firstFilename = "";
+      let count = 0;
+      for (const file of files) {
+        const name = file.fileName.split("/").pop();
+        if (count == 0) {
+          firstFilename = `/project/src/${name}`;
+        }
+        count++;
+        formattedFiles[`/project/src/${name}`] = {
+          name: name,
+          value: file.content,
+        };
+      }
+      setFilesState(formattedFiles);
+      setFileName(firstFilename);
+    } catch (error) {
+      console.error("Error fetching files from S3:", error);
+      toast.error("Failed to load files from S3!");
+    }
+  };
+
+  // Handle editor changes
   const handleEditorChange = (value, event) => {
     if (socket) {
       socket.emit("codeChange", { fileName, value });
     }
+    setFilesState((prevFiles) => ({
+      ...prevFiles,
+      [fileName]: { ...prevFiles[fileName], value },
+    }));
   };
 
-  const startEditor = async () => {
-    const response = await fetch("/api/codeEditor/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ testID: params.id }),
-    });
+  const uploadToS3 = async () => {
+    console.log(filesState);
+    const filesToUpload = Object.keys(filesState).map((key) => ({
+      filename: filesState[key].name,
+      content: filesState[key].value,
+    }));
 
-    const ports = await response.json();
+    if (filesToUpload.length === 0) return;
 
-    console.log(ports);
+    console.log("Auto-save triggered.");
 
-    if (ports.message == "invalid") {
-      window.location.href = "/404";
-    } else {
-      setIsLoading(false);
+    try {
+      const response = await fetch("/api/uploadS3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testId: params.id, files: filesToUpload }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Auto-save successful:", data.message);
+        toast.success("Auto-saved successfully!");
+      } else {
+        console.error("Auto-save failed:", data.error);
+        toast.error("Auto-save failed!");
+      }
+    } catch (error) {
+      console.error("Error uploading to S3:", error);
+      toast.error("Auto-save encountered an error!");
     }
+  };
 
-    const newSocket = io(
-      DOCKER_EC2_TOGGLE
-        ? `http://54.225.167.48:${ports.socketServer}`
-        : `http://localhost:${ports.socketServer}`
-    );
-    setSocket(newSocket);
-    setWebServerPort(ports.webServer);
+  useDebouncedEffect(
+    () => {
+      uploadToS3();
+    },
+    [filesState],
+    3000
+  ); // Debounce saveToS3 function with 3-second delay
 
-    newSocket.on("connect", () => {
-      newSocket.emit("data", "\n");
-      newSocket.emit("data", "cd project\n");
-      newSocket.emit("data", "npm install ajv@^6.12.6 ajv-keywords@^3.5.2\n");
-      newSocket.emit("data", "npm run start\n");
-      for (const [fileName, file] of Object.entries(files)) {
-        newSocket.emit("codeChange", { fileName, value: file.value });
+  // Start the editor and initialize socket connection
+  const startEditor = async () => {
+    try {
+      const response = await fetch("/api/codeEditor/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testID: params.id }),
+      });
+
+      const ports = await response.json();
+
+      console.log("Editor start response:", ports);
+
+      if (ports.message === "invalid") {
+        router.push("/404");
+        return;
+      } else {
+        setIsLoading(false);
       }
 
-      setTimeout(() => {
-        setIframeKey(iframeKey + 1);
-      }, 2000);
-    });
+      const newSocket = io(
+        DOCKER_EC2_TOGGLE
+          ? `http://54.225.167.48:${ports.socketServer}`
+          : `http://localhost:${ports.socketServer}`
+      );
+      setSocket(newSocket);
+      setWebServerPort(ports.webServer);
+
+      newSocket.on("connect", () => {
+        newSocket.emit("data", "\n");
+        newSocket.emit("data", "cd project\n");
+        newSocket.emit("data", "npm install ajv@^6.12.6 ajv-keywords@^3.5.2\n");
+        newSocket.emit("data", "npm run start\n");
+        for (const [fileKey, file] of Object.entries(filesState)) {
+          newSocket.emit("codeChange", {
+            fileName: fileKey,
+            value: file.value,
+          });
+        }
+
+        setTimeout(() => {
+          setIframeKey((prevKey) => prevKey + 1);
+        }, 2000);
+      });
+    } catch (error) {
+      console.error("Error starting editor:", error);
+      router.push("/404");
+    }
   };
+
+  const getIsSubmitted = async () => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "getIsSubmitted",
+          id: params.id,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to mark testID as submitted.");
+      }
+      return data.message.submitted;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to mark testID as submitted.");
+    }
+  };
+
+  useEffect(() => {
+    const initializeEditor = async () => {
+      const submitted = await getIsSubmitted();
+      if (submitted) {
+        router.push("/submission_screen");
+      }
+
+      if (Object.keys(filesState).length > 0) {
+        if (!socket) {
+          startEditor();
+        }
+      }
+    };
+    // fetchFilesFromS3();
+    initializeEditor();
+  }, [filesState]); // Wait for filesState to be populated
 
   // Initialize the terminal
   useEffect(() => {
@@ -108,12 +269,9 @@ export default function Tests({ params }: { params: { id: string } }) {
       fitAddonRef.current.fit();
       termRef.current.focus();
 
-      // Start the editor if not already started
-      if (!socket) {
-        startEditor();
-      }
+      fetchFilesFromS3();
     }
-  }, []);
+  }, [socket]); // Added socket as dependency to ensure startEditor is called when socket is set
 
   // Set up socket event listeners after both terminal and socket are ready
   useEffect(() => {
@@ -130,8 +288,9 @@ export default function Tests({ params }: { params: { id: string } }) {
 
       termRef.current._onDataAttached = true; // Flag to prevent multiple listeners
     }
-  }, [socket, termRef.current]);
+  }, [socket]);
 
+  // Check if the web server is ready
   useEffect(() => {
     if (webServerPort) {
       const checkAppReady = async () => {
@@ -154,41 +313,93 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   }, [webServerPort]);
 
-  const file = files[fileName];
-
-  loader.init().then((monaco) => {
-    monaco.editor.defineTheme("myTheme", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [],
-      colors: {
-        "editor.background": "#1e293b00",
-      },
+  // Initialize Monaco Editor theme
+  useEffect(() => {
+    loader.init().then((monaco) => {
+      monaco.editor.defineTheme("myTheme", {
+        base: "vs-dark",
+        inherit: true,
+        rules: [],
+        colors: {
+          "editor.background": "#1e293b00",
+        },
+      });
     });
-  });
+  }, []);
 
+  // Handle refresh button click
   const handleRefreshClick = () => {
     console.log("Refresh icon clicked");
+    setIframeKey((prevKey) => prevKey + 1);
   };
 
+  // Delete container (additional functionality if needed)
   const deleteContainer = async () => {
-    const response = await fetch("/api/codeEditor/end", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ testID: params.id }),
-    });
+    try {
+      const response = await fetch("/api/codeEditor/end", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ testID: params.id }),
+      });
 
-    const ports = await response.json();
+      const ports = await response.json();
 
-    console.log(ports);
+      console.log("Delete container response:", ports);
 
-    window.location.href = "/404";
+      // Optionally, you can add additional logic here
+    } catch (error) {
+      console.error("Error deleting container:", error);
+    }
+  };
+
+  const markSubmitted = async () => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "markSubmitted",
+          id: params.id,
+        }),
+      });
+      // const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to mark testID as submitted.");
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to mark testID as submitted.");
+    }
+  };
+
+  // Handle submit button click
+  const handleSubmit = async () => {
+    toast.loading("Submitting...");
+    await uploadToS3();
+    await markSubmitted();
+    await deleteContainer();
+    router.push("/submission_screen");
   };
 
   return (
     <div className="max-w-screen text-white bg-slate-950 min-h-screen overflow-x-hidden flex">
+      {/* Toast Container for notifications */}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            background: "#333",
+            color: "#fff",
+            zIndex: 9999,
+          },
+        }}
+      />
+
       {isLoading && (
         <div className="fixed left-0 right-0 top-0 bottom-0 z-50">
           <div className="graphPaper bg-slate-900 text-white h-screen w-screen flex items-center justify-center flex-col">
@@ -257,8 +468,8 @@ export default function Tests({ params }: { params: { id: string } }) {
                   </div>
                   <hr className="border-t-0 border-b border-b-slate-700 mb-1" />
                   <ul className="flex flex-col gap-1">
-                    {Object.keys(files).map((key) => {
-                      const file = files[key];
+                    {Object.keys(filesState).map((key) => {
+                      const file = filesState[key];
                       let icon;
                       if (file.name.endsWith(".js")) {
                         icon = JSIcon;
@@ -298,7 +509,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
-                  onClick={deleteContainer}
+                  onClick={handleSubmit}
                 >
                   Submit{" "}
                   <div className="arrow flex items-center justify-center">
@@ -389,40 +600,40 @@ export default function Tests({ params }: { params: { id: string } }) {
         </div>
         <div className="h-full flex relative">
           <div className="flex-1 relative">
-            <Editor
-              theme="myTheme"
-              path={file.name}
-              defaultLanguage={file.language}
-              defaultValue={file.value}
-              onChange={handleEditorChange}
-              className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
-            />
-          </div>
-          <AnimatePresence>
-            {isAppReady && showBrowser && (
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "auto" }}
-                exit={{ width: 0 }}
-                transition={{
-                  duration: 0.2,
-                  delay: 0,
-                  ease: "backOut",
-                }}
-                className="flex-1 relative bg-slate-950"
-              >
-                <iframe
-                  className="w-full h-full"
-                  key={iframeKey}
-                  src={
-                    DOCKER_EC2_TOGGLE
-                      ? `http://54.225.167.48:${webServerPort}`
-                      : `http://localhost:${webServerPort}`
-                  }
-                ></iframe>
-              </motion.div>
+            {file && (
+              <Editor
+                theme="myTheme"
+                path={file.name}
+                defaultLanguage={file.language}
+                defaultValue={file.value}
+                onChange={handleEditorChange}
+                className="absolute left-0 right-0 bottom-0 top-0 border-r border-r-slate-700"
+              />
             )}
-          </AnimatePresence>
+          </div>
+          {isAppReady && showBrowser && (
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{
+                duration: 0.2,
+                delay: 0,
+                ease: "backOut",
+              }}
+              className="flex-1 relative bg-slate-950"
+            >
+              <iframe
+                className="w-full h-full"
+                key={iframeKey}
+                src={
+                  DOCKER_EC2_TOGGLE
+                    ? `http://54.225.167.48:${webServerPort}`
+                    : `http://localhost:${webServerPort}`
+                }
+              ></iframe>
+            </motion.div>
+          )}
           <div
             className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
             style={{ display: showTerminal ? "block" : "none" }}

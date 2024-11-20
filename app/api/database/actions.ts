@@ -636,15 +636,52 @@ export async function getApplicants(company: string) {
   }
 }
 
+export async function getIsSubmitted(id: string) {
+  try {
+    const applicants = await prisma.testID.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        submitted: true,
+      },
+    });
+    return applicants;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function markSubmitted(id: string) {
+  try {
+    await prisma.testID.update({
+      where: {
+        id: id,
+      },
+      data: {
+        submitted: true,
+        status: "Submitted",
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 interface TestIDInterface {
   companyID: string;
   id: string;
   selected: boolean;
+  created: Date;
   firstName: string;
   lastName: string;
   email: string;
   status: string;
   score: string;
+  submitted: boolean;
 }
 
 export async function assignTemplate(
@@ -739,14 +776,18 @@ export async function assignTemplate(
         <body>
             <div class="content" style="margin: 12px auto; font-family: sans-serif;">
             <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
-                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${applicant.firstName} !</p>
+                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${
+                  applicant.firstName
+                } !</p>
                 <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have been selected by ${company} to participate in a personalized assessment. Click the link below to access your
                 test dashboard.</p>
                 <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation"
                     style="text-align:center">
                     <tbody>
                         <tr>
-                            <td><a href="example.com"
+                            <td><a href="${
+                              "http://localhost:3000/prescreen/" + applicant.id
+                            }"
                                     style="background-color:#008cff;border-radius:7px;color:#fff;font-size:16px;text-decoration:none;text-align:center;display:inline-block;margin:10px 0px 10px 0px;padding:12px 24px 12px 24px;line-height:100%;max-width:100%"
                                     target="_blank"><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span
                                     style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get
