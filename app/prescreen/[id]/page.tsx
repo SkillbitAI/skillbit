@@ -1,8 +1,10 @@
+"use client";
+
 import React from "react";
-import logo from "../../public/assets/branding/logos/logo_mini_transparent_white.png";
+import logo from "../../../public/assets/branding/logos/logo_mini_transparent_white.png";
 import Image from "next/image";
 
-const WaitingRoom = () => {
+const WaitingRoom = ({ params }: { params: { id: string } }) => {
   return (
     <div className="text-white graphPaper bg-slate-900 text-center flex flex-col justify-center h-screen">
       <div className="px-6 pt-24 max-w-7xl mx-auto items-center">
@@ -47,7 +49,10 @@ const WaitingRoom = () => {
         <div className="max-w-7xl mx-auto p-40 ">
           <h1 className="text-6xl">Ready to start the test?</h1>
           <p className="mt-4">Click the button below to begin.</p>
-          <button className="bg-white bg-opacity-10 px-6 py-3 rounded-lg mt-12">
+          <button
+            className="bg-white bg-opacity-10 px-6 py-3 rounded-lg mt-12"
+            onClick={() => (window.location.href = `/tests/${params.id}`)}
+          >
             Start Test
           </button>
         </div>
