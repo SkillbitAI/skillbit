@@ -55,7 +55,7 @@ function useDebouncedEffect(callback, dependencies, delay) {
 }
 
 export default function Tests({ params }: { params: { id: string } }) {
-  const [fileName, setFileName] = useState("/project/src/App.js");
+  const [fileName, setFileName] = useState("");
   // const [filesState, setFilesState] = useState(initialFiles);
   const terminalRef = useRef(null);
   const termRef = useRef(null);
@@ -92,14 +92,21 @@ export default function Tests({ params }: { params: { id: string } }) {
 
       // Assuming the response is an object where keys are file paths and values are file data
       const formattedFiles = {};
+      let firstFilename = "";
+      let count = 0;
       for (const file of files) {
         const name = file.fileName.split("/").pop();
+        if (count == 0) {
+          firstFilename = `/project/src/${name}`;
+        }
+        count++;
         formattedFiles[`/project/src/${name}`] = {
           name: name,
           value: file.content,
         };
       }
       setFilesState(formattedFiles);
+      setFileName(firstFilename);
     } catch (error) {
       console.error("Error fetching files from S3:", error);
       toast.error("Failed to load files from S3!");
