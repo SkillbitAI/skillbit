@@ -1082,7 +1082,7 @@ const Applicants = () => {
                                   <AnimatePresence>
                                     {showCandidateDetails && (
                                       <motion.div
-                                        className="absolute left-0 top-10 border border-slate-700 bg-slate-800 rounded-lg p-3 w-max flex flex-col gap-2"
+                                        className="absolute left-0 top-10 border border-slate-700 bg-slate-800 rounded-lg p-3 w-max flex flex-col gap-2 z-40"
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
