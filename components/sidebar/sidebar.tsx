@@ -51,11 +51,13 @@ interface TestIDInterface {
   companyID: string;
   id: string;
   selected: boolean;
+  created: Date;
   firstName: string;
   lastName: string;
   email: string;
   status: string;
   score: string;
+  submitted: boolean;
 }
 
 const Sidebar = () => {

@@ -53,13 +53,15 @@ interface Employee {
 
 interface TestIDInterface {
   companyID: string;
-  uid: string;
+  id: string;
   selected: boolean;
+  created: Date;
   firstName: string;
   lastName: string;
   email: string;
   status: string;
   score: string;
+  submitted: boolean;
 }
 
 const Dashboard = () => {

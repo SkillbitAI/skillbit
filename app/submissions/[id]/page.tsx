@@ -212,8 +212,36 @@ export default function Submissions({ params }: { params: { id: string } }) {
     }
   };
 
+  const getIsSubmitted = async () => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "getIsSubmitted",
+          id: params.id,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to mark testID as submitted.");
+      }
+      return data.message.submitted;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to mark testID as submitted.");
+    }
+  };
+
   useEffect(() => {
     const initializeEditor = async () => {
+      const submitted = await getIsSubmitted();
+      if (!submitted) {
+        router.push("/404");
+      }
+
       if (Object.keys(filesState).length > 0) {
         if (!socket) {
           startEditor();

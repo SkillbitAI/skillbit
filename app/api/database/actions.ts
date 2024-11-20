@@ -636,15 +636,52 @@ export async function getApplicants(company: string) {
   }
 }
 
+export async function getIsSubmitted(id: string) {
+  try {
+    const applicants = await prisma.testID.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        submitted: true,
+      },
+    });
+    return applicants;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function markSubmitted(id: string) {
+  try {
+    await prisma.testID.update({
+      where: {
+        id: id,
+      },
+      data: {
+        submitted: true,
+        status: "Submitted",
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 interface TestIDInterface {
   companyID: string;
   id: string;
   selected: boolean;
+  created: Date;
   firstName: string;
   lastName: string;
   email: string;
   status: string;
   score: string;
+  submitted: boolean;
 }
 
 export async function assignTemplate(

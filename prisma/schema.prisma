@@ -82,6 +82,7 @@ model testID {
   score         String?
   expirationDate DateTime?
   created DateTime @default(now())
+  submitted Boolean @default(false)
 }
 
 //THIS IS THE TEMPLATE FOR THE QUESTION

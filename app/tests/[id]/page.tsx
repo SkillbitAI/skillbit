@@ -212,8 +212,36 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   };
 
+  const getIsSubmitted = async () => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "getIsSubmitted",
+          id: params.id,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to mark testID as submitted.");
+      }
+      return data.message.submitted;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to mark testID as submitted.");
+    }
+  };
+
   useEffect(() => {
     const initializeEditor = async () => {
+      const submitted = await getIsSubmitted();
+      if (submitted) {
+        router.push("/submission_screen");
+      }
+
       if (Object.keys(filesState).length > 0) {
         if (!socket) {
           startEditor();
@@ -319,8 +347,33 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   };
 
+  const markSubmitted = async () => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "markSubmitted",
+          id: params.id,
+        }),
+      });
+      // const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to mark testID as submitted.");
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to mark testID as submitted.");
+    }
+  };
+
   // Handle submit button click
   const handleSubmit = async () => {
+    toast.loading("Submitting...");
+    await uploadToS3();
+    await markSubmitted();
     await deleteContainer();
     router.push("/submission_screen");
   };
@@ -449,7 +502,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2, ease: "backOut" }}
-                  onClick={deleteContainer}
+                  onClick={handleSubmit}
                 >
                   Submit{" "}
                   <div className="arrow flex items-center justify-center">
