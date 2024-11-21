@@ -24,7 +24,7 @@ const s3Client = new S3Client({
   },
 });
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_ACCESSKEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_ACCESSKEY || "");
 
 const schema = {
   type: "object",
@@ -54,31 +54,7 @@ const schema = {
   required: ["files"],
 };
 
-export async function getPrompt(id: string) {
-    try {
-      const prompt = await prisma.testID.findUnique({
-        where: {
-          id: id,
-        },
-        select: {
-          template: {
-            select: {
-              prompt: true
-            }
-          }
-        },
-      });
-      return prompt?.template?.prompt || null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-}
-
 export async function POST(req: Request) {
-  
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  
   try {
     // Parse request body
     const { testId, recruiter } = await req.json();
@@ -98,18 +74,24 @@ export async function POST(req: Request) {
 
     const listCommand = new ListObjectsV2Command(listParams);
     const listResponse = await s3Client.send(listCommand);
-    const prompt = await getPrompt(testId);
 
-    if (!prompt) {
-      return NextResponse.json(
+    if (
+      !recruiter &&
+      (!listResponse.Contents || listResponse.Contents.length === 0)
+    ) {
+      const prompt = await getPrompt(testId);
+
+      console.log(prompt);
+
+      if (!prompt || prompt.length == 0) {
+        return NextResponse.json(
           { error: "Prompt not found for the provided 'testId'." },
           { status: 404 }
-      );
-    }
+        );
+      }
 
-    if (!recruiter && (!listResponse.Contents || listResponse.Contents.length === 0)) {
-      
       //Generate files for S3 bucket
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const files = await generateFilesFromPrompt(model, prompt);
 
       if (!Array.isArray(files) || files.length === 0) {
@@ -117,11 +99,11 @@ export async function POST(req: Request) {
       }
 
       //Loop through generated files and insert them into S3 Bucket
-      for (const file of files) {
+      for (const f of files) {
         const params = {
           Bucket: "skillbit-inprogress",
-          Key: `${testId}/${file.filename}`, // Save under the folder with the testId
-          Body: file.content,
+          Key: `${testId}/${f.name}`, // Save under the folder with the testId
+          Body: f.content,
           ContentType: "text/plain", // Adjust content type based on your file type
         };
 
@@ -129,12 +111,15 @@ export async function POST(req: Request) {
       }
     }
 
-    if (recruiter && (!listResponse.Contents || listResponse.Contents.length === 0)) {
+    if (
+      recruiter &&
+      (!listResponse.Contents || listResponse.Contents.length === 0)
+    ) {
       return NextResponse.json({ message: "No files found in the folder." });
     }
 
     const filesWithContent = await Promise.all(
-      listResponse.Contents.map(async (file) => {
+      listResponse.Contents.map(async (file: any) => {
         const getCommand = new GetObjectCommand({
           Bucket: "skillbit-inprogress",
           Key: file.Key,
@@ -148,14 +133,14 @@ export async function POST(req: Request) {
     );
 
     return NextResponse.json({ files: filesWithContent });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error retrieving file:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // Helper function to convert stream to string
-async function streamToString(stream) {
+async function streamToString(stream: any) {
   const chunks = [];
   for await (const chunk of stream) {
     chunks.push(chunk);
@@ -163,10 +148,13 @@ async function streamToString(stream) {
   return Buffer.concat(chunks).toString("utf-8");
 }
 
-async function generateFilesFromPrompt(model: any, prompt: string): Promise<Array<{ filename: any, content: string }>>{
+async function generateFilesFromPrompt(
+  model: any,
+  prompt: string
+): Promise<Array<{ name: any; content: string }>> {
   try {
     const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
     });
 
     const response = await result.response.text();
@@ -183,19 +171,44 @@ async function generateFilesFromPrompt(model: any, prompt: string): Promise<Arra
     const parsed = JSON.parse(jsonResponse);
     const generatedFiles = parsed.files;
 
+    console.log("generatedFiles:", generatedFiles);
+
     if (!Array.isArray(generatedFiles)) {
-        throw new Error("Generated files are not in an array format.");
+      throw new Error("Generated files are not in an array format.");
     }
 
     // Process the generated files to replace '\\n' with actual newlines
-    const processedFiles = generatedFiles.map((file: { filename: string, content: string }) => ({
-        filename: file.filename,
+    const processedFiles = generatedFiles.map(
+      (file: { filename: string; content: string }) => ({
+        name: file.filename,
         content: file.content.replace(/\\n/g, "\n"),
-    }));
+      })
+    );
 
     return processedFiles;
-} catch (error: any) {
+  } catch (error: any) {
     console.error("Failed to generate files from prompt:", error);
     throw new Error("Failed to generate files from the prompt.");
+  }
 }
+
+async function getPrompt(id: string) {
+  try {
+    const prompt = await prisma.testID.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        template: {
+          select: {
+            prompt: true,
+          },
+        },
+      },
+    });
+    return prompt?.template?.prompt || null;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
