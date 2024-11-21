@@ -9,6 +9,7 @@ import "dotenv";
 import App from "next/app";
 import { render } from "@react-email/render";
 import logo_full_transparent_blue from "/public/assets/branding/logos/logo_full_transparent_blue.png";
+import { Question } from "@prisma/client";
 
 export async function addApplicant(
   firstName: string,
@@ -628,6 +629,9 @@ export async function getApplicants(company: string) {
           id: company,
         },
       },
+      include: {
+        template: true,
+      },
     });
     return applicants;
   } catch (error) {
@@ -682,6 +686,7 @@ interface TestIDInterface {
   status: string;
   score: string;
   submitted: boolean;
+  question: Question;
 }
 
 export async function assignTemplate(

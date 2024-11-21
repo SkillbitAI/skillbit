@@ -44,7 +44,7 @@ interface Question {
   id: string;
 }
 
-const QuestionWorkshop = () => {
+const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
   const path = usePathname();
   const router = useRouter();
 
