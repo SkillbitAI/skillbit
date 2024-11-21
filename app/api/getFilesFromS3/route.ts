@@ -26,34 +26,6 @@ const s3Client = new S3Client({
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_ACCESSKEY || "");
 
-const schema = {
-  type: "object",
-  properties: {
-    files: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          filename: {
-            type: "string",
-            description: "The path and name of the file",
-          },
-          content: {
-            type: "string",
-            description: "The content of the file",
-          },
-          language: {
-            type: "string",
-            description: "The programming language of the file",
-          },
-        },
-        required: ["filename", "content", "language"],
-      },
-    },
-  },
-  required: ["files"],
-};
-
 export async function POST(req: Request) {
   try {
     // Parse request body
@@ -75,6 +47,12 @@ export async function POST(req: Request) {
     const listCommand = new ListObjectsV2Command(listParams);
     const listResponse = await s3Client.send(listCommand);
 
+    if (
+      recruiter &&
+      (!listResponse.Contents || listResponse.Contents.length === 0)
+    ) {
+      return NextResponse.json({ message: "No files found in the folder." });
+    }
     if (
       !recruiter &&
       (!listResponse.Contents || listResponse.Contents.length === 0)
@@ -98,6 +76,8 @@ export async function POST(req: Request) {
         throw new Error("No files were generated from the prompt.");
       }
 
+      console.log("files:", files);
+
       //Loop through generated files and insert them into S3 Bucket
       for (const f of files) {
         const params = {
@@ -109,28 +89,47 @@ export async function POST(req: Request) {
 
         await s3Client.send(new PutObjectCommand(params));
       }
+
+      const newListResponse = await s3Client.send(listCommand);
+
+      const filesWithContent = newListResponse.Contents
+        ? await Promise.all(
+            newListResponse.Contents.map(async (file: any) => {
+              const getCommand = new GetObjectCommand({
+                Bucket: "skillbit-inprogress",
+                Key: file.Key,
+              });
+
+              const response = await s3Client.send(getCommand);
+              const content = await streamToString(response.Body);
+
+              return { fileName: file.Key, content };
+            })
+          )
+        : [];
+
+      console.log("filesWithContent:", filesWithContent);
+
+      return NextResponse.json({ files: filesWithContent });
     }
 
-    if (
-      recruiter &&
-      (!listResponse.Contents || listResponse.Contents.length === 0)
-    ) {
-      return NextResponse.json({ message: "No files found in the folder." });
-    }
+    const filesWithContent = listResponse.Contents
+      ? await Promise.all(
+          listResponse.Contents.map(async (file: any) => {
+            const getCommand = new GetObjectCommand({
+              Bucket: "skillbit-inprogress",
+              Key: file.Key,
+            });
 
-    const filesWithContent = await Promise.all(
-      listResponse.Contents.map(async (file: any) => {
-        const getCommand = new GetObjectCommand({
-          Bucket: "skillbit-inprogress",
-          Key: file.Key,
-        });
+            const response = await s3Client.send(getCommand);
+            const content = await streamToString(response.Body);
 
-        const response = await s3Client.send(getCommand);
-        const content = await streamToString(response.Body);
+            return { fileName: file.Key, content };
+          })
+        )
+      : [];
 
-        return { fileName: file.Key, content };
-      })
-    );
+    console.log("filesWithContent:", filesWithContent);
 
     return NextResponse.json({ files: filesWithContent });
   } catch (error: any) {
@@ -206,7 +205,42 @@ async function getPrompt(id: string) {
         },
       },
     });
-    return prompt?.template?.prompt || null;
+    const userPart = prompt?.template?.prompt;
+
+    const schema = {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              filename: {
+                type: "string",
+                description: "The path and name of the file",
+              },
+              content: {
+                type: "string",
+                description: "The content of the file",
+              },
+              language: {
+                type: "string",
+                description: "The programming language of the file",
+              },
+            },
+            required: ["filename", "content", "language"],
+          },
+        },
+      },
+      required: ["files"],
+    };
+
+    const systemPart = ` The response should be valid JSON matching this schema:
+    ${JSON.stringify(schema, null, 2)}
+    
+    Make sure to escape newlines with \\n in the content.`;
+
+    return userPart + systemPart;
   } catch (error) {
     console.error(error);
     return null;
