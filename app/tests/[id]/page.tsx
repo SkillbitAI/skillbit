@@ -7,6 +7,7 @@
 import Editor, { loader } from "@monaco-editor/react";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { io } from "socket.io-client";
+import { Rnd } from "react-rnd";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
@@ -23,6 +24,7 @@ import DropdownIcon from "../../../public/assets/icons/dropdown.svg";
 import SearchIcon from "../../../public/assets/icons/search.svg";
 import ExitIcon from "../../../public/assets/icons/exit.svg";
 import Arrow from "../../../public/assets/icons/arrow.svg";
+import Loader from "@/components/loader/loader";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { files as initialFiles } from "./files";
@@ -273,11 +275,20 @@ export default function Tests({ params }: { params: { id: string } }) {
         }),
       });
       const data = await response.json();
+     
+    
       if (!response.ok) {
         throw new Error("Failed to get testID submitted.");
       }
+      
+      console.log("Response data:", data);
+
+      // Log the submitted status
+      console.log("Submitted status:", data.message.submitted);
+      
       return data.message.submitted;
     } catch (error) {
+      
       console.error(error);
       throw new Error("Failed to get testID submitted.");
     }
@@ -469,35 +480,11 @@ export default function Tests({ params }: { params: { id: string } }) {
         }}
       />
 
-      {!isLoading && timeLeft !== null && (
-        <div
-          className={`absolute top-3 right-60 text-xl ${
-            timeLeft <= 300 ? "text-red-500" : "text-white"
-          } bg-black bg-opacity-50 px-3 py-2 rounded-md`}
-        >
-          Time Left: {formatTime(timeLeft)}
-        </div>
-      )}
+     
 
-      {isLoading && (
-        <div className="fixed left-0 right-0 top-0 bottom-0 z-50">
-          <div className="graphPaper bg-slate-900 text-white h-screen w-screen flex items-center justify-center flex-col">
-            {/* LOGO */}
-            <div className="flex">
-              <motion.div className="w-12 h-12 bg-white rounded-xl rotate-45 -mr-1"></motion.div>
-              <motion.div className="w-12 h-12 bg-white rounded-xl rotate-45 -ml-1"></motion.div>
-            </div>
-            <motion.p
-              initial={{ opacity: 1 }}
-              animate={{ opacity: [1, 0.4, 1] }}
-              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              className="mt-10"
-            >
-              Loading...
-            </motion.p>
-          </div>
-        </div>
-      )}
+      {isLoading && 
+        <Loader />
+      }
       <AnimatePresence>
         {showSidebar && (
           <motion.div
@@ -634,6 +621,18 @@ export default function Tests({ params }: { params: { id: string } }) {
             <h1 className="text-white text-2xl">Skillbit</h1>
           </div>
           <div className="flex-1 flex justify-end items-center gap-2">
+          {!isLoading && timeLeft !== null && (
+  <div
+    className={`flex p-2 rounded-md text-md ${
+      timeLeft <= 300 ? "text-red-500" : "text-white"
+    } bg-opacity-50 px-3 py-1`}
+    style={{ backgroundColor: '#1e293b',
+      border: "1px solid #334155"
+    }}
+  >
+    Time Left: {formatTime(timeLeft)}
+  </div>
+)}
             <div
               className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
               style={{
@@ -666,6 +665,10 @@ export default function Tests({ params }: { params: { id: string } }) {
             </div>
             <div
               className="flex p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
+              style={{
+                backgroundColor: showBrowser ? "#1e293b" : "",
+                border: showBrowser ? "1px solid #334155" : "",
+              }}
               onClick={handleRefreshClick}
             >
               <Image
@@ -713,24 +716,44 @@ export default function Tests({ params }: { params: { id: string } }) {
               ></iframe>
             </motion.div>
           )}
-          <div
-            className="absolute left-0 right-0 bottom-0 z-30 p-6 bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700"
-            style={{ display: showTerminal ? "block" : "none" }}
+          {showTerminal && (
+          <Rnd
+            default={{
+              x: 0,
+              y: window.innerHeight - 250,
+              width: "50%",
+              height: 250, // Initial height
+            }}
+            minWidth={300} // Minimum width in pixels
+            minHeight={200} // Minimum height in pixels
+            bounds="parent" // Restricts to parent container
+            enableResizing={{
+              bottom: true,
+              bottomLeft: true,
+              bottomRight: true,
+              left: true,
+              right: true,
+              top: true,
+              topLeft: true,
+              topRight: true,
+            }}
+            className="z-30"
           >
-            <div ref={terminalRef} className="overflow-hidden"></div>
-            <div
-              className="absolute top-4 right-4 p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
-              onClick={() => {
-                if (showTerminal) {
-                  setShowTerminal(false);
-                } else {
-                  setShowTerminal(true);
-                }
-              }}
-            >
-              <Image src={ExitIcon} alt="" width={10} height={10}></Image>
+            <div className="h-full w-full bg-slate-950 bg-opacity-60 backdrop-blur-md drop-shadow-lg border-t border-slate-700 rounded-md flex flex-col">
+              {/* Terminal Output */}
+              <div ref={terminalRef} className="flex-1 overflow-hidden"></div>
+              {/* Exit Button */}
+              <div className="flex justify-end p-2">
+                <div
+                  className="p-2 rounded-md hover:bg-slate-800 border border-transparent hover:border-slate-700 cursor-pointer"
+                  onClick={() => setShowTerminal(false)}
+                >
+                  
+                </div>
+              </div>
             </div>
-          </div>
+          </Rnd>
+        )}
         </div>
       </div>
     </div>

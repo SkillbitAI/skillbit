@@ -642,6 +642,7 @@ export async function getApplicants(company: string) {
 
 export async function getIsSubmitted(id: string) {
   try {
+    console.log("id: ", id);
     const applicants = await prisma.testID.findUnique({
       where: {
         id: id,
@@ -650,6 +651,7 @@ export async function getIsSubmitted(id: string) {
         submitted: true,
       },
     });
+    console.log("Applicant submission status:", applicants);
     return applicants;
   } catch (error) {
     console.error(error);
