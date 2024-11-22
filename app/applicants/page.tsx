@@ -51,6 +51,7 @@ interface TestIDInterface {
   score: string;
   submitted: boolean;
   template: Question;
+  expirationDate: Date;
 }
 
 interface Question {
@@ -1122,7 +1123,21 @@ const Applicants = () => {
                                         <p className="text-sm flex gap-2 items-center">
                                           <div className="">Created:</div>
                                           <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
-                                            {item.created.toString()}
+                                            {item.expirationDate
+                                              ? new Date(
+                                                  item.created
+                                                ).toUTCString()
+                                              : "N/A"}
+                                          </div>
+                                        </p>
+                                        <p className="text-sm flex gap-2 items-center">
+                                          <div className="">Expiration:</div>
+                                          <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
+                                            {item.expirationDate
+                                              ? new Date(
+                                                  item.expirationDate
+                                                ).toUTCString()
+                                              : "N/A"}
                                           </div>
                                         </p>
                                         <p className="text-sm flex gap-2 items-center">

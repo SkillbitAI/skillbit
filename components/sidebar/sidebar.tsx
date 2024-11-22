@@ -58,7 +58,8 @@ interface TestIDInterface {
   status: string;
   score: string;
   submitted: boolean;
-  question: Question;
+  template: Question;
+  expirationDate: Date;
 }
 
 const Sidebar = () => {

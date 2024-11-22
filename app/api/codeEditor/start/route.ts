@@ -2,6 +2,7 @@ import createContainer from "../../createContainer/createContainer";
 import prisma from "../../database/prismaConnection";
 const Docker = require("dockerode");
 const docker = new Docker();
+import { startTest } from "../../database/actions";
 
 const DOCKER_EC2_TOGGLE = true;
 
@@ -19,11 +20,29 @@ export async function POST(req: Request) {
       },
     });
 
+    console.log(test);
+
     if (!test) {
       return Response.json({
         message: "invalid",
       });
     }
+
+    // start the timer
+    // let startEnd = { startTime: test.startTime, endTime: test.endTime };
+    if (!test.startTime && !test.endTime) {
+      await startTest(test.id);
+    }
+
+    const startEnd = await prisma.testID.findUnique({
+      where: {
+        id: containerName,
+      },
+      select: {
+        startTime: true,
+        endTime: true,
+      },
+    });
 
     try {
       const response = await createContainer(
@@ -42,8 +61,25 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("ports:", JSON.stringify(ports));
+    // console.log("ports:", JSON.stringify({ ports, startEnd }));
 
+    console.log(
+      {
+        ports: ports,
+        startTime: startEnd?.startTime,
+        endTime: startEnd?.endTime,
+      },
+      { status: 200 }
+    );
+
+    return Response.json(
+      {
+        ports: ports,
+        startTime: startEnd?.startTime,
+        endTime: startEnd?.endTime,
+      },
+      { status: 200 }
+    );
     return new Response(JSON.stringify(ports));
   } else {
     console.log("LOCAL");
