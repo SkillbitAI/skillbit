@@ -657,6 +657,24 @@ export async function getIsSubmitted(id: string) {
   }
 }
 
+export async function getIsExpired(id: string) {
+  try {
+    const expirationDateResult = await prisma.testID.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        expirationDate: true,
+      },
+    });
+    const expirationDate = expirationDateResult?.expirationDate;
+    return expirationDate && new Date(expirationDate) < new Date();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 export async function markSubmitted(id: string) {
   try {
     await prisma.testID.update({
@@ -686,7 +704,8 @@ interface TestIDInterface {
   status: string;
   score: string;
   submitted: boolean;
-  question: Question;
+  template: Question;
+  expirationDate: Date;
 }
 
 export async function assignTemplate(
@@ -764,49 +783,52 @@ export async function assignTemplate(
             ],
             html: `
             <head>
-            <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-            <!-- Include any necessary styles or head elements here -->
-            <style>
-                body {
+                <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+                <style>
+                  body {
                     text-align: center;
                     background-color: #ffffff;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-                }
-                .content {
+                  }
+                  .content {
                     max-width: 600px;
                     margin: 0 auto;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="content" style="margin: 12px auto; font-family: sans-serif;">
-            <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
-                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Hi ${
-                  applicant.firstName
-                } !</p>
-                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have been selected by ${company} to participate in a personalized assessment. Click the link below to access your
-                test dashboard.</p>
-                <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation"
-                    style="text-align:center">
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="content" style="margin: 12px auto; font-family: sans-serif;">
+                  <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto" />
+                  <p style="font-size: 16px; line-height: 26px; color: #000000; margin: 16px 0">Hi ${
+                    applicant.firstName
+                  }!</p>
+                  <p style="font-size: 16px; line-height: 26px; color: #000000; margin: 16px 0">
+                    You have been selected by ${company} to participate in a personalized assessment. Click the link below to access your test dashboard.
+                  </p>
+                  <p style="font-size: 16px; line-height: 26px; color: #000000; margin: 16px 0">
+                    **Please note:** This assessment will expire on ${expiration.toLocaleDateString()}.
+                  </p>
+                  <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="text-align:center">
                     <tbody>
-                        <tr>
-                            <td><a href="${
-                              "http://localhost:3000/prescreen/" + applicant.id
-                            }"
-                                    style="background-color:#008cff;border-radius:7px;color:#fff;font-size:16px;text-decoration:none;text-align:center;display:inline-block;margin:10px 0px 10px 0px;padding:12px 24px 12px 24px;line-height:100%;max-width:100%"
-                                    target="_blank"><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%;mso-text-raise:18" hidden>&nbsp;</i><![endif]--></span><span
-                                    style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:9px">Get
-                                    started</span><span><!--[if mso]><i style="letter-spacing: 12px;mso-font-width:-100%" hidden>&nbsp;</i><![endif]--></span></a>
-                            </td>
-                        </tr>
+                      <tr>
+                        <td>
+                          <a href="${
+                            "http://localhost:3000/prescreen/" + applicant.id
+                          }"
+                             style="background-color:#008cff; border-radius:7px; color:#fff; font-size:16px; text-decoration:none; text-align:center; display:inline-block; margin:10px 0px; padding:12px 24px; line-height:100%; max-width:100%"
+                             target="_blank">
+                            <span style="max-width:100%; display:inline-block; line-height:120%; mso-padding-alt:0px; mso-text-raise:9px">Get started</span>
+                          </a>
+                        </td>
+                      </tr>
                     </tbody>
-                </table>
-                <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Best, The Skillbit Team</p>
-                <hr style="width:100%;border:none;border-top:1px solid #eaeaea;border-color:#cccccc;margin:20px 0" />
-                <p style="font-size: 12px; line-height: 24px; margin: 16px 0; color: #8898aa">University of Florida</p>
-            </div>
-        </body>
-        </html>
+                  </table>
+                  <p style="font-size: 16px; line-height: 26px; color: #000000; margin: 16px 0">Best, The Skillbit Team</p>
+                  <hr style="width:100%; border:none; border-top:1px solid #eaeaea; border-color:#cccccc; margin:20px 0" />
+                  <p style="font-size: 12px; line-height: 24px; margin: 16px 0; color: #8898aa">University of Florida</p>
+                </div>
+              </body>
+            </html>
             `,
           };
           const info = await transporter.sendMail(mailOptions);
@@ -912,5 +934,43 @@ export async function contactForm(
   } catch (error) {
     console.error(Error);
     return null;
+  }
+}
+
+export async function getTestById(id: string) {
+  try {
+    const test = await prisma.testID.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        template: true,
+        company: true,
+      },
+    });
+    return test;
+  } catch (error) {
+    console.error("Error fetching test by ID:", error);
+    throw error;
+  }
+}
+
+export async function startTest(testId: string) {
+  try {
+    const now = new Date();
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000); // 60 minutes
+    console.log("Start Time:", now);
+    console.log("Calculated End Time:", endTime);
+    const test = await prisma.testID.update({
+      where: { id: testId },
+      data: {
+        startTime: now,
+        endTime: endTime,
+      },
+    });
+    return test;
+  } catch (error) {
+    console.error("Error starting test:", error);
+    throw error;
   }
 }

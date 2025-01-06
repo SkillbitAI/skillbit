@@ -81,6 +81,8 @@ model testID {
   status        String @default("Unsent")
   score         String?
   expirationDate DateTime?
+  startTime     DateTime? 
+  endTime       DateTime? 
   created DateTime @default(now())
   submitted Boolean @default(false)
 }

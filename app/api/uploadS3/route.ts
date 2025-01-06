@@ -44,7 +44,7 @@ export async function POST(req) {
 
       const params = {
         Bucket: "skillbit-inprogress",
-        Key: `${testId}/${file.filename}`, // Save under the folder with the testId
+        Key: `${testId}/project/src/${file.filename}`, // Save under the folder with the testId
         Body: file.content,
         ContentType: "text/plain", // Adjust content type based on your file type
       };

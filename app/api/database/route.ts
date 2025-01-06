@@ -26,6 +26,9 @@ import {
   contactForm,
   markSubmitted,
   getIsSubmitted,
+  getIsExpired,
+  getTestById,
+  startTest,
 } from "./actions";
 import { send } from "process";
 
@@ -280,6 +283,9 @@ export async function POST(req: Request) {
   } else if (data.action === "getIsSubmitted") {
     const response = await getIsSubmitted(data.id);
     return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "getIsExpired") {
+    const response = await getIsExpired(data.id);
+    return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "assignTemplate") {
     const response = await assignTemplate(
       data.applicantData,
@@ -316,6 +322,18 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "getTestById") {
+    const response = await getTestById(data.id);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error fetching test by ID." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  } else if (data.action === "startTest") {
+    const startResponse = await startTest(data.testId);
+    return NextResponse.json({ message: startResponse }, { status: 200 });
   } else {
     return NextResponse.json(
       { message: "Not a valid action." },
