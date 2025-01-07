@@ -257,14 +257,14 @@ const Dashboard = () => {
                 <h2>Dashboard</h2>
                 <div className="flex gap-3 items-center justify-center relative z-10">
                   <p>{date}</p>
-                  <button className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100">
+                  {/* <button className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100">
                     <Image
                       src={SearchIcon}
                       width={25}
                       height={25}
                       alt=""
                     ></Image>
-                  </button>
+                  </button> */}
                 </div>
               </div>
               <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl py-6 px-20 pb-20 flex items-center justify-between gap-20">
