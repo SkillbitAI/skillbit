@@ -141,7 +141,7 @@ export default function RecruiterGuide() {
             </h1>
             <p className="mt-8">
               In 'Candidate Manager', click on 'Assign Templates and Send Tests'
-              or navigate to 'Template Workshop' on the menu bar on the
+              or navigate to 'Assessment Builder' on the menu bar on the
               left-hand side of the dashboard.
             </p>
             <Image

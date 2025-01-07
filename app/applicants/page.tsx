@@ -651,7 +651,7 @@ const Applicants = () => {
                                 className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
                                 onClick={() => router.push("/questionWorkshop")}
                               >
-                                Visit template workshop
+                                Visit Assessment Builder
                               </button>
                             </div>
                           )}
