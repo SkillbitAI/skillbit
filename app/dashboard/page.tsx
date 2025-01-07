@@ -290,7 +290,7 @@ const Dashboard = () => {
                   <div className="mt-20 text-center flex justify-center items-center flex-col">
                     <div className="">
                       <h1>Get Started</h1>
-                      <p>Complete these tasks in order to get started!</p>
+                      <p>Complete these tasks, in order, to get started!</p>
                       <div className="mt-6 flex flex-wrap gap-6 justify-start">
                         <div className="border border-slate-800 rounded-xl p-6 bg-slate-900 w-64 flex flex-col justify-between relative overflow-hidden">
                           <div className="">
@@ -479,7 +479,7 @@ const Dashboard = () => {
                       applicantData.length == 0) && (
                       <div className="">
                         <h1>Get Started</h1>
-                        <p>Complete these tasks in order to get started!</p>
+                        <p>Complete these tasks, in order, to get started!</p>
                         <div className="mt-6 flex flex-wrap gap-6 justify-start">
                           <div className="border border-slate-800 rounded-xl p-6 bg-slate-900 w-64 flex flex-col justify-between relative overflow-hidden">
                             <div className="">
