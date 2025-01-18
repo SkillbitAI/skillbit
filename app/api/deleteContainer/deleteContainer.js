@@ -4,8 +4,9 @@ async function deleteContainer(backendKey, containerName) {
   let docker;
   try {
     docker = new Docker({
-      host: "http://54.225.167.48",
-      port: 2375,
+      host: "skillbit.org",
+      port: 443,
+      protocol: "https",
     });
   } catch (err) {
     console.error("Error creating/starting container:", err);

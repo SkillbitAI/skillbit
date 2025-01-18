@@ -75,6 +75,9 @@ ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
 
 - Remove all docker containers (active and inactive): `docker rm -v -f $(docker ps -qa)`
 - Remove only inactive docker containers: `docker rm -v $(docker ps --filter status=exited -q)`
+- Show all containers: `docker ps -all`
 - Restart docker: `sudo systemctl restart docker`
 - Stop docker: `sudo systemctl stop docker`
 - Start docker manually with desired hosts: `sudo dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock`
+
+- Remember to set elastic IP address on EC2 instance
