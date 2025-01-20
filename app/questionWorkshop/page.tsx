@@ -44,7 +44,7 @@ interface Question {
   id: string;
 }
 
-const QuestionWorkshop = () => {
+const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
   const path = usePathname();
   const router = useRouter();
 
@@ -543,7 +543,7 @@ const QuestionWorkshop = () => {
                   )}
                   {!currentQuestion && (
                     <div className="w-full h-full flex justify-center items-center flex-col text-center">
-                      <h1>Welcome to the Template Workshop!</h1>
+                      <h1>Welcome to the Assessment Builder!</h1>
                       <p className="text-slate-400">
                         To get started, generate a new template.
                       </p>
@@ -602,7 +602,7 @@ const QuestionWorkshop = () => {
                       ></Image>
                     </motion.button>
                     <motion.div
-                      className="flex flex-col gap-6 max-w-lg overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl p-6"
+                      className="flex flex-col gap-12 max-w-4xl overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl p-6"
                       style={{
                         scrollbarWidth: "thin",
                         scrollbarColor: "rgb(51 65 85) transparent",
@@ -616,13 +616,13 @@ const QuestionWorkshop = () => {
                       exit={{ opacity: 0, y: 30 }}
                     >
                       <div className="flex flex-col">
-                        <h1>Template Builder</h1>
+                        <h1>Assessment Builder</h1>
                         <p className="">
-                          Welcome to the Skillbit template builder.
+                          Welcome to the Skillbit Assessment Builder.
                         </p>
                       </div>
                       <div className="flex flex-col">
-                        <h2>Title</h2>
+                        <h2>Assessment name</h2>
                         <p className="text-slate-400">
                           Name your template. Candidates will not see this.
                         </p>
@@ -853,7 +853,7 @@ const QuestionWorkshop = () => {
                         onClick={addQuestion}
                       >
                         <>
-                          Generate question{" "}
+                          Create Assessment{" "}
                           <div className=" arrow flex items-center justify-center">
                             <div className="arrowMiddle"></div>
                             <div>
@@ -877,7 +877,7 @@ const QuestionWorkshop = () => {
           {companyDataLoaded && !userApprovalStatus && (
             <div className="p-6 flex justify-center items-center flex-col w-full text-center">
               <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
-              <h1>Welcome to the Template Workshop!</h1>
+              <h1>Welcome to the Assessment Builder!</h1>
               <p className="text-slate-400">
                 To get started, please join a company in the Company Profile
                 tab.

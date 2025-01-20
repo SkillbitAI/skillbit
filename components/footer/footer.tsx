@@ -70,7 +70,7 @@ const Footer = (props: Props) => {
               className="hover:cursor-pointer"
               onClick={() => router.push("/questionWorkshop")}
             >
-              <p>Template Workshop</p>
+              <p>Assessment Builder</p>
             </li>
             <li
               className="hover:cursor-pointer"

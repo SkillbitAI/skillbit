@@ -58,6 +58,8 @@ interface TestIDInterface {
   status: string;
   score: string;
   submitted: boolean;
+  template: Question;
+  expirationDate: Date;
 }
 
 const Sidebar = () => {
@@ -602,24 +604,24 @@ const Sidebar = () => {
               </li>
               <li
                 className={
-                  path == "/applicants"
+                  path == "/companyProfile"
                     ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
                     : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
                 }
-                onClick={() => router.push("/applicants")}
+                onClick={() => router.push("/companyProfile")}
               >
                 <div
                   className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/applicants" ? "1" : "0" }}
+                  style={{ opacity: path == "/companyProfile" ? "1" : "0" }}
                 ></div>
                 <div className="flex gap-2">
                   <Image
-                    src={ApplicantsIcon}
+                    src={CompanyIcon}
                     alt=""
                     width={25}
                     height={25}
                   ></Image>
-                  <p>Candidate Manager</p>
+                  <p>Company Profile</p>
                 </div>
               </li>
               <li
@@ -641,29 +643,29 @@ const Sidebar = () => {
                     width={25}
                     height={25}
                   ></Image>
-                  <p>Template Workshop</p>
+                  <p>Assessment Builder</p>
                 </div>
               </li>
               <li
                 className={
-                  path == "/companyProfile"
+                  path == "/applicants"
                     ? "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer"
                     : "rounded-lg flex items-center gap-6 duration-100 text-white cursor-pointer opacity-50"
                 }
-                onClick={() => router.push("/companyProfile")}
+                onClick={() => router.push("/applicants")}
               >
                 <div
                   className="w-1 h-4 rounded-r-md bg-white"
-                  style={{ opacity: path == "/companyProfile" ? "1" : "0" }}
+                  style={{ opacity: path == "/applicants" ? "1" : "0" }}
                 ></div>
                 <div className="flex gap-2">
                   <Image
-                    src={CompanyIcon}
+                    src={ApplicantsIcon}
                     alt=""
                     width={25}
                     height={25}
                   ></Image>
-                  <p>Company Profile</p>
+                  <p>Candidate Manager</p>
                 </div>
               </li>
             </ul>

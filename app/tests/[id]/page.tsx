@@ -5,7 +5,7 @@
 "use client";
 
 import Editor, { loader } from "@monaco-editor/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal } from "xterm";
@@ -26,6 +26,14 @@ import Arrow from "../../../public/assets/icons/arrow.svg";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { files as initialFiles } from "./files";
+
+const formatTime = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const secs = (seconds % 60).toString().padStart(2, "0");
+  return `${mins}:${secs}`;
+};
 
 // Import react-hot-toast components
 import { toast, Toaster } from "react-hot-toast";
@@ -70,6 +78,7 @@ export default function Tests({ params }: { params: { id: string } }) {
   const [isAppReady, setIsAppReady] = useState(false);
   const router = useRouter();
   const [filesState, setFilesState] = useState({});
+  const [timeLeft, setTimeLeft] = useState(null); // Initialized to null
   // const [file, setFile] = useState("");
   const file = filesState[fileName];
 
@@ -159,6 +168,26 @@ export default function Tests({ params }: { params: { id: string } }) {
     }
   };
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (timeLeft === null) return; // Do not do anything if timeLeft is not set
+    if (timeLeft <= 0) {
+      handleSubmit();
+      return;
+    }
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
   useDebouncedEffect(
     () => {
       uploadToS3();
@@ -178,11 +207,23 @@ export default function Tests({ params }: { params: { id: string } }) {
         body: JSON.stringify({ testID: params.id }),
       });
 
-      const ports = await response.json();
+      const data = await response.json();
+
+      const ports = data.ports;
+
+      const startTime = new Date(data.startTime);
+      const endTime = new Date(data.endTime);
+      const currentTime = new Date();
+
+      const remainingTime = Math.floor(
+        (endTime.getTime() - currentTime.getTime()) / 1000
+      );
+
+      setTimeLeft(remainingTime);
 
       console.log("Editor start response:", ports);
 
-      if (ports.message === "invalid") {
+      if (data.message === "invalid") {
         router.push("/404");
         return;
       } else {
@@ -233,12 +274,35 @@ export default function Tests({ params }: { params: { id: string } }) {
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error("Failed to mark testID as submitted.");
+        throw new Error("Failed to get testID submitted.");
       }
       return data.message.submitted;
     } catch (error) {
       console.error(error);
-      throw new Error("Failed to mark testID as submitted.");
+      throw new Error("Failed to get testID submitted.");
+    }
+  };
+
+  const getIsExpired = async () => {
+    try {
+      const response = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "getIsExpired",
+          id: params.id,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to get testID expired.");
+      }
+      return data.message;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to get testID expired.");
     }
   };
 
@@ -247,6 +311,11 @@ export default function Tests({ params }: { params: { id: string } }) {
       const submitted = await getIsSubmitted();
       if (submitted) {
         router.push("/submission_screen");
+      }
+
+      const expired = await getIsExpired();
+      if (expired) {
+        router.push("/testExpired");
       }
 
       if (Object.keys(filesState).length > 0) {
@@ -399,6 +468,16 @@ export default function Tests({ params }: { params: { id: string } }) {
           },
         }}
       />
+
+      {!isLoading && timeLeft !== null && (
+        <div
+          className={`absolute top-3 right-60 text-xl ${
+            timeLeft <= 300 ? "text-red-500" : "text-white"
+          } bg-black bg-opacity-50 px-3 py-2 rounded-md`}
+        >
+          Time Left: {formatTime(timeLeft)}
+        </div>
+      )}
 
       {isLoading && (
         <div className="fixed left-0 right-0 top-0 bottom-0 z-50">

@@ -50,6 +50,8 @@ interface TestIDInterface {
   status: string;
   score: string;
   submitted: boolean;
+  template: Question;
+  expirationDate: Date;
 }
 
 interface Question {
@@ -93,6 +95,7 @@ const Applicants = () => {
         }),
       });
       const data = await response.json();
+      console.log(data);
       data.message.map((applicant: TestIDInterface) => {
         applicant.selected = false;
       });
@@ -648,7 +651,7 @@ const Applicants = () => {
                                 className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
                                 onClick={() => router.push("/questionWorkshop")}
                               >
-                                Visit template workshop
+                                Visit Assessment Builder
                               </button>
                             </div>
                           )}
@@ -1120,8 +1123,58 @@ const Applicants = () => {
                                         <p className="text-sm flex gap-2 items-center">
                                           <div className="">Created:</div>
                                           <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
-                                            {item.created.toString()}
+                                            {item.expirationDate
+                                              ? new Date(
+                                                  item.created
+                                                ).toUTCString()
+                                              : "N/A"}
                                           </div>
+                                        </p>
+                                        <p className="text-sm flex gap-2 items-center">
+                                          <div className="">Expiration:</div>
+                                          <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
+                                            {item.expirationDate
+                                              ? new Date(
+                                                  item.expirationDate
+                                                ).toUTCString()
+                                              : "N/A"}
+                                          </div>
+                                        </p>
+                                        <p className="text-sm flex gap-2 items-center">
+                                          <div className="">Template:</div>
+                                          {item.template && (
+                                            <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
+                                              {item.template.title}
+                                            </div>
+                                          )}
+                                          {!item.template && (
+                                            <div className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3 text-slate-500">
+                                              No template assigned
+                                            </div>
+                                          )}
+                                          <motion.button
+                                            className="flex justify-center items-center p-1 px-3 bg-indigo-600 rounded-full shadow-lg cursor-pointer duration-100 text-sm"
+                                            onClick={() =>
+                                              (window.location.href =
+                                                "/questionWorkshop")
+                                            }
+                                          >
+                                            <>
+                                              View Templates
+                                              <div className=" arrow flex items-center justify-center">
+                                                <div className="arrowMiddle"></div>
+                                                <div>
+                                                  <Image
+                                                    src={Arrow}
+                                                    alt=""
+                                                    width={14}
+                                                    height={14}
+                                                    className="arrowSide"
+                                                  ></Image>
+                                                </div>
+                                              </div>
+                                            </>
+                                          </motion.button>
                                         </p>
                                       </motion.div>
                                     )}
