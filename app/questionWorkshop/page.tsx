@@ -19,7 +19,7 @@ import Plus from "../../public/assets/icons/plus.svg";
 import { Toaster, toast } from "react-hot-toast";
 import Dropdown from "../../public/assets/icons/dropdown.svg";
 
-//dashboard icons
+// Dashboard icons
 import DashboardIcon from "../../public/assets/icons/dashboard.svg";
 import DashboardIconWhite from "../../public/assets/icons/dashboard_white.svg";
 import ApplicantsIcon from "../../public/assets/icons/applicants.svg";
@@ -78,7 +78,26 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
   const questionTitleRef = createRef<HTMLInputElement>();
 
   const { data: session, status } = useSession();
+ // New state for Dashboard Button Visibility
+ const [showDashboardButton, setShowDashboardButton] = useState(false);
 
+ // Key for Local Storage
+ const DASHBOARD_BUTTON_KEY = "hasClickedDashboardButton";
+
+ useEffect(() => {
+   // Check Local Storage on component mount
+   const hasClicked = localStorage.getItem(DASHBOARD_BUTTON_KEY);
+   if (!hasClicked) {
+     setShowDashboardButton(true);
+   }
+ }, []);
+
+ const handleDashboardButtonClick = () => {
+   // Hide the button and set the flag in Local Storage
+   setShowDashboardButton(false);
+   localStorage.setItem(DASHBOARD_BUTTON_KEY, "true");
+   router.push("/dashboard");
+ };
   const findQuestions = async (company: string) => {
     try {
       const response = await fetch("/api/database", {
@@ -129,14 +148,14 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
     setIsSaving(true);
     if (
       currentQuestion &&
-      questions.find((question) => question.title == newTitle) &&
-      newTitle != currentQuestion.title
+      questions.find((question) => question.title === newTitle) &&
+      newTitle !== currentQuestion.title
     ) {
       toast.remove();
       toast.error(
         "Title already exists. Please choose a unique template title."
       );
-    } else if (newTitle == "") {
+    } else if (newTitle === "") {
       toast.remove();
       toast.error("Please enter a title.");
     } else {
@@ -163,8 +182,8 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
   };
 
   const addQuestion = async () => {
-    //framework can be ""
-    if (title != "" && language != "" && type != "") {
+    // framework can be ""
+    if (title !== "" && language !== "" && type !== "") {
       try {
         const response = await fetch("/api/database", {
           method: "POST",
@@ -183,7 +202,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
           }),
         });
         const data = await response.json();
-        if (data.message == "Success") {
+        if (data.message === "Success") {
           toast.remove();
           toast.success("Template added.");
           setTitle("");
@@ -196,7 +215,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
           setNewQuestionButton(false);
           await findQuestions(userCompanyId || "");
         } else if (
-          data.message ==
+          data.message ===
           "Title already exists. Please choose a unique template title."
         ) {
           toast.remove();
@@ -208,13 +227,13 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
       }
     } else {
       toast.remove();
-      if (title == "") {
+      if (title === "") {
         toast.error("Please choose a title.");
       }
-      if (language == "") {
+      if (language === "") {
         toast.error("Please choose a language and framework.");
       }
-      if (type == "") {
+      if (type === "") {
         toast.error("Please choose a type.");
       }
     }
@@ -225,8 +244,6 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
       if (session) {
         toast.remove();
         toast.loading("Looking for questions...");
-        // console.log("Hello world!");
-        //other than print hello world, set user data here
         setEmail(session.user?.email || "");
         const userResponse = await fetch("/api/database", {
           method: "POST",
@@ -259,6 +276,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
       getData();
     }
   }, [session, status]);
+
   if (status === "loading") {
     return <Loader></Loader>;
   }
@@ -266,13 +284,45 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
     router.push("/auth");
     return;
   }
+
   return (
     <>
       <Toaster position="top-right"></Toaster>
-      <div className="max-w-screen text-white flex overflow-x-hidden">
-        <Sidebar></Sidebar>
-        <div className="bg-slate-950 flex-1">
-          {/* <TopMenuBar></TopMenuBar> */}
+      <div className="flex text-white overflow-x-hidden min-h-screen">
+        <Sidebar />
+        <div className="flex-1 bg-slate-950">
+          {/* Enhanced Info Section */}
+          <div className="p-6 flex flex-col gap-6  mx-auto w-full">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 mb-3">
+            {/* Left Section: Icon and Text */}
+            <div className="flex items-center gap-3">
+              <Image src={QuestionIcon} width={32} height={32} alt="Info Icon" />
+              <div>
+                <h2 className="text-lg font-semibold text-white">
+                  What is this Assessment Builder?
+                </h2>
+                <p className="text-sm text-slate-400">
+  This is your tool for building customized question templates, tailored by AI to suit specific needs and preferences.
+</p>
+              </div>
+            </div>
+
+            {/* Right Section: Button */}
+            {questions.length > 0 && showDashboardButton && (
+              <motion.button
+                className="bg-indigo-600 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors duration-200 animate-glow"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDashboardButtonClick}
+              >
+                <Image src={Arrow} width={16} height={16} alt="Back to Dashboard" />
+                <span className="text-white">Back to Dashboard</span>
+              </motion.button>
+            )}
+          </div>
+          </div>
+          {/* End of Enhanced Info Section */}
+
           {/* Dashboard content */}
           {!companyDataLoaded && (
             <div className="flex justify-center items-center scale-150 mt-6">
@@ -285,242 +335,178 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
             </div>
           )}
           {companyDataLoaded && userApprovalStatus && (
-            <div className="p-6 flex gap-6">
-              <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 w-64">
-                <div className="flex justify-between items-center mb-3">
-                  <h1>Templates</h1>
-                  <button
-                    className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100"
-                    onClick={() => {
-                      setNewQuestionButton(true);
-                      setTitle("");
-                      setLanguage("");
-                      setFramework("");
-                      setPrompt("");
-                      setType("");
-                    }}
-                  >
-                    <Image src={Plus} width={14} height={14} alt=""></Image>
-                  </button>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {questions &&
-                    questions.map((question) => (
-                      <div className="relative" key={question.id}>
-                        <div
-                          className={
-                            currentQuestion?.id == question.id
-                              ? "flex justify-between items-center p-3 bg-indigo-600 border border-indigo-600 rounded-lg cursor-pointer duration-100"
-                              : "flex justify-between items-center p-3 hover:bg-slate-700 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer duration-100"
-                          }
-                          onClick={() => {
-                            setCurrentQuestion(question);
-                            setNewTitle(question.title);
-                            setNewPrompt(question.prompt);
-                          }}
-                          key={question.id}
-                        >
-                          <p>{question.title}</p>
-                          <Image
-                            src={Dots}
-                            alt=""
-                            width={14}
-                            height={14}
+            <div className="p-6">
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Templates List */}
+                <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 w-full lg:w-1/3">
+                  <div className="flex justify-between items-center mb-3">
+                    <h1 className="text-xl font-semibold">Templates</h1>
+                    <button
+                      className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100"
+                      onClick={() => {
+                        setNewQuestionButton(true);
+                        setTitle("");
+                        setLanguage("");
+                        setFramework("");
+                        setPrompt("");
+                        setType("");
+                      }}
+                      aria-label="Add New Template"
+                    >
+                      <Image src={Plus} width={14} height={14} alt="Add" />
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
+                    {questions && questions.length > 0 ? (
+                      questions.map((question) => (
+                        <div className="relative" key={question.id}>
+                          <div
+                            className={`flex justify-between items-center p-3 rounded-lg cursor-pointer border ${
+                              currentQuestion?.id === question.id
+                                ? "bg-indigo-600 border-indigo-600"
+                                : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                            } transition-colors duration-200`}
                             onClick={() => {
-                              if (showQuestionOptions == "") {
-                                setShowQuestionOptions(question.id);
-                              } else {
-                                setShowQuestionOptions("");
-                              }
+                              setCurrentQuestion(question);
+                              setNewTitle(question.title);
+                              setNewPrompt(question.prompt);
                             }}
-                          ></Image>
-                        </div>
-                        {showQuestionOptions == question.id && (
-                          <motion.div
-                            className="flex flex-col bg-slate-800 border border-slate-700 rounded-lg absolute z-20 right-0 mt-1"
-                            onClick={() => setShowQuestionOptions("")}
-                            initial={{ opacity: 0, y: -30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{
-                              duration: 0.2,
-                              ease: "backOut",
-                            }}
-                            exit={{ opacity: 0, y: -30 }}
                           >
-                            <div
-                              className="p-3 hover:bg-slate-700 duration-100 rounded-lg cursor-pointer"
-                              onClick={() => questionTitleRef.current?.focus()}
-                            >
-                              <p>Rename</p>
-                            </div>
-                            <div
-                              className="p-3 hover:bg-slate-700 duration-100 rounded-lg cursor-pointer text-red-500"
-                              onClick={() => setDeleteQuestionWarning(true)}
-                            >
-                              <p>Delete</p>
-                            </div>
-                          </motion.div>
-                        )}
-                        {/* DELETE QUESTION WARNING */}
-                        <AnimatePresence>
-                          {deleteQuestionWarning && (
-                            <motion.div
-                              className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{
-                                duration: 0.5,
-                                ease: "backOut",
+                            <p className="truncate">{question.title}</p>
+                            <Image
+                              src={Dots}
+                              alt="Options"
+                              width={14}
+                              height={14}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowQuestionOptions(
+                                  showQuestionOptions === question.id
+                                    ? ""
+                                    : question.id
+                                );
                               }}
-                              exit={{ opacity: 0 }}
-                            >
-                              <motion.div
-                                className="bg-slate-900 p-6 rounded-xl border border-slate-800"
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                  duration: 0.5,
-                                  ease: "backOut",
-                                }}
-                                exit={{ opacity: 0, y: 30 }}
-                              >
-                                <h1>Are you sure?</h1>
-                                <p className="mb-6">
-                                  You will not be able to recover this question
-                                  template once you delete it.
-                                </p>
-                                <motion.button
-                                  className="mt-3 w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                                  initial={{ opacity: 0, y: 30 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{
-                                    duration: 0.5,
-                                    ease: "backOut",
-                                  }}
-                                  onClick={() => deleteQuestion(question.id)}
-                                >
-                                  Yes, delete {question.title}
-                                </motion.button>
-                                <motion.button
-                                  className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                                  initial={{ opacity: 0, y: 30 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{
-                                    duration: 0.5,
-                                    ease: "backOut",
-                                  }}
-                                  onClick={() =>
-                                    setDeleteQuestionWarning(false)
-                                  }
-                                >
-                                  Cancel
-                                </motion.button>
-                              </motion.div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ))}
-                  {(!questions || questions.length == 0) && (
-                    <p className="text-slate-400">
-                      Your company has no question templates.
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex-1">
-                <div
-                  className="bg-slate-900 rounded-xl border border-slate-800 p-6 min-h-full overflow-hidden flex justify-center items-center flex-col gap-6"
-                  // style={{ height: "calc(100vh - 116px)" }}
-                  style={{ height: "calc(100vh - 48px)" }}
-                >
-                  {currentQuestion && (
-                    <div className="w-full h-full flex flex-col justify-between">
-                      <div className="">
-                        <div className="flex items-end gap-2">
-                          <input
-                            className="border-b border-slate-800 bg-transparent outline-none placeholder:text-white font-['h1'] text-[24px] w-full"
-                            ref={questionTitleRef}
-                            type="text"
-                            onChange={(e) => setNewTitle(e.target.value)}
-                            value={newTitle}
-                          />
-                          <Image
-                            src={Edit}
-                            alt="Edit title"
-                            width={14}
-                            height={14}
-                          ></Image>
-                        </div>
-                        <div className="flex gap-3 items-center flex-wrap mt-3">
-                          <div className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
-                            <p>{currentQuestion.language}</p>
+                            />
                           </div>
-                          {currentQuestion.framework != "" && (
-                            <div className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
-                              <p>{currentQuestion.framework}</p>
-                            </div>
-                          )}
-                          <div className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
-                            <p>{currentQuestion.type}</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col mt-3">
-                          <h2>Template Prompt</h2>
-                          <p className="text-slate-400">
-                            {
-                              "This open-ended prompt is being used to help generate your templates. Candidates will not see this."
-                            }
-                          </p>
-                          <textarea
-                            placeholder="Generate a todo list application with 5 errors..."
-                            className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
-                            onChange={(e) => setNewPrompt(e.target.value)}
-                            value={newPrompt}
-                          />
-                        </div>
-                        <div className="mt-3 flex gap-2 items-center">
-                          <h2>Expiration: </h2>
-                          <p className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
-                            {currentQuestion.expiration}
-                          </p>
-                        </div>
-                      </div>
-                      {/* <div className="flex justify-center items-center flex-col gap-6 text-center">
-                        <div className="flex justify-center items-center scale-150 mt-6">
-                          <div className="lds-ring">
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                            <div></div>
-                          </div>
-                        </div>
-                        <motion.p
-                          initial={{ opacity: 1 }}
-                          animate={{ opacity: [1, 0.4, 1] }}
-                          transition={{
-                            repeat: Infinity,
-                            duration: 1,
-                            ease: "linear",
-                          }}
-                        >
-                          Generating questions...
-                        </motion.p>
-                      </div> */}
-                      <div className="">
-                        <AnimatePresence>
-                          {(currentQuestion.title != newTitle ||
-                            currentQuestion.prompt != newPrompt) && (
-                            <motion.button
-                              className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                              initial={{ opacity: 0, y: 30 }}
+                          {showQuestionOptions === question.id && (
+                            <motion.div
+                              className="flex flex-col bg-slate-800 border border-slate-700 rounded-lg absolute z-20 right-0 mt-1 w-32"
+                              onClick={() => setShowQuestionOptions("")}
+                              initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ duration: 0.2, ease: "backOut" }}
+                              exit={{ opacity: 0, y: -10 }}
+                            >
+                              <div
+                                className="p-3 hover:bg-slate-700 duration-100 rounded-t-lg cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  questionTitleRef.current?.focus();
+                                }}
+                              >
+                                <p>Rename</p>
+                              </div>
+                              <div
+                                className="p-3 hover:bg-slate-700 duration-100 rounded-b-lg cursor-pointer text-red-500"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteQuestionWarning(true);
+                                }}
+                              >
+                                <p>Delete</p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-slate-400">
+                        Your company has no question templates.
+                      </p>
+                    )}
+                    
+                  </div>
+                </div>
+                {/* End of Templates List */}
+
+                {/* Question Details */}
+                <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 w-full lg:w-2/3">
+                  <div className="min-h-[60vh]">
+                    {currentQuestion ? (
+                      <div className="flex flex-col justify-between h-full">
+                        {/* Question Header */}
+                        <div>
+                          <div className="flex items-end gap-2">
+                            <input
+                              className="border-b border-slate-800 bg-transparent outline-none placeholder:text-white font-bold text-2xl w-full"
+                              ref={questionTitleRef}
+                              type="text"
+                              onChange={(e) => setNewTitle(e.target.value)}
+                              value={newTitle}
+                              placeholder="Question Title"
+                            />
+                            <Image
+                              src={Edit}
+                              alt="Edit title"
+                              width={14}
+                              height={14}
+                            />
+                          </div>
+                          <div className="flex flex-wrap gap-3 mt-3">
+                            <span className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
+                              {currentQuestion.language}
+                            </span>
+                            {currentQuestion.framework && (
+                              <span className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
+                                {currentQuestion.framework}
+                              </span>
+                            )}
+                            <span className="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800">
+                              {currentQuestion.type}
+                            </span>
+                          </div>
+                          <div className="mt-3">
+                            <h2 className="text-lg font-semibold">
+                              Template Prompt
+                            </h2>
+                            <p className="text-sm text-slate-400">
+                              This open-ended prompt is being used to help
+                              generate your templates. Candidates will not see
+                              this.
+                            </p>
+                            <textarea
+                              placeholder="Generate a todo list application with 5 errors..."
+                              className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
+                              onChange={(e) => setNewPrompt(e.target.value)}
+                              value={newPrompt}
+                            />
+                          </div>
+                          <div className="mt-3 flex items-center gap-2">
+                            <h2 className="text-lg font-semibold">
+                              Expiration:
+                            </h2>
+                            <span className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
+                              {currentQuestion.expiration}
+                            </span>
+                          </div>
+                        </div>
+                        {/* End of Question Header */}
+
+                        {/* Save Changes Button */}
+                        <AnimatePresence>
+                          {(currentQuestion.title !== newTitle ||
+                            currentQuestion.prompt !== newPrompt) && (
+                            <motion.button
+                              className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-indigo-700 transition-colors duration-200"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: 30 }}
+                              transition={{ duration: 0.2, ease: "backOut" }}
                               onClick={() => updateQuestion(currentQuestion.id)}
                             >
-                              {!isSaving && <>Save changes</>}
-                              {isSaving && (
+                              {!isSaving ? (
+                                "Save changes"
+                              ) : (
                                 <div className="lds-ring">
                                   <div></div>
                                   <div></div>
@@ -529,361 +515,42 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                                 </div>
                               )}
                             </motion.button>
-
-                            // <button
-                            //   className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                            //   onClick={() => updateQuestion(currentQuestion.id)}
-                            // >
-                            //   Save changes
-                            // </button>
                           )}
                         </AnimatePresence>
+                        {/* End of Save Changes Button */}
                       </div>
-                    </div>
-                  )}
-                  {!currentQuestion && (
-                    <div className="w-full h-full flex justify-center items-center flex-col text-center">
-                      <h1>Welcome to the Assessment Builder!</h1>
-                      <p className="text-slate-400">
-                        To get started, generate a new template.
-                      </p>
-                      <button
-                        className="bg-indigo-600 py-2 px-4 rounded-lg flex justify-center items-center gap-2 mt-3"
-                        onClick={() => setNewQuestionButton(true)}
-                      >
-                        New template
-                        <div className="flex items-center justify-center">
-                          <div>
-                            <Image
-                              src={Plus}
-                              alt=""
-                              width={14}
-                              height={14}
-                            ></Image>
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <AnimatePresence>
-                {newQuestionButton && (
-                  <motion.div
-                    className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      duration: 0.5,
-                      ease: "backOut",
-                    }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <motion.button
-                      className="bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center gap-2"
-                      onClick={() => {
-                        setNewQuestionButton(false);
-                        setViewAdditionalSettings(false);
-                      }}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.7,
-                        ease: "backOut",
-                      }}
-                      exit={{ opacity: 0, y: 30 }}
-                    >
-                      <Image
-                        src={Plus}
-                        width={14}
-                        height={14}
-                        className="rotate-45"
-                        alt="Exit"
-                      ></Image>
-                    </motion.button>
-                    <motion.div
-                      className="flex flex-col gap-12 max-w-4xl overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl p-6"
-                      style={{
-                        scrollbarWidth: "thin",
-                        scrollbarColor: "rgb(51 65 85) transparent",
-                      }}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.5,
-                        ease: "backOut",
-                      }}
-                      exit={{ opacity: 0, y: 30 }}
-                    >
-                      <div className="flex flex-col">
-                        <h1>Assessment Builder</h1>
-                        <p className="">
-                          Welcome to the Skillbit Assessment Builder.
+                    ) : (
+                      <div className="flex justify-center items-center flex-col text-center h-full">
+                        <h1 className="text-2xl font-semibold mb-2">
+                          Welcome to the Assessment Builder!
+                        </h1>
+                        <p className="text-slate-400 mb-4">
+                          To get started, generate a new template.
                         </p>
-                      </div>
-                      <div className="flex flex-col">
-                        <h2>Assessment name</h2>
-                        <p className="text-slate-400">
-                          Name your template. Candidates will not see this.
-                        </p>
-                        <input
-                          type="text"
-                          placeholder="Template title"
-                          className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 border border-slate-700"
-                          onChange={(e) => setTitle(e.target.value)}
-                        />
-                      </div>
-                      <div className="flex flex-col">
-                        <h2>Programming language and framework</h2>
-                        <p className="text-slate-400">
-                          Your questions will test candidates using the
-                          programming language or framework you choose.
-                        </p>
-                        <div className="flex gap-3 mt-3 flex-wrap">
-                          <div
-                            className={
-                              language == "JavaScript" &&
-                              framework == "React JS"
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setLanguage("JavaScript");
-                              setFramework("React JS");
-                            }}
-                          >
-                            React JS (Javascript)
-                          </div>
-                          <div
-                            className={
-                              language == "TypeScript" &&
-                              framework == "React JS"
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setLanguage("TypeScript");
-                              setFramework("React JS");
-                            }}
-                          >
-                            React JS (TypeScript)
-                          </div>
-                          <div
-                            className={
-                              language == "C++" && framework == ""
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setLanguage("C++");
-                              setFramework("");
-                            }}
-                          >
-                            C++
-                          </div>
-                          <div
-                            className={
-                              language == "Java" && framework == ""
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setLanguage("Java");
-                              setFramework("");
-                            }}
-                          >
-                            Java
-                          </div>
-                          <div
-                            className={
-                              language == "SQL" && framework == ""
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setLanguage("SQL");
-                              setFramework("");
-                            }}
-                          >
-                            SQL
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col">
-                        <h2>Question type</h2>
-                        <p className="text-slate-400">
-                          {
-                            "We will use this to help generate your template and give candidates an idea of what to expect."
-                          }
-                        </p>
-                        <div className="flex gap-3 mt-3 flex-wrap">
-                          <div
-                            className={
-                              type == "Debugging challenge"
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setType("Debugging challenge");
-                            }}
-                          >
-                            Debugging challenge
-                          </div>
-                          <div
-                            className={
-                              type == "Data Structures challenge"
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setType("Data Structures challenge");
-                            }}
-                          >
-                            Data Structures challenge
-                          </div>
-                          <div
-                            className={
-                              type == "Algorithmic challenge"
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setType("Algorithmic challenge");
-                            }}
-                          >
-                            Algorithmic challenge
-                          </div>
-                          <div
-                            className={
-                              type == "Coding puzzle"
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setType("Coding puzzle");
-                            }}
-                          >
-                            Coding puzzle
-                          </div>
-                          <div
-                            className={
-                              type == "Real-world problem"
-                                ? "bg-indigo-600 rounded-xl border border-indigo-600 p-3 duration-100 cursor-pointer"
-                                : "bg-slate-800 rounded-xl border border-slate-700 p-3 hover:bg-slate-700 duration-100 cursor-pointer"
-                            }
-                            onClick={() => {
-                              setType("Real-world problem");
-                            }}
-                          >
-                            Real-world problem
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col">
-                        <h2>Template Prompt</h2>
-                        <p className="text-slate-400">
-                          {
-                            "We will use this open-ended prompt to help generate your template. Candidates will not see this."
-                          }
-                        </p>
-                        <textarea
-                          placeholder="Generate a todo list application with 5 errors..."
-                          className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
-                          onChange={(e) => setPrompt(e.target.value)}
-                        />
-                      </div>
-                      <div className="flex flex-col">
-                        <div
-                          className="flex justify-between items-center"
-                          onClick={() =>
-                            setViewAdditionalSettings(!viewAdditionalSettings)
-                          }
+                        <button
+                          className="bg-indigo-600 px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors duration-200"
+                          onClick={() => setNewQuestionButton(true)}
                         >
-                          <h2>Additional settings</h2>
-                          <Image
-                            src={Dropdown}
-                            alt="Dropdown"
-                            width={15}
-                            height={15}
-                            className={
-                              viewAdditionalSettings
-                                ? "duration-100"
-                                : "-rotate-90 duration-100"
-                            }
-                          ></Image>
-                        </div>
-                        {viewAdditionalSettings && (
-                          <motion.div
-                            className=""
-                            initial={{ opacity: 0, y: -30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                          >
-                            <div className="flex items-center gap-3 mt-3">
-                              <p className="whitespace-nowrap">
-                                Test expires in:
-                              </p>
-                              <select
-                                id="expiration"
-                                value={expiration}
-                                onChange={(e) => setExpiration(e.target.value)}
-                                className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none"
-                              >
-                                <option value="1 day">1 day</option>
-                                <option value="1 week">1 week</option>
-                                <option value="2 weeks">2 weeks</option>
-                                <option value="1 month">1 month</option>
-                                <option value="2 months">2 months</option>
-                              </select>
-                              <p className="text-slate-400 text-sm">
-                                The test will expire {expiration} from the date
-                                it is sent to the candidate.
-                              </p>
-                            </div>
-                          </motion.div>
-                        )}
+                          New Template
+                          <Image src={Plus} width={14} height={14} alt="Add" />
+                        </button>
                       </div>
-                      <motion.button
-                        className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.5,
-                          ease: "backOut",
-                        }}
-                        onClick={addQuestion}
-                      >
-                        <>
-                          Create Assessment{" "}
-                          <div className=" arrow flex items-center justify-center">
-                            <div className="arrowMiddle"></div>
-                            <div>
-                              <Image
-                                src={Arrow}
-                                alt=""
-                                width={14}
-                                height={14}
-                                className="arrowSide"
-                              ></Image>
-                            </div>
-                          </div>
-                        </>
-                      </motion.button>
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    )}
+                  </div>
+                </div>
+                {/* End of Question Details */}
+              </div>
             </div>
           )}
           {companyDataLoaded && !userApprovalStatus && (
             <div className="p-6 flex justify-center items-center flex-col w-full text-center">
               <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
-              <h1>Welcome to the Assessment Builder!</h1>
-              <p className="text-slate-400">
-                To get started, please join a company in the Company Profile
-                tab.
+              <h1 className="text-2xl font-semibold">Welcome to the Assessment Builder!</h1>
+              <p className="text-slate-400 mb-4">
+                To get started, please join a company in the Company Profile tab.
               </p>
               <motion.button
-                className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-opacity-100 mt-3"
+                className="bg-indigo-600 px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors duration-200 mt-3"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
@@ -892,24 +559,354 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                 }}
                 onClick={() => router.push("/companyProfile")}
               >
-                <>
-                  Join a company{" "}
-                  <div className=" arrow flex items-center justify-center">
-                    <div className="arrowMiddle"></div>
-                    <div>
-                      <Image
-                        src={Arrow}
-                        alt=""
-                        width={14}
-                        height={14}
-                        className="arrowSide"
-                      ></Image>
-                    </div>
+                Join a company
+                <div className="flex items-center justify-center">
+                  <div>
+                    <Image
+                      src={Arrow}
+                      alt="Arrow"
+                      width={14}
+                      height={14}
+                      className="arrowSide"
+                    />
                   </div>
-                </>
+                </div>
               </motion.button>
             </div>
           )}
+
+          {/* New Question Modal */}
+          <AnimatePresence>
+            {newQuestionButton && (
+              <motion.div
+                className="fixed inset-0 z-50 flex justify-center items-center bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  className="flex flex-col gap-12 max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-6 overflow-y-auto"
+                  style={{
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "rgb(51 65 85) transparent",
+                  }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 30 }}
+                  transition={{ duration: 0.5, ease: "backOut" }}
+                >
+                  <div className="flex justify-end">
+                    <motion.button
+                      className="bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center"
+                      onClick={() => {
+                        setNewQuestionButton(false);
+                        setViewAdditionalSettings(false);
+                      }}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 30 }}
+                      transition={{ duration: 0.7, ease: "backOut" }}
+                      aria-label="Close Modal"
+                    >
+                      <Image
+                        src={Plus}
+                        width={14}
+                        height={14}
+                        className="rotate-45"
+                        alt="Close"
+                      />
+                    </motion.button>
+                  </div>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col">
+                      <h1 className="text-2xl font-semibold">Assessment Builder</h1>
+                      <p className="text-slate-400">
+                        Welcome to the Skillbit Assessment Builder. Create and customize assessment templates to effectively evaluate candidate skills.
+                      </p>
+                    </div>
+                    <div className="flex flex-col">
+                      <h2 className="text-lg font-semibold">Assessment Name</h2>
+                      <p className="text-slate-400">
+                        Name your template. Candidates will not see this.
+                      </p>
+                      <input
+                        type="text"
+                        placeholder="Template title"
+                        className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 border border-slate-700"
+                        onChange={(e) => setTitle(e.target.value)}
+                        value={title}
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <h2 className="text-lg font-semibold">
+                        Programming Language and Framework
+                      </h2>
+                      <p className="text-slate-400">
+                        Your questions will test candidates using the programming
+                        language or framework you choose.
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-3">
+                        <div
+                          className={`rounded-xl border ${
+                            language === "JavaScript" && framework === "React JS"
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => {
+                            setLanguage("JavaScript");
+                            setFramework("React JS");
+                          }}
+                        >
+                          React JS (JavaScript)
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            language === "TypeScript" && framework === "React JS"
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => {
+                            setLanguage("TypeScript");
+                            setFramework("React JS");
+                          }}
+                        >
+                          React JS (TypeScript)
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            language === "C++" && framework === ""
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => {
+                            setLanguage("C++");
+                            setFramework("");
+                          }}
+                        >
+                          C++
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            language === "Java" && framework === ""
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => {
+                            setLanguage("Java");
+                            setFramework("");
+                          }}
+                        >
+                          Java
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            language === "SQL" && framework === ""
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => {
+                            setLanguage("SQL");
+                            setFramework("");
+                          }}
+                        >
+                          SQL
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <h2 className="text-lg font-semibold">Question Type</h2>
+                      <p className="text-slate-400">
+                        We will use this to help generate your template and give
+                        candidates an idea of what to expect.
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-3">
+                        <div
+                          className={`rounded-xl border ${
+                            type === "Debugging challenge"
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => setType("Debugging challenge")}
+                        >
+                          Debugging Challenge
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            type === "Data Structures challenge"
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => setType("Data Structures challenge")}
+                        >
+                          Data Structures Challenge
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            type === "Algorithmic challenge"
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => setType("Algorithmic challenge")}
+                        >
+                          Algorithmic Challenge
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            type === "Coding puzzle"
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => setType("Coding puzzle")}
+                        >
+                          Coding Puzzle
+                        </div>
+                        <div
+                          className={`rounded-xl border ${
+                            type === "Real-world problem"
+                              ? "bg-indigo-600 border-indigo-600"
+                              : "bg-slate-800 border-slate-700 hover:bg-slate-700"
+                          } p-3 cursor-pointer transition-colors duration-100`}
+                          onClick={() => setType("Real-world problem")}
+                        >
+                          Real-world Problem
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <h2 className="text-lg font-semibold">Template Prompt</h2>
+                      <p className="text-slate-400">
+                        We will use this open-ended prompt to help generate your
+                        template. Candidates will not see this.
+                      </p>
+                      <textarea
+                        placeholder="Generate a todo list application with 5 errors..."
+                        className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
+                        onChange={(e) => setPrompt(e.target.value)}
+                        value={prompt}
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <div
+                        className="flex justify-between items-center cursor-pointer"
+                        onClick={() =>
+                          setViewAdditionalSettings(!viewAdditionalSettings)
+                        }
+                      >
+                        <h2 className="text-lg font-semibold">
+                          Additional Settings
+                        </h2>
+                        <Image
+                          src={Dropdown}
+                          alt="Dropdown"
+                          width={15}
+                          height={15}
+                          className={`transform transition-transform duration-200 ${
+                            viewAdditionalSettings ? "rotate-180" : "rotate-0"
+                          }`}
+                        />
+                      </div>
+                      {viewAdditionalSettings && (
+                        <motion.div
+                          className="mt-3"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <p className="whitespace-nowrap">Test expires in:</p>
+                            <select
+                              id="expiration"
+                              value={expiration}
+                              onChange={(e) => setExpiration(e.target.value)}
+                              className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none"
+                            >
+                              <option value="1 day">1 day</option>
+                              <option value="1 week">1 week</option>
+                              <option value="2 weeks">2 weeks</option>
+                              <option value="1 month">1 month</option>
+                              <option value="2 months">2 months</option>
+                            </select>
+                            <p className="text-slate-400 text-sm">
+                              The test will expire {expiration} from the date it is
+                              sent to the candidate.
+                            </p>
+                          </div>
+                        </motion.div>
+                      )}
+                    </div>
+                    <motion.button
+                      className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-indigo-700 transition-colors duration-200"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, ease: "backOut" }}
+                      onClick={addQuestion}
+                    >
+                      Create Assessment
+                      <div className="flex items-center justify-center ml-2">
+                        <div className="arrowMiddle"></div>
+                        <Image
+                          src={Arrow}
+                          alt="Arrow"
+                          width={14}
+                          height={14}
+                          className="arrowSide"
+                        />
+                      </div>
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* End of New Question Modal */}
+
+          {/* DELETE QUESTION WARNING */}
+          <AnimatePresence>
+            {deleteQuestionWarning && currentQuestion && (
+              <motion.div
+                className="fixed inset-0 z-50 flex justify-center items-center bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  className="bg-slate-900 p-6 rounded-xl border border-slate-800 w-full max-w-md"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 30 }}
+                  transition={{ duration: 0.5, ease: "backOut" }}
+                >
+                  <h1 className="text-xl font-semibold mb-4">Are you sure?</h1>
+                  <p className="mb-6">
+                    You will not be able to recover this question template once
+                    you delete it.
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    <motion.button
+                      className="w-full bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-slate-700 transition-colors duration-200"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 30 }}
+                      onClick={() => deleteQuestion(currentQuestion.id)}
+                    >
+                      Yes, delete {currentQuestion.title}
+                    </motion.button>
+                    <motion.button
+                      className="w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-indigo-700 transition-colors duration-200"
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 30 }}
+                      onClick={() => setDeleteQuestionWarning(false)}
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* End of DELETE QUESTION WARNING */}
         </div>
       </div>
     </>
