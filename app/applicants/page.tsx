@@ -57,12 +57,17 @@ const Applicants = () => {
   const [deleteCandidatesWarning, setDeleteCandidatesWarning] = useState(false);
   const [viewTemplateAssignModal, setViewTemplateAssignModal] = useState(false);
 
+  // For Template Preview (if needed)
+  const [previewTemplate, setPreviewTemplate] = useState<Question | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+
   const [showCandidateDetails, setShowCandidateDetails] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showOptionsIndex, setShowOptionsIndex] = useState("");
   const [applicantData, setApplicantData] = useState<TestIDInterface[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
+  // Add Applicant
   const [isAddApplicantModalOpen, setIsAddApplicantModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -73,33 +78,26 @@ const Applicants = () => {
     selected: false,
   });
 
-  // -- PAGINATION --
-
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
   const applicantsPerPage = 50;
 
-  // -- SEARCH --
+  // Search
   const [searchTerm, setSearchTerm] = useState("");
+  useEffect(() => {
+    setCurrentPage(1); // reset to page 1 anytime searchTerm changes
+  }, [searchTerm]);
 
-// 2) Immediately after, add the effect that resets currentPage
-useEffect(() => {
-  // Anytime the user changes the search, jump back to page 1
-  setCurrentPage(1);
-}, [searchTerm]);
-
-// 3) Then your other states, such as currentPage, applicantsPerPage, etc.
-const [currentPage, setCurrentPage] = useState(1);
-
-  // -- FILTER BY STATUS (multi-select) --
+  // Filter (multi-select statuses)
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const path = usePathname();
   const router = useRouter();
-
   const { data: session, status } = useSession();
 
-  // -------------------------
-  //   Fetch company & data
-  // -------------------------
+  // ------------------------------
+  //   Fetch company & applicants
+  // ------------------------------
   useEffect(() => {
     const getData = async () => {
       if (session) {
@@ -150,16 +148,14 @@ const [currentPage, setCurrentPage] = useState(1);
     return null;
   }
 
-  // -----------------------
-  //   getApplicants, etc
-  // -----------------------
+  // -----------------------------
+  //    getApplicants, findQuestions
+  // -----------------------------
   const getApplicants = async (companyId: string) => {
     try {
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
+        headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           action: "getApplicants",
           company: companyId,
@@ -186,9 +182,7 @@ const [currentPage, setCurrentPage] = useState(1);
     try {
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
+        headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           action: "findQuestions",
           company: company,
@@ -201,9 +195,9 @@ const [currentPage, setCurrentPage] = useState(1);
     }
   };
 
-  // ----------------------
-  //   Add Single Applicant
-  // ----------------------
+  // ---------------------
+  //    Add Single Applicant
+  // ---------------------
   const toggleAddApplicantModal = () => {
     setIsAddApplicantModalOpen((prev) => !prev);
   };
@@ -248,9 +242,7 @@ const [currentPage, setCurrentPage] = useState(1);
     try {
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addApplicant",
           firstName: applicantFirstName,
@@ -269,9 +261,9 @@ const [currentPage, setCurrentPage] = useState(1);
     }
   };
 
-  // ----------------------
-  //   CSV Import
-  // ----------------------
+  // ---------------------
+  //    CSV Import
+  // ---------------------
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
@@ -305,9 +297,7 @@ const [currentPage, setCurrentPage] = useState(1);
       toast.loading("Importing applicant(s)...");
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addApplicants",
           applicants: applicants,
@@ -329,9 +319,9 @@ const [currentPage, setCurrentPage] = useState(1);
     }
   };
 
-  // ----------------------
-  //   Select & Delete
-  // ----------------------
+  // ---------------------
+  //    Select & Delete
+  // ---------------------
   const handleSelectAll = () => {
     setSelectAll((prevSelectAll) => !prevSelectAll);
     const updatedData = applicantData.map((item) => ({
@@ -346,9 +336,7 @@ const [currentPage, setCurrentPage] = useState(1);
       toast.loading("Loading...");
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
+        headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           action: "deleteApplicants",
           applicantData: applicantData,
@@ -374,9 +362,9 @@ const [currentPage, setCurrentPage] = useState(1);
     }
   };
 
-  // ----------------------
-  //   Assign Templates
-  // ----------------------
+  // ---------------------
+  //    Assign Templates
+  // ---------------------
   const assignTemplateSafety = () => {
     if (template === "Choose one") {
       toast.remove();
@@ -391,9 +379,7 @@ const [currentPage, setCurrentPage] = useState(1);
       toast.loading("Loading...");
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
+        headers: { "Content-type": "application/json" },
         body: JSON.stringify({
           action: "assignTemplate",
           applicantData: applicantData,
@@ -422,11 +408,27 @@ const [currentPage, setCurrentPage] = useState(1);
     }
   };
 
-  // ----------------------
+  // ---------------------
+  //   PREVIEW TEMPLATE
+  // ---------------------
+  const handlePreviewTemplate = () => {
+    if (template === "Choose one") {
+      toast.error("Please select a valid template first.");
+      return;
+    }
+    const chosen = questions.find((q) => q.id === template);
+    if (!chosen) {
+      toast.error("Could not find that template. Please select again.");
+      return;
+    }
+    setPreviewTemplate(chosen);
+    setShowPreviewModal(true);
+  };
+
+  // ---------------------
   //   Status Filter Logic
-  // ----------------------
+  // ---------------------
   const toggleFilter = (status: string) => {
-    // Toggle on/off a status in the activeFilters array
     setActiveFilters((prev) => {
       if (prev.includes(status)) {
         return prev.filter((s) => s !== status);
@@ -436,35 +438,26 @@ const [currentPage, setCurrentPage] = useState(1);
     });
   };
 
-  // ----------------------
+  // ---------------------
   //   Derived Data
-  // ----------------------
-  // Combine searchTerm & status-based filtering
+  // ---------------------
   const filteredCandidates = applicantData.filter((candidate) => {
-    // Search
     const fullName = (candidate.firstName + " " + candidate.lastName).toLowerCase();
     const matchesSearch =
       fullName.includes(searchTerm.toLowerCase()) ||
       candidate.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // If any status filters are active, candidate must match one of them
     if (activeFilters.length > 0) {
       if (!activeFilters.includes(candidate.status)) {
         return false;
       }
     }
-
     return matchesSearch;
   });
 
   const totalPages = Math.ceil(filteredCandidates.length / applicantsPerPage);
-
-  // Number selected
   const numSelected = applicantData.filter((a) => a.selected).length;
 
-  // ----------------------
-  //   RENDER
-  // ----------------------
   return (
     <>
       <Toaster position="top-right" />
@@ -485,7 +478,7 @@ const [currentPage, setCurrentPage] = useState(1);
             </div>
           )}
 
-          {/* 2) Not approved => show message */}
+          {/* 2) If user not approved */}
           {companyDataLoaded && !userApprovalStatus && (
             <div className="p-6 flex justify-center items-center flex-col w-full text-center">
               <div className="bg-gradient-to-b from-indigo-600 to-transparent w-full rounded-xl p-6 py-20 mb-20"></div>
@@ -520,7 +513,7 @@ const [currentPage, setCurrentPage] = useState(1);
             </div>
           )}
 
-          {/* 3) Approved => main interface */}
+          {/* 3) If approved => main interface */}
           {companyDataLoaded && userApprovalStatus && (
             <div className="p-6 flex flex-col gap-6 mx-auto w-full">
               {/* Header Info */}
@@ -530,7 +523,7 @@ const [currentPage, setCurrentPage] = useState(1);
                 </p>
                 <p className="text-sm text-slate-400">
                   Quick steps: <strong>Add candidate</strong> → <strong>Select</strong> →{" "}
-                  <strong>Assign a template</strong>.
+                  <strong>Assign a template &amp; Send the test</strong>.
                 </p>
               </div>
 
@@ -594,7 +587,6 @@ const [currentPage, setCurrentPage] = useState(1);
                       }}
                       className="absolute top-10 right-0 bg-slate-800 bg-opacity-60 backdrop-blur-lg rounded-lg border border-slate-800 p-3 flex flex-col gap-2 z-10"
                     >
-                      {/* Each status is clickable to toggle filter */}
                       <li
                         className="flex gap-3 items-center w-max cursor-pointer"
                         onClick={() => toggleFilter("Sent")}
@@ -652,9 +644,9 @@ const [currentPage, setCurrentPage] = useState(1);
                 </div>
               </div>
 
-              {/* 2-COLUMN LAYOUT */}
+              {/* MAIN LAYOUT (Left = Candidates, Right = Search+Assign) */}
               <div className="flex flex-col gap-8 lg:flex-row w-full">
-                {/* LEFT COLUMN: Candidate List */}
+                {/* LEFT: Candidate List */}
                 <div className="lg:w-2/3 flex flex-col gap-4">
                   <div className="bg-slate-900 border border-slate-800 rounded-md p-4">
                     {filteredCandidates.length > 0 ? (
@@ -683,10 +675,9 @@ const [currentPage, setCurrentPage] = useState(1);
                                       : setShowOptionsIndex(listIndex.toString())
                                   }
                                 >
-                                  {/* Top row: name, email, status */}
                                   <div className="flex gap-3 items-center justify-between w-full">
                                     <div className="flex gap-6 items-center">
-                                      {/* Individual checkbox */}
+                                      {/* Each checkbox */}
                                       <input
                                         type="checkbox"
                                         checked={item.selected}
@@ -714,7 +705,7 @@ const [currentPage, setCurrentPage] = useState(1);
                                       </div>
                                     </div>
 
-                                    {/* Status pill */}
+                                    {/* Status Pill */}
                                     <div className="flex gap-3 items-center justify-center">
                                       {item.status === "Sent" && (
                                         <div className="flex gap-3 items-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
@@ -795,7 +786,7 @@ const [currentPage, setCurrentPage] = useState(1);
                                                 ? "rotate-0 opacity-25 duration-100"
                                                 : "-rotate-90 opacity-25 duration-100"
                                             }
-                                          />
+                                        />
                                         </button>
 
                                         <AnimatePresence>
@@ -821,9 +812,7 @@ const [currentPage, setCurrentPage] = useState(1);
                                                 <span>Created:</span>
                                                 <span className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
                                                   {item.created
-                                                    ? new Date(
-                                                        item.created
-                                                      ).toUTCString()
+                                                    ? new Date(item.created).toUTCString()
                                                     : "N/A"}
                                                 </span>
                                               </p>
@@ -831,16 +820,12 @@ const [currentPage, setCurrentPage] = useState(1);
                                                 <span>Expiration:</span>
                                                 <span className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
                                                   {item.expirationDate
-                                                    ? new Date(
-                                                        item.expirationDate
-                                                      ).toUTCString()
+                                                    ? new Date(item.expirationDate).toUTCString()
                                                     : "N/A"}
                                                 </span>
                                               </p>
                                               <p className="text-sm flex flex-col mt-1">
-                                                <span className="mb-1">
-                                                  Template:
-                                                </span>
+                                                <span className="mb-1">Template:</span>
                                                 {item.template ? (
                                                   <span className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
                                                     {item.template.title}
@@ -852,9 +837,7 @@ const [currentPage, setCurrentPage] = useState(1);
                                                 )}
                                                 <motion.button
                                                   className="mt-2 flex justify-center items-center p-1 px-3 bg-indigo-600 rounded-full shadow-lg cursor-pointer duration-100 text-sm w-fit"
-                                                  onClick={() =>
-                                                    router.push("/questionWorkshop")
-                                                  }
+                                                  onClick={() => router.push("/questionWorkshop")}
                                                 >
                                                   <>
                                                     View Templates
@@ -875,6 +858,28 @@ const [currentPage, setCurrentPage] = useState(1);
                                           )}
                                         </AnimatePresence>
                                       </motion.li>
+
+                                      {/* NEW: View Test ID if status === "Sent" */}
+                                      {item.status === "Sent" && (
+                                        <motion.li
+                                          className="flex items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100 relative"
+                                          initial={{ opacity: 0, y: -20 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          exit={{ opacity: 0, y: -20 }}
+                                          transition={{
+                                            duration: 0.2,
+                                            delay: 0,
+                                            ease: "backOut",
+                                          }}
+                                        >
+                                          <button
+                                            className="text-sm"
+                                            onClick={() => router.push(`/tests/${item.id}`)}
+                                          >
+                                            View Test ID
+                                          </button>
+                                        </motion.li>
+                                      )}
 
                                       {/* View Submission if "Submitted" */}
                                       {item.status === "Submitted" && (
@@ -922,7 +927,7 @@ const [currentPage, setCurrentPage] = useState(1);
                             })}
                         </ul>
 
-                        {/* PAGINATION */}
+                        {/* Pagination */}
                         <div className="flex justify-center mt-6 flex-wrap gap-2">
                           {Array.from({ length: totalPages }, (_, i) => (
                             <button
@@ -963,9 +968,9 @@ const [currentPage, setCurrentPage] = useState(1);
                   </div>
                 </div>
 
-                {/* RIGHT COLUMN: Search + Assign */}
+                {/* RIGHT: Search + Assign */}
                 <div className="lg:w-1/3 flex flex-col gap-4">
-                  {/* SEARCH BAR (MOVED HERE) */}
+                  {/* SEARCH BAR */}
                   <div className="bg-slate-900 border border-slate-800 rounded-md p-4">
                     <label htmlFor="search" className="block mb-2 text-sm font-semibold">
                       Search (Name or Email)
@@ -1044,9 +1049,7 @@ const [currentPage, setCurrentPage] = useState(1);
         </div>
       </div>
 
-      {/* -------------------------
-          ADD APPLICANT MODAL
-      ------------------------- */}
+      {/* ADD APPLICANT MODAL */}
       <AnimatePresence>
         {isAddApplicantModalOpen && (
           <motion.div
@@ -1132,9 +1135,7 @@ const [currentPage, setCurrentPage] = useState(1);
         )}
       </AnimatePresence>
 
-      {/* -------------------------
-          ASSIGN TEMPLATE MODAL
-      ------------------------- */}
+      {/* ASSIGN TEMPLATE MODAL */}
       <AnimatePresence>
         {viewTemplateAssignModal && (
           <motion.div
@@ -1176,7 +1177,7 @@ const [currentPage, setCurrentPage] = useState(1);
                     id="template"
                     value={template}
                     onChange={(e) => setTemplate(e.target.value)}
-                    className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none w-full mb-4"
+                    className="bg-slate-800 border border-slate-700 rounded-xl px-2 py-1 outline-none w-full mb-2"
                   >
                     <option value="Choose one">Choose one</option>
                     {questions.map((question) => (
@@ -1185,6 +1186,15 @@ const [currentPage, setCurrentPage] = useState(1);
                       </option>
                     ))}
                   </select>
+
+                  {/* PREVIEW BUTTON */}
+                  <button
+                    onClick={handlePreviewTemplate}
+                    className="bg-slate-800 border border-slate-700 px-3 py-1 rounded-lg w-full text-sm
+                               hover:bg-slate-700 transition-colors duration-200 mb-4"
+                  >
+                    Preview Template
+                  </button>
 
                   <button
                     className="bg-indigo-600 py-2 px-4 rounded-lg w-full"
@@ -1212,9 +1222,61 @@ const [currentPage, setCurrentPage] = useState(1);
         )}
       </AnimatePresence>
 
-      {/* -------------------------
-          CONFIRM SEND & DELETE
-      ------------------------- */}
+      {/* PREVIEW TEMPLATE MODAL */}
+      <AnimatePresence>
+        {showPreviewModal && previewTemplate && (
+          <motion.div
+            className="fixed inset-0 z-50 flex justify-center items-center bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-slate-900 p-6 rounded-xl border border-slate-800 w-full max-w-md relative"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 30 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* CLOSE BUTTON */}
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="p-1 border border-slate-700 rounded-full hover:bg-slate-700 transition-colors absolute top-4 right-4"
+              >
+                <Image
+                  src={Plus}
+                  width={14}
+                  height={14}
+                  className="rotate-45"
+                  alt="Close"
+                />
+              </button>
+
+              <h2 className="text-xl font-semibold mb-2">
+                {previewTemplate.title}
+              </h2>
+              <div className="text-sm text-slate-400 flex flex-col gap-2">
+                <p><strong>Language:</strong> {previewTemplate.language}</p>
+                {previewTemplate.framework && (
+                  <p><strong>Framework:</strong> {previewTemplate.framework}</p>
+                )}
+                <p><strong>Type:</strong> {previewTemplate.type}</p>
+                <p><strong>Expiration:</strong> {previewTemplate.expiration}</p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="text-md font-semibold">Prompt</h3>
+                <p className="text-sm text-slate-300 whitespace-pre-line mt-1 border border-slate-700 bg-slate-800 rounded p-2">
+                  {previewTemplate.prompt}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* CONFIRM SEND & DELETE */}
       <AnimatePresence>
         {assignTemplatesWarning && (
           <motion.div
