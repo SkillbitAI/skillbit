@@ -51,16 +51,18 @@ const Applicants = () => {
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
 
+  // Template selection & modals
   const [template, setTemplate] = useState("Choose one");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [assignTemplatesWarning, setAssignTemplatesWarning] = useState(false);
   const [deleteCandidatesWarning, setDeleteCandidatesWarning] = useState(false);
   const [viewTemplateAssignModal, setViewTemplateAssignModal] = useState(false);
 
-  // For Template Preview (if needed)
+  // -------- NEW: States for Template Preview --------
   const [previewTemplate, setPreviewTemplate] = useState<Question | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
 
+  // Additional UI states
   const [showCandidateDetails, setShowCandidateDetails] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showOptionsIndex, setShowOptionsIndex] = useState("");
@@ -85,14 +87,16 @@ const Applicants = () => {
   // Search
   const [searchTerm, setSearchTerm] = useState("");
   useEffect(() => {
-    setCurrentPage(1); // reset to page 1 anytime searchTerm changes
+    // Anytime search changes, jump back to page 1
+    setCurrentPage(1);
   }, [searchTerm]);
 
-  // Filter (multi-select statuses)
+  // Filter by status (multi-select)
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const path = usePathname();
   const router = useRouter();
+
   const { data: session, status } = useSession();
 
   // ------------------------------
@@ -148,14 +152,14 @@ const Applicants = () => {
     return null;
   }
 
-  // -----------------------------
-  //    getApplicants, findQuestions
-  // -----------------------------
+  // Fetch Applicants from DB
   const getApplicants = async (companyId: string) => {
     try {
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: { "Content-type": "application/json" },
+        headers: {
+          "Content-type": "application/json",
+        },
         body: JSON.stringify({
           action: "getApplicants",
           company: companyId,
@@ -166,7 +170,7 @@ const Applicants = () => {
         applicant.selected = false;
       });
 
-      // sort by created date
+      // Sort by created date
       data.message.sort((a: TestIDInterface, b: TestIDInterface) => {
         const dateA = new Date(a.created);
         const dateB = new Date(b.created);
@@ -178,11 +182,14 @@ const Applicants = () => {
     }
   };
 
+  // Fetch Templates from DB
   const findQuestions = async (company: string) => {
     try {
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: { "Content-type": "application/json" },
+        headers: {
+          "Content-type": "application/json",
+        },
         body: JSON.stringify({
           action: "findQuestions",
           company: company,
@@ -242,7 +249,9 @@ const Applicants = () => {
     try {
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           action: "addApplicant",
           firstName: applicantFirstName,
@@ -297,7 +306,9 @@ const Applicants = () => {
       toast.loading("Importing applicant(s)...");
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           action: "addApplicants",
           applicants: applicants,
@@ -336,7 +347,9 @@ const Applicants = () => {
       toast.loading("Loading...");
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: { "Content-type": "application/json" },
+        headers: {
+          "Content-type": "application/json",
+        },
         body: JSON.stringify({
           action: "deleteApplicants",
           applicantData: applicantData,
@@ -379,7 +392,9 @@ const Applicants = () => {
       toast.loading("Loading...");
       const response = await fetch("/api/database", {
         method: "POST",
-        headers: { "Content-type": "application/json" },
+        headers: {
+          "Content-type": "application/json",
+        },
         body: JSON.stringify({
           action: "assignTemplate",
           applicantData: applicantData,
@@ -416,11 +431,13 @@ const Applicants = () => {
       toast.error("Please select a valid template first.");
       return;
     }
+    // Find the chosen template
     const chosen = questions.find((q) => q.id === template);
     if (!chosen) {
       toast.error("Could not find that template. Please select again.");
       return;
     }
+    // Store and show preview modal
     setPreviewTemplate(chosen);
     setShowPreviewModal(true);
   };
@@ -441,6 +458,7 @@ const Applicants = () => {
   // ---------------------
   //   Derived Data
   // ---------------------
+  // Combine searchTerm & status-based filtering
   const filteredCandidates = applicantData.filter((candidate) => {
     const fullName = (candidate.firstName + " " + candidate.lastName).toLowerCase();
     const matchesSearch =
@@ -587,6 +605,7 @@ const Applicants = () => {
                       }}
                       className="absolute top-10 right-0 bg-slate-800 bg-opacity-60 backdrop-blur-lg rounded-lg border border-slate-800 p-3 flex flex-col gap-2 z-10"
                     >
+                      {/* Each status is clickable to toggle filter */}
                       <li
                         className="flex gap-3 items-center w-max cursor-pointer"
                         onClick={() => toggleFilter("Sent")}
@@ -644,7 +663,7 @@ const Applicants = () => {
                 </div>
               </div>
 
-              {/* MAIN LAYOUT (Left = Candidates, Right = Search+Assign) */}
+              {/* MAIN LAYOUT: LEFT = Candidates, RIGHT = Search + Assign */}
               <div className="flex flex-col gap-8 lg:flex-row w-full">
                 {/* LEFT: Candidate List */}
                 <div className="lg:w-2/3 flex flex-col gap-4">
@@ -677,7 +696,7 @@ const Applicants = () => {
                                 >
                                   <div className="flex gap-3 items-center justify-between w-full">
                                     <div className="flex gap-6 items-center">
-                                      {/* Each checkbox */}
+                                      {/* Individual checkbox */}
                                       <input
                                         type="checkbox"
                                         checked={item.selected}
@@ -705,7 +724,7 @@ const Applicants = () => {
                                       </div>
                                     </div>
 
-                                    {/* Status Pill */}
+                                    {/* Status pill */}
                                     <div className="flex gap-3 items-center justify-center">
                                       {item.status === "Sent" && (
                                         <div className="flex gap-3 items-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700">
@@ -786,7 +805,7 @@ const Applicants = () => {
                                                 ? "rotate-0 opacity-25 duration-100"
                                                 : "-rotate-90 opacity-25 duration-100"
                                             }
-                                        />
+                                          />
                                         </button>
 
                                         <AnimatePresence>
@@ -812,7 +831,9 @@ const Applicants = () => {
                                                 <span>Created:</span>
                                                 <span className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
                                                   {item.created
-                                                    ? new Date(item.created).toUTCString()
+                                                    ? new Date(
+                                                        item.created
+                                                      ).toUTCString()
                                                     : "N/A"}
                                                 </span>
                                               </p>
@@ -820,12 +841,16 @@ const Applicants = () => {
                                                 <span>Expiration:</span>
                                                 <span className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
                                                   {item.expirationDate
-                                                    ? new Date(item.expirationDate).toUTCString()
+                                                    ? new Date(
+                                                        item.expirationDate
+                                                      ).toUTCString()
                                                     : "N/A"}
                                                 </span>
                                               </p>
                                               <p className="text-sm flex flex-col mt-1">
-                                                <span className="mb-1">Template:</span>
+                                                <span className="mb-1">
+                                                  Template:
+                                                </span>
                                                 {item.template ? (
                                                   <span className="border rounded-lg border-slate-600 bg-slate-700 py-1 px-3">
                                                     {item.template.title}
@@ -837,7 +862,9 @@ const Applicants = () => {
                                                 )}
                                                 <motion.button
                                                   className="mt-2 flex justify-center items-center p-1 px-3 bg-indigo-600 rounded-full shadow-lg cursor-pointer duration-100 text-sm w-fit"
-                                                  onClick={() => router.push("/questionWorkshop")}
+                                                  onClick={() =>
+                                                    router.push("/questionWorkshop")
+                                                  }
                                                 >
                                                   <>
                                                     View Templates
@@ -858,28 +885,6 @@ const Applicants = () => {
                                           )}
                                         </AnimatePresence>
                                       </motion.li>
-
-                                      {/* NEW: View Test ID if status === "Sent" */}
-                                      {item.status === "Sent" && (
-                                        <motion.li
-                                          className="flex items-center justify-center p-1 px-3 bg-slate-800 rounded-full border border-slate-700 hover:bg-slate-700 shadow-lg cursor-pointer duration-100 relative"
-                                          initial={{ opacity: 0, y: -20 }}
-                                          animate={{ opacity: 1, y: 0 }}
-                                          exit={{ opacity: 0, y: -20 }}
-                                          transition={{
-                                            duration: 0.2,
-                                            delay: 0,
-                                            ease: "backOut",
-                                          }}
-                                        >
-                                          <button
-                                            className="text-sm"
-                                            onClick={() => router.push(`/tests/${item.id}`)}
-                                          >
-                                            View Test ID
-                                          </button>
-                                        </motion.li>
-                                      )}
 
                                       {/* View Submission if "Submitted" */}
                                       {item.status === "Submitted" && (
@@ -927,7 +932,7 @@ const Applicants = () => {
                             })}
                         </ul>
 
-                        {/* Pagination */}
+                        {/* PAGINATION */}
                         <div className="flex justify-center mt-6 flex-wrap gap-2">
                           {Array.from({ length: totalPages }, (_, i) => (
                             <button
