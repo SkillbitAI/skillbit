@@ -53,8 +53,8 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
   const [card, setCard] = useState(1);
   const [email, setEmail] = useState("");
 
-  const [userCompanyName, setUserCompanyName] = useState(null);
-  const [userCompanyId, setUserCompanyId] = useState(null);
+  const [userCompanyName, setUserCompanyName] = useState<string | null>(null);
+  const [userCompanyId, setUserCompanyId] = useState<string | null>(null);
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -78,26 +78,24 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
   const questionTitleRef = createRef<HTMLInputElement>();
 
   const { data: session, status } = useSession();
- // New state for Dashboard Button Visibility
- const [showDashboardButton, setShowDashboardButton] = useState(false);
 
- // Key for Local Storage
- const DASHBOARD_BUTTON_KEY = "hasClickedDashboardButton";
+  // ***** Updated logic for the Dashboard button *****
+  const [showDashboardButton, setShowDashboardButton] = useState(false);
 
- useEffect(() => {
-   // Check Local Storage on component mount
-   const hasClicked = localStorage.getItem(DASHBOARD_BUTTON_KEY);
-   if (!hasClicked) {
-     setShowDashboardButton(true);
-   }
- }, []);
+  // Whenever the questions array changes, decide if we should show the button
+  useEffect(() => {
+    if (questions.length > 1) {
+      setShowDashboardButton(true);
+    } else {
+      setShowDashboardButton(false);
+    }
+  }, [questions]);
 
- const handleDashboardButtonClick = () => {
-   // Hide the button and set the flag in Local Storage
-   setShowDashboardButton(false);
-   localStorage.setItem(DASHBOARD_BUTTON_KEY, "true");
-   router.push("/dashboard");
- };
+  const handleDashboardButtonClick = () => {
+    router.push("/dashboard");
+  };
+  // ***** End of updated logic for Dashboard Button *****
+
   const findQuestions = async (company: string) => {
     try {
       const response = await fetch("/api/database", {
@@ -113,8 +111,8 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
       const data = await response.json();
       setQuestions(data.message.reverse());
       setCurrentQuestion(data.message[0]);
-      setNewTitle(data.message[0].title);
-      setNewPrompt(data.message[0].prompt);
+      setNewTitle(data.message[0]?.title || "");
+      setNewPrompt(data.message[0]?.prompt || "");
     } catch (error) {
       console.error("Error finding questions: ", error);
     }
@@ -293,33 +291,36 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
         <div className="flex-1 bg-slate-950">
           {/* Enhanced Info Section */}
           <div className="p-6 flex flex-col gap-6  mx-auto w-full">
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 mb-3">
-            {/* Left Section: Icon and Text */}
-            <div className="flex items-center gap-3">
-              <Image src={QuestionIcon} width={32} height={32} alt="Info Icon" />
-              <div>
-                <h2 className="text-lg font-semibold text-white">
-                  What is this Assessment Builder?
-                </h2>
-                <p className="text-sm text-slate-400">
-  This is your tool for building customized question templates, tailored by AI to suit specific needs and preferences.
-</p>
-              </div>
-            </div>
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 items-center justify-between flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 mb-3">
+              {/* Left Section: Icon and Text */}
+            
+  {/* Left Section: Info */}
+  <div className="flex items-center gap-3">
+    <Image src={QuestionIcon} width={32} height={32} alt="Info Icon" />
+    <div>
+      <h2 className="text-lg font-semibold text-white">
+        What is this Assessment Builder?
+      </h2>
+      <p className="text-sm text-slate-400">
+        This is your tool for building customized question templates,
+        tailored by AI to suit specific needs and preferences.
+      </p>
+    </div>
+  </div>
 
-            {/* Right Section: Button */}
-            {questions.length > 0 && showDashboardButton && (
-              <motion.button
-                className="bg-indigo-600 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors duration-200 animate-glow"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleDashboardButtonClick}
-              >
-                <Image src={Arrow} width={16} height={16} alt="Back to Dashboard" />
-                <span className="text-white">Back to Dashboard</span>
-              </motion.button>
-            )}
-          </div>
+  {/* Right Section: Button */}
+  {questions.length > 0 && (
+    <motion.button
+      className="bg-indigo-600 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors duration-200 animate-glow"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={handleDashboardButtonClick}
+    >
+      <span className="text-white">Back to Dashboard</span>
+    </motion.button>
+  )}
+</div>
+
           </div>
           {/* End of Enhanced Info Section */}
 
@@ -424,7 +425,6 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                         Your company has no question templates.
                       </p>
                     )}
-                    
                   </div>
                 </div>
                 {/* End of Templates List */}
@@ -621,7 +621,9 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                     <div className="flex flex-col">
                       <h1 className="text-2xl font-semibold">Assessment Builder</h1>
                       <p className="text-slate-400">
-                        Welcome to the Skillbit Assessment Builder. Create and customize assessment templates to effectively evaluate candidate skills.
+                        Welcome to the Skillbit Assessment Builder. Create and
+                        customize assessment templates to effectively evaluate candidate
+                        skills.
                       </p>
                     </div>
                     <div className="flex flex-col">
