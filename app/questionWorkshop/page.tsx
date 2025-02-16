@@ -33,6 +33,7 @@ import SearchIcon from "../../public/assets/icons/search.svg";
 import Edit from "../../public/assets/icons/edit.svg";
 
 interface Question {
+  candidatePrompt: string;
   title: string;
   language: string;
   framework: string;
@@ -72,6 +73,8 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
   const [framework, setFramework] = useState("");
   const [prompt, setPrompt] = useState("");
   const [newPrompt, setNewPrompt] = useState("");
+  const [candidatePrompt, setCandidatePrompt] = useState("");
+  const [newCandidatePrompt, setNewCandidatePrompt] = useState("");
   const [type, setType] = useState("");
   const [showQuestionOptions, setShowQuestionOptions] = useState("");
 
@@ -111,8 +114,9 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
       const data = await response.json();
       setQuestions(data.message.reverse());
       setCurrentQuestion(data.message[0]);
-      setNewTitle(data.message[0]?.title || "");
-      setNewPrompt(data.message[0]?.prompt || "");
+      setNewTitle(data.message[0].title);
+      setNewPrompt(data.message[0].prompt);
+      setNewCandidatePrompt(data.message[0].candidatePrompt);
     } catch (error) {
       console.error("Error finding questions: ", error);
     }
@@ -168,6 +172,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
             id: id,
             title: newTitle,
             prompt: newPrompt,
+            candidatePrompt: newCandidatePrompt,
           }),
         });
         await findQuestions(userCompanyId || "");
@@ -336,37 +341,49 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
             </div>
           )}
           {companyDataLoaded && userApprovalStatus && (
-            <div className="p-6">
-              <div className="flex flex-col lg:flex-row gap-6">
-                {/* Templates List */}
-                <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 w-full lg:w-1/3">
-                  <div className="flex justify-between items-center mb-3">
-                    <h1 className="text-xl font-semibold">Templates</h1>
-                    <button
-                      className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100"
-                      onClick={() => {
-                        setNewQuestionButton(true);
-                        setTitle("");
-                        setLanguage("");
-                        setFramework("");
-                        setPrompt("");
-                        setType("");
-                      }}
-                      aria-label="Add New Template"
-                    >
-                      <Image src={Plus} width={14} height={14} alt="Add" />
-                    </button>
-                  </div>
-                  <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
-                    {questions && questions.length > 0 ? (
-                      questions.map((question) => (
-                        <div className="relative" key={question.id}>
-                          <div
-                            className={`flex justify-between items-center p-3 rounded-lg cursor-pointer border ${
-                              currentQuestion?.id === question.id
-                                ? "bg-indigo-600 border-indigo-600"
-                                : "bg-slate-800 border-slate-700 hover:bg-slate-700"
-                            } transition-colors duration-200`}
+            <div className="p-6 flex gap-6">
+              <div className="rounded-xl bg-slate-900 border border-slate-800 p-6 w-64">
+                <div className="flex justify-between items-center mb-3">
+                  <h1>Templates</h1>
+                  <button
+                    className="bg-slate-800 cursor-pointer rounded-lg p-2 border border-slate-700 hover:bg-slate-700 duration-100"
+                    onClick={() => {
+                      setNewQuestionButton(true);
+                      setTitle("");
+                      setLanguage("");
+                      setFramework("");
+                      setPrompt("");
+                      setType("");
+                      setCandidatePrompt("");
+                    }}
+                  >
+                    <Image src={Plus} width={14} height={14} alt=""></Image>
+                  </button>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {questions &&
+                    questions.map((question) => (
+                      <div className="relative" key={question.id}>
+                        <div
+                          className={
+                            currentQuestion?.id == question.id
+                              ? "flex justify-between items-center p-3 bg-indigo-600 border border-indigo-600 rounded-lg cursor-pointer duration-100"
+                              : "flex justify-between items-center p-3 hover:bg-slate-700 bg-slate-800 border border-slate-700 rounded-lg cursor-pointer duration-100"
+                          }
+                          onClick={() => {
+                            setCurrentQuestion(question);
+                            setNewTitle(question.title);
+                            setNewPrompt(question.prompt);
+                            setNewCandidatePrompt(question.candidatePrompt)
+                          }}
+                          key={question.id}
+                        >
+                          <p>{question.title}</p>
+                          <Image
+                            src={Dots}
+                            alt=""
+                            width={14}
+                            height={14}
                             onClick={() => {
                               setCurrentQuestion(question);
                               setNewTitle(question.title);
@@ -465,37 +482,59 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                               {currentQuestion.type}
                             </span>
                           </div>
-                          <div className="mt-3">
-                            <h2 className="text-lg font-semibold">
-                              Template Prompt
-                            </h2>
-                            <p className="text-sm text-slate-400">
-                              This open-ended prompt is being used to help
-                              generate your templates. Candidates will not see
-                              this.
-                            </p>
-                            <textarea
-                              placeholder="Generate a todo list application with 5 errors..."
-                              className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
-                              onChange={(e) => setNewPrompt(e.target.value)}
-                              value={newPrompt}
-                            />
-                          </div>
-                          <div className="mt-3 flex items-center gap-2">
-                            <h2 className="text-lg font-semibold">
-                              Expiration:
-                            </h2>
-                            <span className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
-                              {currentQuestion.expiration}
-                            </span>
+                        </div>
+                        <div className="flex flex-col mt-3 pb-8">
+                          <h2>Candidate Instructions</h2>
+                          <p className="text-slate-400">
+                            {"This prompt is the user's instructions and is generated by the AI model."}
+                          </p>
+                          <textarea
+                            placeholder="You will be asked to..."
+                            className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
+                            onChange={(e) =>
+                              setNewCandidatePrompt(e.target.value)
+                            }
+                            value={newCandidatePrompt}
+                          />
+                        </div>
+                        <div className="flex flex-col mt-3">
+                          <h2>Template Prompt</h2>
+                          <p className="text-slate-400">
+                            {
+                              "This open-ended prompt is being used to help generate your templates. Candidates will not see this."
+                            }
+                          </p>
+                          <textarea
+                            placeholder="Generate a todo list application with 5 errors..."
+                            className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
+                            onChange={(e) => setNewPrompt(e.target.value)}
+                            value={newPrompt}
+                          />
+                        </div>
+                        <div className="mt-3 flex gap-2 items-center">
+                          <h2>Expiration: </h2>
+                          <p className="bg-slate-800 border border-slate-700 py-1 px-2 rounded-xl">
+                            {currentQuestion.expiration}
+                          </p>
+                        </div>
+                      </div>
+                      {/* <div className="flex justify-center items-center flex-col gap-6 text-center">
+                        <div className="flex justify-center items-center scale-150 mt-6">
+                          <div className="lds-ring">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
                           </div>
                         </div>
                         {/* End of Question Header */}
 
                         {/* Save Changes Button */}
                         <AnimatePresence>
-                          {(currentQuestion.title !== newTitle ||
-                            currentQuestion.prompt !== newPrompt) && (
+                          {(currentQuestion.title != newTitle ||
+                            currentQuestion.prompt != newPrompt ||
+                            currentQuestion.candidatePrompt != newCandidatePrompt
+                            ) && (
                             <motion.button
                               className="mt-10 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-indigo-700 transition-colors duration-200"
                               initial={{ opacity: 0, y: 30 }}

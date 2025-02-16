@@ -55,6 +55,7 @@ interface TestIDInterface {
 }
 
 interface Question {
+  candidatePrompt: string;
   title: string;
   language: string;
   framework: string;

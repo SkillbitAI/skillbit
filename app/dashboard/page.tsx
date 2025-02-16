@@ -35,6 +35,7 @@ import Edit from "../../public/assets/icons/edit.svg";
 import exp from "constants";
 
 interface Question {
+  candidatePrompt: string;
   title: string;
   language: string;
   framework: string;
