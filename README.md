@@ -71,6 +71,97 @@ ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
 - Reload the daemon: `sudo systemctl daemon-reload`
 - Restart docker: `sudo systemctl restart docker`
 
+## Set up nginx
+
+- install nginx: `sudo yum install nginx`
+- `sudo nano /etc/nginx/conf.d/dynamic-ports.conf`
+- start nginx: `sudo systemctl start nginx`
+- paste this in the file:
+
+```
+server {
+    listen 80;
+    server_name api.skillbit.org 127.0.0.1;
+
+    ## ODD PORTS – Socket endpoints
+    #
+    # Matches URLs like:
+    #   /3001/socket.io/...
+    # where 3001 is an odd-numbered port (4 digits, starting with 3).
+    #
+    location ~ "^/(?<port>3\d{2}[13579])/?(?<restOfPath>.*)$" {
+        # Strip the port from the beginning of the URI.
+        # For example: /3001/socket.io/  →  /socket.io/
+        rewrite "^/(?<port>3\d{2}[13579])/?(.*)$" /$2 break;
+
+        # For WebSocket support
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # Forward the request to the backend on the given port.
+        proxy_pass http://127.0.0.1:$port/$restOfPath$is_args$args;
+
+        # Pass along common headers.
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    ## EVEN PORTS – React endpoints
+    #
+    # Two location blocks are used: one for requests with no extra path, and one
+    # for requests with additional path info.
+
+    # Case 1: Exactly /<port>/ (no additional path)
+    location ~ "^/(?<port>3\d{2}[02468])/?$" {
+        proxy_pass http://127.0.0.1:$port/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Case 2: /<port>/<restOfPath> (with extra path)
+    location ~ "^/(?<port>3\d{2}[02468])/(?<restOfPath>.+)$" {
+        # The backend expects the port number to be repeated as the first part
+        # of the path. For example:
+        #   Request: /3002/about → Proxy to: http://127.0.0.1:3002/3002/about
+        proxy_pass http://127.0.0.1:$port/$port/$restOfPath$is_args$args;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    ## Catch-All: 404 if none of the above locations match.
+    location / {
+        return 404;
+    }
+}
+```
+
+- test: `sudo nginx -t`
+- reload: `sudo systemctl reload nginx`
+
+## Update DNS
+
+- update to direct api.skillbit.org to the correct load balancer
+
+## Update security groups
+
+### Inbound
+
+- All traffic to My IP
+- All traffic to its own security group
+
+### Outbound
+
+- All traffic to My IP
+- All traffic to its own security group
+- HTTPS (port 443 will set automatically) to 0.0.0.0
+
 ## Other general commands
 
 - Remove all docker containers (active and inactive): `docker rm -v -f $(docker ps -qa)`
@@ -81,3 +172,4 @@ ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
 - Start docker manually with desired hosts: `sudo dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock`
 
 - Remember to set elastic IP address on EC2 instance
+- Remember that you must start nginx whenever the instance shuts down and turns back on

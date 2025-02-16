@@ -37,6 +37,7 @@ const formatTime = (seconds) => {
 
 // Import react-hot-toast components
 import { toast, Toaster } from "react-hot-toast";
+import path from "path";
 
 const DOCKER_EC2_TOGGLE = true;
 
@@ -230,10 +231,15 @@ export default function Tests({ params }: { params: { id: string } }) {
         setIsLoading(false);
       }
 
+      // `https://ec2.skillbit.org/${ports.socketServer}/`
+
       const newSocket = io(
         DOCKER_EC2_TOGGLE
-          ? `http://54.225.167.48:${ports.socketServer}`
-          : `http://localhost:${ports.socketServer}`
+          ? `https://api.skillbit.org`
+          : `http://localhost:${ports.socketServer}`,
+        {
+          path: `/${ports.socketServer}/socket.io/`,
+        }
       );
       setSocket(newSocket);
       setWebServerPort(ports.webServer);
@@ -242,7 +248,10 @@ export default function Tests({ params }: { params: { id: string } }) {
         newSocket.emit("data", "\n");
         newSocket.emit("data", "cd project\n");
         newSocket.emit("data", "npm install ajv@^6.12.6 ajv-keywords@^3.5.2\n");
-        newSocket.emit("data", "npm run start\n");
+        newSocket.emit(
+          "data",
+          `PUBLIC_URL=/${ports.webServer} npm run start\n`
+        );
         for (const [fileKey, file] of Object.entries(filesState)) {
           newSocket.emit("codeChange", {
             fileName: fileKey,
@@ -366,7 +375,7 @@ export default function Tests({ params }: { params: { id: string } }) {
         try {
           const response = await fetch(
             DOCKER_EC2_TOGGLE
-              ? `http://54.225.167.48:${webServerPort}`
+              ? `https://api.skillbit.org/${webServerPort}`
               : `http://localhost:${webServerPort}`
           );
           if (response.ok) {
@@ -707,7 +716,7 @@ export default function Tests({ params }: { params: { id: string } }) {
                 key={iframeKey}
                 src={
                   DOCKER_EC2_TOGGLE
-                    ? `http://54.225.167.48:${webServerPort}`
+                    ? `https://api.skillbit.org/${webServerPort}`
                     : `http://localhost:${webServerPort}`
                 }
               ></iframe>

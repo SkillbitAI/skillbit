@@ -5,10 +5,11 @@ import { experimental_useOptimistic } from "react";
 import prisma from "../database/prismaConnection";
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
+import path from "path";
 import "dotenv";
 import App from "next/app";
 import { render } from "@react-email/render";
-import logo_full_transparent_blue from "/public/assets/branding/logos/logo_full_transparent_blue.png";
+import logo_full_transparent_blue from "/assets/branding/logos/logo_full_transparent_blue.png";
 import { Question } from "@prisma/client";
 
 export async function addApplicant(
@@ -770,6 +771,15 @@ export async function assignTemplate(
             },
           });
 
+          const imagePath = path.join(
+            process.cwd(),
+            "public",
+            "assets",
+            "branding",
+            "logos",
+            "logo_full_transparent_blue.png"
+          );
+
           const mailOptions = {
             from: "Skillbit <skillbitassessment@gmail.com>",
             to: applicant.email,
@@ -777,7 +787,7 @@ export async function assignTemplate(
             attachments: [
               {
                 filename: "logo_full_transparent_blue.png",
-                path: "./public/assets/branding/logos/logo_full_transparent_blue.png",
+                path: imagePath,
                 cid: "logo1",
               },
             ],
@@ -881,6 +891,15 @@ export async function contactForm(
       },
     });
 
+    const imagePath = path.join(
+      process.cwd(),
+      "public",
+      "assets",
+      "branding",
+      "logos",
+      "logo_full_transparent_blue.png"
+    );
+
     const mailOptions = {
       from: "Skillbit <skillbitassessment@gmail.com>",
       to: "skillbitassessment@gmail.com",
@@ -888,7 +907,7 @@ export async function contactForm(
       attachments: [
         {
           filename: "logo_full_transparent_blue.png",
-          path: "./public/assets/branding/logos/logo_full_transparent_blue.png",
+          path: imagePath,
           cid: "logo1",
         },
       ],

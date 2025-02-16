@@ -1,21 +1,43 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState, ChangeEvent } from "react";
 
+//import mail file
+//
 import Loader from "@/components/loader/loader";
 import Papa from "papaparse";
-import { signOut, useSession } from "next-auth/react";
+import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
+import ReactDOM from "react-dom";
+import { PDFViewer } from "@react-pdf/renderer";
+import Nav from "@/components/nav/nav";
 import Image from "next/image";
-
 import Arrow from "../../public/assets/icons/arrow.svg";
-import Plus from "../../public/assets/icons/plus.svg";
+import Demo from "../../public/assets/images/demo.png";
+import Logo from "../../public/assets/branding/logos/logo_mini_transparent_white.png";
 import Sidebar from "@/components/sidebar/sidebar";
-import Copy from "../../public/assets/icons/copy.svg";
+import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import TopMenuBar from "@/components/topmenubar/topmenubar";
 import Dropdown from "../../public/assets/icons/dropdown.svg";
-import FilterIcon from "../../public/assets/icons/filter.svg";
+import Copy from "../../public/assets/icons/copy.svg";
 import { Toaster, toast } from "react-hot-toast";
+import FilterIcon from "../../public/assets/icons/filter.svg";
+
+//dashboard icons
+import Plus from "../../public/assets/icons/plus.svg";
+import DashboardIcon from "../../public/assets/icons/dashboard.svg";
+import DashboardIconWhite from "../../public/assets/icons/dashboard_white.svg";
+import ApplicantsIcon from "../../public/assets/icons/applicants.svg";
+import CompanyIcon from "../../public/assets/icons/company.svg";
+import SupportIcon from "../../public/assets/icons/support.svg";
+import WorkshopIcon from "../../public/assets/icons/workshop.svg";
+import ProfileIcon from "../../public/assets/icons/profile.svg";
+import QuestionIcon from "../../public/assets/icons/question.svg";
+import SearchIcon from "../../public/assets/icons/search.svg";
+import App from "next/app";
 
 interface TestIDInterface {
   companyID: string;
@@ -25,7 +47,7 @@ interface TestIDInterface {
   firstName: string;
   lastName: string;
   email: string;
-  status: string; // "Sent" | "Unsent" | "Submitted" | "Expired"
+  status: string;
   score: string;
   submitted: boolean;
   template: Question;
@@ -43,7 +65,6 @@ interface Question {
   userId: string;
   id: string;
 }
-
 const Applicants = () => {
   const [email, setEmail] = useState("");
   const [userCompanyName, setUserCompanyName] = useState<string | null>(null);
