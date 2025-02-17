@@ -122,7 +122,7 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ message: response }, { status: 200 });
   } else if (data.action === "updateQuestion") {
-    const response = await updateQuestion(data.id, data.title, data.prompt);
+    const response = await updateQuestion(data.id, data.title, data.prompt, data.candidatePrompt);
     if (response == null) {
       return NextResponse.json(
         { message: "Error updating question." },

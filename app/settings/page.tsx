@@ -32,6 +32,7 @@ import SearchIcon from "../../public/assets/icons/search.svg";
 import Edit from "../../public/assets/icons/edit.svg";
 
 interface Question {
+  candidatePrompt: string;
   title: string;
   language: string;
   framework: string;

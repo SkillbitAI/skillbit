@@ -208,7 +208,8 @@ export async function findQuestions(companyId: string) {
 export async function updateQuestion(
   id: string,
   title: string,
-  prompt: string
+  prompt: string,
+  candidatePrompt: string,
 ) {
   try {
     const questions = await prisma.question.update({
@@ -218,6 +219,7 @@ export async function updateQuestion(
       data: {
         title: title,
         prompt: prompt,
+        candidatePrompt: candidatePrompt,
       },
     });
     return "Success";
