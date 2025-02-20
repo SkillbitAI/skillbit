@@ -100,7 +100,8 @@ const CompanyProfile = () => {
       setIsLoading(false);
       toast.remove();
       toast.success("Company added!");
-      location.reload();
+
+      location.href = "/dashboard";
     }
   };
 
