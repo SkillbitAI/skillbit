@@ -3,7 +3,7 @@
 // Import Prisma to use the database query tools
 import { experimental_useOptimistic } from "react";
 import prisma from "../database/prismaConnection";
-const nodemailer = require("nodemailer");
+import { Resend } from "resend";
 const bcrypt = require("bcrypt");
 import path from "path";
 import "dotenv";
@@ -11,6 +11,8 @@ import App from "next/app";
 import { render } from "@react-email/render";
 import logo_full_transparent_blue from "/assets/branding/logos/logo_full_transparent_blue.png";
 import { Question } from "@prisma/client";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function addApplicant(
   firstName: string,
@@ -763,37 +765,7 @@ export async function assignTemplate(
           },
         });
         try {
-          const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-              user: process.env.GMAIL_USERNAME,
-              pass: process.env.GMAIL_PASSWORD,
-            },
-          });
-
-          const imagePath = path.join(
-            process.cwd(),
-            "public",
-            "assets",
-            "branding",
-            "logos",
-            "logo_full_transparent_blue.png"
-          );
-
-          const mailOptions = {
-            from: "Skillbit <skillbitassessment@gmail.com>",
-            to: applicant.email,
-            subject: "Skillbit Assessment",
-            attachments: [
-              {
-                filename: "logo_full_transparent_blue.png",
-                path: imagePath,
-                cid: "logo1",
-              },
-            ],
-            html: `
+          const emailHtml = `
             <head>
                 <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
                 <style>
@@ -841,11 +813,16 @@ export async function assignTemplate(
                 </div>
               </body>
             </html>
-            `,
-          };
-          const info = await transporter.sendMail(mailOptions);
-          console.log("Email Sent:", info.response);
-          transporter.close();
+          `;
+
+          const data = await resend.emails.send({
+            from: "Skillbit <hello@skillbit.org>",
+            to: applicant.email,
+            subject: "Skillbit Assessment",
+            html: emailHtml,
+          });
+
+          console.log("Email sent:", data);
 
           await prisma.testID.update({
             where: {
@@ -881,42 +858,9 @@ export async function contactForm(
   message: string
 ) {
   try {
-    //SENDING EMAIL TO OURSELVES
-
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.GMAIL_USERNAME,
-        pass: process.env.GMAIL_PASSWORD,
-      },
-    });
-
-    const imagePath = path.join(
-      process.cwd(),
-      "public",
-      "assets",
-      "branding",
-      "logos",
-      "logo_full_transparent_blue.png"
-    );
-
-    const mailOptions = {
-      from: "Skillbit <skillbitassessment@gmail.com>",
-      to: "skillbitassessment@gmail.com",
-      subject: "Skillbit Contact Form Submission",
-      attachments: [
-        {
-          filename: "logo_full_transparent_blue.png",
-          path: imagePath,
-          cid: "logo1",
-        },
-      ],
-      html: `
+    const emailHtml = `
       <head>
       <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-      <!-- Include any necessary styles or head elements here -->
       <style>
           body {
               text-align: center;
@@ -928,29 +872,33 @@ export async function contactForm(
               margin: 0 auto;
           }
       </style>
-  </head>
-  <body>
-      <div class="content" style="margin: 12px auto; font-family: sans-serif;">
-      <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
-          <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have a new contact form submission!</p>
-          <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">
-          First name: ${firstName}<br/>
-          Last name: ${lastName}<br/>
-          Email: ${email}<br/>
-          Message: ${message}
-          </p>
-          <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Best, The Skillbit Server</p>
-          <hr style="width:100%;border:none;border-top:1px solid #eaeaea;border-color:#cccccc;margin:20px 0" />
-          <p style="font-size: 12px; line-height: 24px; margin: 16px 0; color: #8898aa">University of Florida</p>
-      </div>
-  </body>
-  </html>
-      `,
-    };
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email Sent:", info.response);
-    transporter.close();
+      </head>
+      <body>
+          <div class="content" style="margin: 12px auto; font-family: sans-serif;">
+          <img alt="SkillBit" height="100" src="cid:logo1" style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"  />
+              <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">You have a new contact form submission!</p>
+              <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">
+              First name: ${firstName}<br/>
+              Last name: ${lastName}<br/>
+              Email: ${email}<br/>
+              Message: ${message}
+              </p>
+              <p style="font-size: 16px; line-height: 26px;color: #000000; margin: 16px 0">Best, The Skillbit Server</p>
+              <hr style="width:100%;border:none;border-top:1px solid #eaeaea;border-color:#cccccc;margin:20px 0" />
+              <p style="font-size: 12px; line-height: 24px; margin: 16px 0; color: #8898aa">University of Florida</p>
+          </div>
+      </body>
+      </html>
+    `;
 
+    const data = await resend.emails.send({
+      from: "Skillbit <hello@skillbit.org>",
+      to: "skillbitassessment@gmail.com",
+      subject: "Skillbit Contact Form Submission",
+      html: emailHtml,
+    });
+
+    console.log("Email sent:", data);
     return "Success";
   } catch (error) {
     console.error(Error);
