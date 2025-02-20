@@ -13,7 +13,7 @@ import Footer from "@/components/footer/footer";
 import RecruiterDashboard from "../../public/assets/images/recruiterDashboard.png";
 import CompanyProfile from "../../public/assets/images/companyProfile.png";
 import CandidateManager from "../../public/assets/images/candidateManager.png";
-import TemplateWorkshop from "../../public/assets/images/templateWorkshop.png";
+import AssessmentBuilder from "../../public/assets/images/assessmentBuilder.png";
 import TemplateBuilder from "../../public/assets/images/templateBuilder.png";
 export default function RecruiterGuide() {
   return (
@@ -46,18 +46,18 @@ export default function RecruiterGuide() {
               </li>
               <li>
                 <a
-                  href="#managing-candidates"
-                  className="text-slate-300 no-underline"
-                >
-                  Managing Candidates
-                </a>
-              </li>
-              <li>
-                <a
                   href="#creating-a-template"
                   className="text-slate-300 no-underline"
                 >
                   Creating a Template
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#managing-candidates"
+                  className="text-slate-300 no-underline"
+                >
+                  Managing Candidates
                 </a>
               </li>
             </ul>
@@ -79,12 +79,12 @@ export default function RecruiterGuide() {
             <p className="mt-8">
               First, create an account and log in with your credentials. This
               will direct you to the recruiter dashboard, where you can begin
-              managing your interview process. Here’s what the dashboard will
+              managing your interview process. Here is what the dashboard will
               look like.
             </p>
             <Image
               src={RecruiterDashboard}
-              alt="Assessment Submission"
+              alt="recruiter-dashboard"
               className="mt-8"
             ></Image>
             <h1
@@ -104,49 +104,23 @@ export default function RecruiterGuide() {
             </p>
             <Image
               src={CompanyProfile}
-              alt="Company Profile"
+              alt="company-profile"
               className="mt-8"
             ></Image>
-            <h1 id="managing-candidates" className="text-4xl font-bold mt-10">
-              Managing Candidates
-            </h1>
-            <p className="mt-8">
-              Now that you've joined your organization, you can begin managing
-              candidates. Navigate to the 'Candidate Manager' page located on
-              the menu bar on the left-hand side of the dashboard. From there,
-              you can start adding candidates by clicking 'Add applicant' or
-              importing them in bulk using the 'Import csv' option.
-            </p>
-            <p className="mt-8">
-              To add an applicant manually, simply enter their first name, last
-              name, and email address. If you have a list of candidates in a CSV
-              file, you can import them by selecting the file and clicking
-              'Import'. Make sure the file is formatted correctly to ensure a
-              successful import.
-            </p>
-            <p className="mt-8">
-              Here’s an example of the 'Candidate Manager' page:
-            </p>
-            <Image
-              src={CandidateManager}
-              alt="Candidate Manager"
-              className="mt-8"
-            ></Image>
-            <p className="mt-8">
-              Once you're ready assess your candidates, you need to create a
-              template for the online assessments they will complete.
-            </p>
             <h1 id="creating-a-template" className="text-4xl font-bold mt-10">
               Creating a Template
             </h1>
             <p className="mt-8">
-              In 'Candidate Manager', click on 'Assign Templates and Send Tests'
-              or navigate to 'Assessment Builder' on the menu bar on the
-              left-hand side of the dashboard.
+              Now that you've joined your organization, the next step is to access the Assessment Builder. 
+              You can do so by following the steps listed on your dashboard or you can access it directly 
+              on the menu bar on the left-hand side.
+            </p>
+            <p className="mt-8">
+              Here is what the 'Assessment Builder' page will like:
             </p>
             <Image
-              src={TemplateWorkshop}
-              alt="Assessment Submission"
+              src={AssessmentBuilder}
+              alt="assessmentBuilder"
               className="mt-8"
             ></Image>
             <p className="mt-8">
@@ -157,15 +131,33 @@ export default function RecruiterGuide() {
             </p>
             <Image
               src={TemplateBuilder}
-              alt="Assessment Submission"
+              alt="template-builder"
               className="mt-8"
             ></Image>
             <p className="mt-8">
-              After you have created a template, you can now send candidates the
-              assessment. Navigate back to 'Candidate Manager'. Click on the
-              candidates you want to send the assessment to, and click 'Assign
+              Once you have selected and filled out the necessary fields, you are ready to begin assigning 
+              the assessment to candidates.
+            </p>
+            <h1 id="managing-candidates" className="text-4xl font-bold mt-10">
+              Managing Candidates
+            </h1>
+            <p className="mt-8">
+              Navigate back to the dashboard to continue the steps shown to access the candidate manager or you can select 'Candidate Manager' 
+              directly on the left-hand menu bar. Before assigning assessments to candidates, you must add them to the candidate manager. 
+              You may import a csv file with the candidate's first and last name along with their email address or you can add candidates manually.
+            </p>
+            <p className="mt-8">
+              One you have candidates added to the candidate manager, you can begin assigning assessments. 
+            </p>
+            <Image
+              src={CandidateManager}
+              alt="candidate-manager"
+              className="mt-8"
+            ></Image>
+            <p className="mt-8">
+              Select the candidates you want to send an assessment to, and click 'Assign
               Templates and Send Tests'. Click on the template you want to
-              assign, and click 'Assign templates and send tests'
+              assign, and click 'Assign templates and send tests'.
             </p>
             <h1 className="text-xl font-bold mt-10">Have any questions?</h1>
             <p className="mt-8">
@@ -173,7 +165,6 @@ export default function RecruiterGuide() {
               <span className="font-bold text-indigo-300">
                 skillbitassessment@gmail.com
               </span>
-              .
             </p>
           </div>
         </div>
