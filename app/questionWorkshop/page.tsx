@@ -593,7 +593,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                 exit={{ opacity: 0 }}
               >
                 <motion.div
-                  className="flex flex-col gap-12 max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-6 overflow-y-auto"
+                  className="relative flex flex-col gap-12 max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-xl p-8 overflow-y-auto max-h-[90vh]"
                   style={{
                     scrollbarWidth: "thin",
                     scrollbarColor: "rgb(51 65 85) transparent",
@@ -603,29 +603,27 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                   exit={{ opacity: 0, y: 30 }}
                   transition={{ duration: 0.5, ease: "backOut" }}
                 >
-                  <div className="flex justify-end">
-                    <motion.button
-                      className="bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center"
-                      onClick={() => {
-                        setNewQuestionButton(false);
-                        setViewAdditionalSettings(false);
-                      }}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 30 }}
-                      transition={{ duration: 0.7, ease: "backOut" }}
-                      aria-label="Close Modal"
-                    >
-                      <Image
-                        src={Plus}
-                        width={14}
-                        height={14}
-                        className="rotate-45"
-                        alt="Close"
-                      />
-                    </motion.button>
-                  </div>
-                  <div className="flex flex-col gap-6">
+                <motion.button
+                  className="absolute top-4 right-4 bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center"
+                  onClick={() => {
+                    setNewQuestionButton(false);
+                    setViewAdditionalSettings(false);
+                  }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 30 }}
+                  transition={{ duration: 0.7, ease: "backOut" }}
+                  aria-label="Close Modal"
+                >
+                  <Image
+                    src={Plus}
+                    width={14}
+                    height={14}
+                    className="rotate-45"
+                    alt="Close"
+                  />
+                </motion.button>
+                  <div className="flex flex-col gap-8">
                     <div className="flex flex-col">
                       <h1 className="text-2xl font-semibold">
                         Assessment Builder
@@ -657,7 +655,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                         Your questions will test candidates using the
                         programming language or framework you choose.
                       </p>
-                      <div className="flex flex-wrap gap-3 mt-3">
+                      <div className="flex flex-wrap gap-3 mt-6">
                         <div
                           className={`rounded-xl border ${
                             language === "JavaScript" &&
@@ -733,7 +731,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                         We will use this to help generate your template and give
                         candidates an idea of what to expect.
                       </p>
-                      <div className="flex flex-wrap gap-3 mt-3">
+                      <div className="flex flex-wrap gap-3 mt-6">
                         <div
                           className={`rounded-xl border ${
                             type === "Debugging challenge"
@@ -794,7 +792,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                       </p>
                       <textarea
                         placeholder="Generate a todo list application with 5 errors..."
-                        className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-3 resize-y max-h-60 min-h-[100px] border border-slate-700"
+                        className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-slate-800 outline-none w-full mt-6 resize-y max-h-60 min-h-[100px] border border-slate-700"
                         onChange={(e) => setPrompt(e.target.value)}
                         value={prompt}
                       />
@@ -852,7 +850,7 @@ const QuestionWorkshop = ({ params }: { params: { id: string } }) => {
                       )}
                     </div>
                     <motion.button
-                      className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-indigo-700 transition-colors duration-200"
+                      className="bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center hover:bg-indigo-700 transition-colors duration-200 p-2"
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, ease: "backOut" }}
