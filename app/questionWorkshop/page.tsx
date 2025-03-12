@@ -493,21 +493,20 @@ const QuestionWorkshop = () => {
         <Sidebar />
         <div className="flex-1 bg-slate-950">
           {/* Info Section */}
-          <div className="p-6 flex flex-col gap-6 mx-auto w-full">
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 items-center justify-between flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mb-3">
-              <div className="flex items-end gap-3">
-                <Image src={QuestionIcon} width={32} height={32} alt="Icon" />
-                <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    Assessment Builder
-                  </h2>
-                  <p className="text-sm text-slate-400">
-                    Build customized question templates for your candidates!
-                  </p>
+          <div className="p-6 pb-0 flex flex-col gap-6 mx-auto w-full">
+            {questions.length < 1 && (
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 items-center justify-between flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+                <div className="flex items-end gap-3">
+                  <Image src={QuestionIcon} width={32} height={32} alt="Icon" />
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">
+                      Assessment Builder
+                    </h2>
+                    <p className="text-sm text-slate-400">
+                      Build customized question templates for your candidates!
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {questions.length > 0 && (
                 <motion.button
                   className="bg-indigo-600 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors duration-200 animate-glow"
                   whileHover={{ scale: 1.05 }}
@@ -516,8 +515,8 @@ const QuestionWorkshop = () => {
                 >
                   <span className="text-white">Back to Dashboard</span>
                 </motion.button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* If still loading company info */}
