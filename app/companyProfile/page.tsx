@@ -136,56 +136,51 @@ const CompanyProfile = () => {
     setJobs(data.message || []);
   };
 
-  useEffect(() => {
-    const getData = async () => {
-      if (session) {
-        toast.remove();
-        toast.loading("Looking for company...");
-        setEmail(session.user?.email || "");
+  const getData = async () => {
+    if (session) {
+      toast.remove();
+      toast.loading("Looking for company...");
+      setEmail(session.user?.email || "");
 
-        // 1) Fetch user by email
-        const userResponse = await fetch("/api/database", {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "findUserByEmail",
-            email: session.user?.email,
-          }),
-        });
-        const userData = await userResponse.json();
-        // 2) If user has a company, set relevant data
+      // 1) Fetch user by email
+      const userResponse = await fetch("/api/database", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "findUserByEmail",
+          email: session.user?.email,
+        }),
+      });
+      const userData = await userResponse.json();
+      // 2) If user has a company, set relevant data
 
-        if (
-          userData.message.employee &&
-          userData.message.employee.company.name &&
-          userData.message.employee.company.join_code &&
-          userData.message.employee.company.id &&
-          userData.message.employee.isApproved != null
-        ) {
-          setUserCompanyName(userData.message.employee.company.name);
-          setUserCompanyJoinCode(userData.message.employee.company.join_code);
-          setUserCompanyId(userData.message.employee.company.id);
-          setUserApprovalStatus(userData.message.employee.isApproved);
+      if (
+        userData.message.employee &&
+        userData.message.employee.company.name &&
+        userData.message.employee.company.join_code &&
+        userData.message.employee.company.id &&
+        userData.message.employee.isApproved != null
+      ) {
+        setUserCompanyName(userData.message.employee.company.name);
+        setUserCompanyJoinCode(userData.message.employee.company.join_code);
+        setUserCompanyId(userData.message.employee.company.id);
+        setUserApprovalStatus(userData.message.employee.isApproved);
 
-          // Additional calls
-          await findRecruiterRequests(userData.message.employee.company.id);
-          await findEmployees(userData.message.employee.company.id);
-          await getJobs(userData.message.employee.company.id);
-        }
-
-        // 3) Retrieve overall list of companies
-        await findCompanies();
-
-        setCompanyDataLoaded(true);
-        toast.remove();
+        // Additional calls
+        await findRecruiterRequests(userData.message.employee.company.id);
+        await findEmployees(userData.message.employee.company.id);
+        await getJobs(userData.message.employee.company.id);
       }
-    };
-    if (status === "authenticated") {
-      getData();
+
+      // 3) Retrieve overall list of companies
+      await findCompanies();
+
+      setCompanyDataLoaded(true);
+      toast.remove();
     }
-  }, []);
+  };
 
   // -------------
   // UI Handlers
@@ -365,10 +360,12 @@ const CompanyProfile = () => {
 
   const { data: session, status } = useSession();
   useEffect(() => {
+    if (status === "loading") return; 
     if (status === "authenticated") {
-      // already handled in getData() above
+      getData();
     }
-  }, [status]);
+  }, [status, session]); 
+
 
   if (status === "loading") {
     return <Loader />;
