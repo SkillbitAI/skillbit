@@ -262,3 +262,7 @@ textarea:autofill {
 .animate-glow {
   animation: glow 2s infinite;
 }
+
+.min-h-custom {
+  min-height: calc(100vh - 3rem - 2px);
+}
