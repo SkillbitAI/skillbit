@@ -295,7 +295,23 @@ export async function deleteApplicants(applicantData: Array<TestIDInterface>) {
     return null;
   }
 }
+export async function deleteJobRecord(jobId: string, companyId: string) {
+  try {
+    // (Optional) confirm that the job belongs to `companyId` before deleting
+    // e.g. by a findUnique with { where: { id: jobId, companyId } }
 
+    // Then delete:
+    await prisma.job.delete({
+      where: {
+        id: jobId,
+      },
+    });
+    return "Success";
+  } catch (error) {
+    console.error("Error deleting job:", error);
+    return null;
+  }
+}
 export async function addQuestion(
   email: string,
   title: string,
@@ -303,68 +319,54 @@ export async function addQuestion(
   framework: string,
   prompt: string,
   type: string,
-  expiration: string
+  expiration: string,
+  jobId: string  // <-- NEW (REQUIRED)
 ) {
   try {
-    //getting user company
     const user = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
+      where: { email },
       include: {
-        questions: true,
-        employee: {
-          include: {
-            company: true,
-          },
+        employee: { include: { company: true } },
+      },
+    });
+
+    if (!user?.employee?.companyID) {
+      return null;
+    }
+
+    // Optionally check for unique title, etc.
+
+    // Actually create the Question
+    await prisma.question.create({
+      data: {
+        title,
+        language,
+        framework,
+        prompt,
+        type,
+        expiration,
+        // Link it to the user's company
+        company: {
+          connect: { id: user.employee.companyID },
+        },
+        // Link it to the job
+        job: {
+          connect: { id: jobId },
+        },
+        // Optionally link it to the user
+        user: {
+          connect: { email },
         },
       },
     });
 
-    if (user?.employee?.companyID) {
-      const questionTitle = await prisma.question.findFirst({
-        where: {
-          user: {
-            email: email,
-          },
-          title: title,
-        },
-      });
-      if (questionTitle && questionTitle?.title == title) {
-        return "Title already exists. Please choose a unique question title.";
-      } else {
-        const question = await prisma.user.update({
-          where: {
-            email: email,
-          },
-          data: {
-            questions: {
-              create: {
-                company: {
-                  connect: {
-                    id: user?.employee?.companyID,
-                  },
-                },
-                title: title,
-                language: language,
-                framework: framework,
-                prompt: prompt,
-                type: type,
-                expiration: expiration,
-              },
-            },
-          },
-        });
-      }
-    } else {
-      return null;
-    }
     return "Success";
   } catch (error) {
-    console.error("Error finding employees:", error);
+    console.error("Error creating question:", error);
     return null;
   }
 }
+
 
 export async function findEmployees(companyId: string) {
   try {

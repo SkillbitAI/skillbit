@@ -236,7 +236,7 @@ const QuestionWorkshop = () => {
             prompt: prompt,
             type: type,
             expiration: expiration,
-            // jobId: selectedJobId,   <-- If your schema uses jobId on the question model
+            jobId: selectedJobId, 
           }),
         });
 

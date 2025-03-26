@@ -90,18 +90,23 @@ model testID {
 }
 
 model Question {
-  id              String   @id @unique @default(cuid())
-  companyID       String
-  title           String
-  language        String
-  framework       String?
-  type            String
-  userId          String
-  expiration      String   @default("1 month")
-  prompt          String   @default("")
-  company         Company  @relation(fields: [companyID], references: [id], onDelete: Cascade)
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  testIDs         testID[]
+  id         String  @id @unique @default(cuid())
+  companyID  String
+  title      String
+  language   String
+  framework  String?
+  type       String
+  userId     String
+  expiration String  @default("1 month")
+  prompt     String  @default("")
+
+  // TEMPORARILY optional
+  jobId String?
+  job   Job?    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  company Company  @relation(fields: [companyID], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testIDs testID[]
 }
 
 model Company {
@@ -111,14 +116,18 @@ model Company {
   employees Employee[]
   questions Question[]
   testIDs   testID[]
-  jobs      Job[] 
+  jobs      Job[]
 }
+
 model Job {
-  id        String    @id @default(cuid())
-  name      String
-  companyId String
-  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  applicants testID[] // <--- NEW: each Job can have multiple applicants (testIDs)
+  id         String   @id @default(cuid())
+  name       String
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  applicants testID[]
+
+  // ADD THIS – an array of Questions referencing Job
+  questions Question[]
 }

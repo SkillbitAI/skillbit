@@ -40,7 +40,6 @@ interface Employee {
   email: string;
 }
 
-// NEW: Interface for Job
 interface Job {
   id: string;
   name: string;
@@ -52,9 +51,7 @@ const CompanyProfile = () => {
 
   const [accountMenuVisible, setAccountMenuVisible] = useState(false);
   const [userCompanyName, setUserCompanyName] = useState<string | null>(null);
-  const [userCompanyJoinCode, setUserCompanyJoinCode] = useState<string | null>(
-    null
-  );
+  const [userCompanyJoinCode, setUserCompanyJoinCode] = useState<string | null>(null);
   const [userCompanyId, setUserCompanyId] = useState<string | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [joinCompany, setJoinCompany] = useState("");
@@ -67,10 +64,14 @@ const CompanyProfile = () => {
   const [userApprovalStatus, setUserApprovalStatus] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
 
-  // NEW: States for Jobs
+  // --- JOB STATES ---
   const [jobs, setJobs] = useState<Job[]>([]);
   const [newJobName, setNewJobNameState] = useState("");
   const [showAddJobModal, setShowAddJobModal] = useState(false);
+
+  // NEW: Delete Job Modal States
+  const [showDeleteJobModal, setShowDeleteJobModal] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
 
   // -------------
   // Fetch Calls
@@ -155,8 +156,8 @@ const CompanyProfile = () => {
           }),
         });
         const userData = await userResponse.json();
-        // 2) If user has a company, set relevant data
 
+        // 2) If user has a company, set relevant data
         if (
           userData.message.employee &&
           userData.message.employee.company.name &&
@@ -290,7 +291,6 @@ const CompanyProfile = () => {
   // NEW: create a job for the company
   const handleCreateJob = async (e: FormEvent) => {
     e.preventDefault();
-
     if (!newJobName) {
       toast.error("Please enter a job name.");
       return;
@@ -323,16 +323,49 @@ const CompanyProfile = () => {
     }
   };
 
+  // NEW: set job for deletion and open confirmation modal
+  const openDeleteJobModal = (job: Job) => {
+    setJobToDelete(job);
+    setShowDeleteJobModal(true);
+  };
+
+  // NEW: confirm deletion of job
+  const handleDeleteJob = async () => {
+    if (!jobToDelete || !userCompanyId) return;
+
+    toast.loading("Deleting job...");
+
+    // Call our new route action
+    const response = await fetch("/api/database", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "deleteJob",
+        jobId: jobToDelete.id,
+        companyId: userCompanyId,
+      }),
+    });
+    toast.remove();
+    const data = await response.json();
+
+    if (data.message === "Success") {
+      toast.success("Job deleted!");
+      // remove the job from local state
+      setJobs((prev) => prev.filter((j) => j.id !== jobToDelete.id));
+    } else {
+      toast.error("Error deleting job.");
+    }
+    setShowDeleteJobModal(false);
+    setJobToDelete(null);
+  };
+
   // -------------
   // Join Code Inputs
   // -------------
 
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
-  const handleInput = (
-    index: number,
-    event: React.FormEvent<HTMLInputElement>
-  ) => {
+  const handleInput = (index: number, event: React.FormEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
     const maxLength = parseInt(input.getAttribute("maxlength") || "0");
 
@@ -344,17 +377,13 @@ const CompanyProfile = () => {
 
     // Check if all six inputs have values
     const allInputsFilled = inputs.current.every((input) => input?.value);
-
     if (allInputsFilled) {
       const joinCode = inputs.current.map((input) => input?.value).join("");
       handleJoinCompany(joinCode);
     }
   };
 
-  const handleKeyDown = (
-    index: number,
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) => {
+  const handleKeyDown = (index: number, event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Backspace" && index > 0) {
       const input = event.currentTarget;
       if (input.value.length === 0 && inputs.current[index - 1]) {
@@ -405,7 +434,6 @@ const CompanyProfile = () => {
             {/* If no company or user not in company */}
             {companyDataLoaded && (!userCompanyName || !userCompanyId) && (
               <div className="m-auto flex justify-center items-center flex-col">
-                {/* NEW COMPANY MENU */}
                 <AnimatePresence>
                   {newCompanyButton && (
                     <motion.div
@@ -450,8 +478,7 @@ const CompanyProfile = () => {
                       >
                         <h1>Add your company</h1>
                         <p className="mb-6">
-                          If your company is not a part of Skillbit, enroll
-                          here!
+                          If your company is not a part of Skillbit, enroll here!
                         </p>
                         <motion.p
                           initial={{ opacity: 0, y: 30 }}
@@ -571,6 +598,7 @@ const CompanyProfile = () => {
                       {userCompanyJoinCode}
                     </span>
                   </p>
+
                   <div className="mt-6 pt-6 border-t border-slate-800">
                     <h2>Team Management</h2>
                     <div className="flex flex-col lg:flex-row gap-6 mt-3">
@@ -597,36 +625,22 @@ const CompanyProfile = () => {
                             <div className="flex gap-3">
                               <button
                                 className="bg-slate-700 border border-slate-600 p-2 rounded-lg flex justify-center items-center gap-2"
-                                onClick={() =>
-                                  handleApproveRecruiter(employee.email)
-                                }
+                                onClick={() => handleApproveRecruiter(employee.email)}
                               >
                                 <div className="flex items-center justify-center">
                                   <div>
-                                    <Image
-                                      src={Check}
-                                      alt=""
-                                      width={16}
-                                      height={16}
-                                    />
+                                    <Image src={Check} alt="" width={16} height={16} />
                                   </div>
                                 </div>
                                 Accept
                               </button>
                               <button
                                 className="bg-slate-700 border border-slate-600 p-2 rounded-lg flex justify-center items-center gap-2"
-                                onClick={() =>
-                                  handleDenyRecruiter(employee.email)
-                                }
+                                onClick={() => handleDenyRecruiter(employee.email)}
                               >
                                 <div className="flex items-center justify-center">
                                   <div>
-                                    <Image
-                                      src={Cancel}
-                                      alt=""
-                                      width={16}
-                                      height={16}
-                                    />
+                                    <Image src={Cancel} alt="" width={16} height={16} />
                                   </div>
                                 </div>
                                 Reject
@@ -655,11 +669,10 @@ const CompanyProfile = () => {
                     </div>
                   </div>
 
-                  {/* NEW: Job Management Section */}
+                  {/* Job Management Section */}
                   <div className="mt-6 pt-6 border-t border-slate-800">
                     <h2>Job Management</h2>
                     <div className="flex flex-col md:flex-row gap-6 mt-3">
-                      {/* Left: Add Job */}
                       <div className="p-6 rounded-xl bg-slate-900 border border-slate-800 flex-1">
                         <div className="flex justify-between items-center">
                           <h1>Jobs</h1>
@@ -683,9 +696,16 @@ const CompanyProfile = () => {
                                 className="p-3 bg-slate-800 border border-slate-700 mt-3 rounded-xl flex justify-between items-center"
                               >
                                 <p>{job.name}</p>
-                                <p className="text-slate-400 text-sm">
-                                  ID: {job.id}
-                                </p>
+                                <div className="flex items-center gap-4">
+                                  <p className="text-slate-400 text-sm">ID: {job.id}</p>
+                                  {/* DELETE button */}
+                                  <button
+                                    className="bg-red-600 px-3 py-1 rounded-lg text-sm"
+                                    onClick={() => openDeleteJobModal(job)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -781,6 +801,68 @@ const CompanyProfile = () => {
                 </div>
               </motion.button>
             </motion.form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* DELETE JOB MODAL */}
+      <AnimatePresence>
+        {showDeleteJobModal && jobToDelete && (
+          <motion.div
+            className="fixed inset-0 z-50 flex justify-center items-center bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              className="bg-slate-900 p-6 rounded-xl border border-slate-800 w-full max-w-md relative"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+            >
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteJobModal(false);
+                  setJobToDelete(null);
+                }}
+                className="absolute top-4 right-4 bg-slate-900 border border-slate-800 p-2 rounded-full"
+              >
+                <Image
+                  src={Plus}
+                  width={14}
+                  height={14}
+                  alt="close"
+                  className="rotate-45"
+                />
+              </button>
+
+              <h2 className="text-xl font-semibold mb-4">Delete Job</h2>
+              <p className="mb-4">
+                If you delete the job "<strong>{jobToDelete.name}</strong>", 
+                any templates made with it will also be deleted. 
+                Are you sure you want to proceed?
+              </p>
+              <div className="flex gap-4 justify-end">
+                <button
+                  className="bg-slate-700 px-4 py-2 rounded-md"
+                  onClick={() => {
+                    setShowDeleteJobModal(false);
+                    setJobToDelete(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bg-red-600 px-4 py-2 rounded-md"
+                  onClick={handleDeleteJob}
+                >
+                  Delete Job
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

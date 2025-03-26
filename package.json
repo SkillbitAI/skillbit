@@ -48,7 +48,7 @@
     "react-email": "^2.1.0",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^4.12.0",
-    "react-markdown": "^10.0.0",
+    "react-markdown": "^10.1.0",
     "react-password-checklist": "^1.5.0",
     "resend": "^4.1.2",
     "socket.io-client": "^4.7.2",

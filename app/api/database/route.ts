@@ -35,6 +35,7 @@ import {
   getIsSample,
   createJobRecord,
   getCompanyJobsForCompany,
+  deleteJobRecord
 } from "./actions";
 import { send } from "process";
 
@@ -113,7 +114,8 @@ export async function POST(req: Request) {
       data.framework,
       data.prompt,
       data.type,
-      data.expiration
+      data.expiration,
+      data.jobId  // pass the jobId from the front end
     );
     if (
       response == "Title already exists. Please choose a unique question title."
@@ -263,7 +265,18 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({ message: response }, { status: 200 });
-  } else if (data.action === "findCompanies") {
+  } else if (data.action === "deleteJob") {
+    const { jobId, companyId } = data;
+    const response = await deleteJobRecord(jobId, companyId);
+    if (response == null) {
+      return NextResponse.json(
+        { message: "Error deleting job." },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json({ message: response }, { status: 200 });
+  }
+  else if (data.action === "findCompanies") {
     const response = await findCompanies();
     if (response == null) {
       return NextResponse.json(
