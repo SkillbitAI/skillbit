@@ -68,6 +68,18 @@ export default function Home() {
     setRotate({ x: 0, y: 0 });
   };
 
+  //checks hash and extracts id and scrolls to element associated with that id
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.replace("#", "");
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, []);
+
   return (
     <>
       {/* <Mousetrail></Mousetrail> */}
@@ -208,7 +220,7 @@ export default function Home() {
         <About></About>
         <div
           className="text-left relative bg-gradient-to-b to-slate-950 from-transparent"
-          id="how it works"
+          id="how-it-works"
         >
           {/* <div className="bg-slate-950 h-[900px] absolute -top-36 -right-96 -left-96 -rotate-6 z-0"></div> */}
           <div className="px-6 max-w-7xl m-auto relative z-20 pt-40 pb-64 flex justify-between gap-20 items-center flex-col lg:flex-row">
