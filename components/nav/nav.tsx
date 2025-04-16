@@ -68,20 +68,35 @@ const Nav = () => {
           ) : (
             <li
               className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-              onClick={() => scrolltoHash("top")}
+              onClick={() => {
+                if (pathname.endsWith("/support")) {
+                  router.push("/")
+                }
+                scrolltoHash("top");
+              }}
             >
               Home
             </li>
           )}
           <li
             className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-            onClick={() => scrolltoHash("features")}
+            onClick={() => {
+              if (pathname.endsWith("/support")) {
+                router.push("/#features")
+              }
+              scrolltoHash("features");
+            }}
           >
             Features
           </li>
           <li
             className="hover:cursor-pointer transition hover:bg-opacity-10 bg-opacity-0 bg-white p-3 rounded-xl"
-            onClick={() => scrolltoHash("how it works")}
+            onClick={() => {
+              if (pathname.endsWith("/support")) {
+                router.push("/#how-it-works");
+              }
+              scrolltoHash("how-it-works");
+            }}
           >
             How It Works
           </li>
