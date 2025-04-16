@@ -312,6 +312,41 @@ export async function deleteJobRecord(jobId: string, companyId: string) {
     return null;
   }
 }
+export async function addCompanyWithJob(email: string, companyName: string, jobName: string) {
+  try {
+    // Duplicate check
+    const existing = await prisma.company.findFirst({ where: { name: companyName } });
+    if (existing) return "Company already exists";
+
+    // helper to generate 6‑char alphanum code
+    const joinCode = Array.from({ length: 6 }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random()*36)]).join("");
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Create company
+      const company = await tx.company.create({ data: { name: companyName, join_code: joinCode } });
+
+      // 2. Attach creator as approved employee
+      await tx.user.update({
+        where: { email },
+        data : {
+          employee: {
+            create: {
+              company: { connect: { id: company.id } },
+              isApproved: true,
+            },
+          },
+        },
+      });
+
+      // 3. First Job
+      await tx.job.create({ data: { name: jobName, company: { connect: { id: company.id } } } });
+    });
+    return "Success";
+  } catch (err) {
+    console.error("Error addCompanyWithJob:", err);
+    return null;
+  }
+}
 export async function addQuestion(
   email: string,
   title: string,

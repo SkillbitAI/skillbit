@@ -57,6 +57,7 @@ const CompanyProfile = () => {
   const [joinCompany, setJoinCompany] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState("");
+  const [firstJobTitle, setFirstJobTitle] = useState("");
   const [email, setEmail] = useState("");
   const [newCompanyButton, setNewCompanyButton] = useState(false);
   const [companyDataLoaded, setCompanyDataLoaded] = useState(false);
@@ -206,9 +207,10 @@ const CompanyProfile = () => {
           "Content-type": "application/json",
         },
         body: JSON.stringify({
-          action: "addCompany",
+          action: "addCompanyWithJob",
           email: email,
           company: newCompanyName,
+          jobName: firstJobTitle,
         }),
       });
       setIsLoading(false);
@@ -433,108 +435,25 @@ const CompanyProfile = () => {
 
             {/* If no company or user not in company */}
             {companyDataLoaded && (!userCompanyName || !userCompanyId) && (
-              <div className="m-auto flex justify-center items-center flex-col">
+              <div className="m-auto flex flex-col items-center">
                 <AnimatePresence>
                   {newCompanyButton && (
-                    <motion.div
-                      className="fixed left-0 right-0 bottom-0 top-0 z-50 flex justify-center items-center flex-col gap-3 bg-slate-950 bg-opacity-60 p-6 backdrop-blur-sm"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{
-                        duration: 0.5,
-                        ease: "backOut",
-                      }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <motion.button
-                        className="bg-slate-900 border border-slate-800 p-2 rounded-full flex justify-center items-center gap-2 mt-3"
-                        onClick={() => setNewCompanyButton(false)}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.7,
-                          ease: "backOut",
-                        }}
-                        exit={{ opacity: 0, y: 30 }}
-                      >
-                        <Image
-                          src={Plus}
-                          width={14}
-                          height={14}
-                          className="rotate-45"
-                          alt="Exit"
-                        />
+                    <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-6 backdrop-blur-sm" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+                      <motion.button onClick={() => setNewCompanyButton(false)} className="absolute top-4 right-4 bg-slate-900 border border-slate-800 p-2 rounded-full" initial={{opacity:0, y:30}} animate={{opacity:1,y:0}} exit={{opacity:0,y:30}}>
+                        <Image src={Plus} width={14} height={14} alt="Exit" className="rotate-45" />
                       </motion.button>
-                      <motion.form
-                        className="bg-slate-900 p-6 rounded-xl border border-slate-800"
-                        onSubmit={handleCompanyEnroll}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.5,
-                          ease: "backOut",
-                        }}
-                        exit={{ opacity: 0, y: 30 }}
-                      >
+                      <motion.form onSubmit={handleCompanyEnroll} className="bg-slate-900 p-6 rounded-xl border border-slate-800 w-full max-w-md" initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} exit={{opacity:0,y:30}}>
                         <h1>Add your company</h1>
-                        <p className="mb-6">
-                          If your company is not a part of Skillbit, enroll here!
-                        </p>
-                        <motion.p
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.5,
-                            ease: "backOut",
-                          }}
-                        >
-                          Company Name
-                        </motion.p>
-                        <motion.input
-                          type="text"
-                          placeholder="Skillbit"
-                          className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none w-full mt-1"
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.5,
-                            ease: "backOut",
-                          }}
-                          onChange={(e) => setNewCompanyName(e.target.value)}
-                        />
-                        <motion.button
-                          className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex justify-center items-center m-auto hover:bg-opacity-100"
-                          initial={{ opacity: 0, y: 30 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.5,
-                            ease: "backOut",
-                          }}
-                        >
-                          {!isLoading && (
-                            <>
-                              Enroll{" "}
-                              <div className="arrow flex items-center justify-center">
-                                <div className="arrowMiddle"></div>
-                                <div>
-                                  <Image
-                                    src={Arrow}
-                                    alt=""
-                                    width={14}
-                                    height={14}
-                                    className="arrowSide"
-                                  />
-                                </div>
-                              </div>
-                            </>
-                          )}
-                          {isLoading && (
-                            <div className="lds-ring">
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                              <div></div>
-                            </div>
+                        <p className="mb-6">If your company is not a part of Skillbit, enroll here!</p>
+                        <motion.p initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:0.5, ease:"backOut"}}>Company Name</motion.p>
+                        <motion.input type="text" placeholder="Skillbit" className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none w-full mt-1" initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:0.5,ease:"backOut"}} onChange={e=>setNewCompanyName(e.target.value)} />
+                        <motion.p initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:0.5, ease:"backOut"}}>First Job Title</motion.p>
+                        <motion.input type="text" placeholder="e.g. Frontend Engineer" className="p-2 rounded-lg placeholder:text-gray-500 text-white bg-white bg-opacity-10 outline-none w-full mt-1" initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:0.5,ease:"backOut"}} onChange={e=>setFirstJobTitle(e.target.value)} />
+                        <motion.button type="submit" className="mt-3 w-full bg-indigo-600 px-6 py-3 rounded-lg flex items-center justify-center hover:bg-opacity-100" initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} transition={{duration:0.5,ease:"backOut"}}>
+                          {!isLoading ? (
+                            <>Enroll <div className="arrow flex items-center ml-2"><div className="arrowMiddle"/><Image src={Arrow} alt="" width={14} height={14} className="arrowSide"/></div></>
+                          ) : (
+                            <div className="lds-ring"><div/><div/><div/><div/></div>
                           )}
                         </motion.button>
                       </motion.form>

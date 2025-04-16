@@ -256,24 +256,38 @@ const Applicants = () => {
   // -----------------------
   const handleCsvImport = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.type !== "text/csv") {
+    if (!file || file.type !== "text/csv") {
       toast.error("Please upload a valid .csv file.");
       return;
     }
 
     Papa.parse(file, {
       header: true,
+      skipEmptyLines: true,
       complete: async (results) => {
         const rows: any[] = results.data;
+
+        // Build a lookup for existing jobs (name -> id)
+        const jobMap = new Map(jobs.map((j) => [j.name.toLowerCase(), j.id]));
+
+        // Transform rows: if job name not found, set jobId=null so user can assign later
+        const cleanedApplicants = rows.map((row) => {
+          const jobName: string | undefined = row.job || row.Job || row["job name"];
+          const normalized = jobName?.toString().trim().toLowerCase() || "";
+          return {
+            ...row,
+            jobId: jobMap.get(normalized) || null,
+          };
+        });
+
         try {
-          toast.loading("Importing CSV...");
+          toast.loading("Importing applicants...");
           const res = await fetch("/api/database", {
             method: "POST",
-            headers: { "Content-type": "application/json" },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               action: "addApplicants",
-              applicants: rows,
+              applicants: cleanedApplicants,
               recruiterEmail: session?.user?.email || "",
             }),
           });
@@ -290,7 +304,8 @@ const Applicants = () => {
         }
       },
     });
-    // reset file input
+
+    // reset file input so same file can be uploaded again if needed
     setFileInputKey((prev) => prev + 1);
   };
 

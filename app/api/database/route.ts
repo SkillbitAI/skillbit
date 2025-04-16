@@ -8,6 +8,7 @@ import {
   findCompanyById,
   findCompanies,
   addCompany,
+  addCompanyWithJob,
   leaveCompany,
   joinCompany,
   approveRecruitrer,
@@ -135,7 +136,13 @@ export async function POST(req: Request) {
       );
     }
     return NextResponse.json({ message: response }, { status: 200 });
-  } else if (data.action === "updateQuestion") {
+  } else if (data.action === "addCompanyWithJob") {
+    const resp = await addCompanyWithJob(data.email, data.company, data.jobName);
+    if (resp !== "Success") {
+      return NextResponse.json({ message: resp || "Error adding company." }, { status: 400 });
+    }
+    return NextResponse.json({ message: "Success" }, { status: 200 });
+  }else if (data.action === "updateQuestion") {
     const response = await updateQuestion(data.id, data.title, data.prompt);
     if (response == null) {
       return NextResponse.json(
