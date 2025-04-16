@@ -18,8 +18,6 @@ export default function Home() {
   const ref = useRef(null);
   const isInView = useInView(ref);
 
-  // const [scrollId, setScrollId]
-
   useEffect(() => {
     testExpressServer();
   }, []);
